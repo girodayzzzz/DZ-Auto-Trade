@@ -10,9 +10,10 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.cs" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <div class="container nav-wrap">
         <a href="index.html" class="brand">
@@ -33,11 +34,11 @@
       </div>
     </header>
 
-    <main>
-      <section class="hero page-hero">
+    <main id="main-content">
+      <section class="hero page-hero" aria-labelledby="shop-hero-title">
         <div class="container">
           <p class="eyebrow">Auto Parts Store</p>
-          <h1>Shop quality parts and consumables for your vehicle.</h1>
+          <h1 id="shop-hero-title">Shop quality parts and consumables for your vehicle.</h1>
           <p class="hero-copy">
             Select trusted brands for reliable performance, then pair your order
             with installation at our workshop.
@@ -54,7 +55,7 @@
               in multiple sizes with balanced comfort and handling.
             </p>
             <p><strong>Starting at:</strong> $149</p>
-            <button class="shop-btn">Add to Cart</button>
+            <button class="shop-btn" aria-label="Add Performance Tires to cart">Add to Cart</button>
           </article>
 
           <article class="card product" id="oil">
@@ -64,7 +65,7 @@
               Includes oil filter options for complete service.
             </p>
             <p><strong>Starting at:</strong> $39</p>
-            <button class="shop-btn">Add to Cart</button>
+            <button class="shop-btn" aria-label="Add Engine Oil Packs to cart">Add to Cart</button>
           </article>
 
           <article class="card product" id="brakes">
@@ -74,7 +75,7 @@
               dependable stopping power and reduced noise.
             </p>
             <p><strong>Starting at:</strong> $89</p>
-            <button class="shop-btn">Add to Cart</button>
+            <button class="shop-btn" aria-label="Add Brake Kits to cart">Add to Cart</button>
           </article>
         </div>
       </section>
@@ -84,8 +85,8 @@
       <div class="container footer-wrap">
         <div>
           <h3>Need help choosing parts?</h3>
-          <p>Call us: (555) 010-9241</p>
-          <p>Email: shop@dzautotrade.com</p>
+          <p>Call us: <a href="tel:+15550109241">(555) 010-9241</a></p>
+          <p>Email: <a href="mailto:shop@dzautotrade.com">shop@dzautotrade.com</a></p>
         </div>
         <a href="index.html" class="btn-secondary">Back Home</a>
       </div>
