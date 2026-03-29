@@ -10,9 +10,10 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.cs" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <div class="container nav-wrap">
         <a href="index.html" class="brand">
@@ -33,11 +34,11 @@
       </div>
     </header>
 
-    <main>
-      <section class="hero page-hero">
+    <main id="main-content">
+      <section class="hero page-hero" aria-labelledby="services-hero-title">
         <div class="container">
           <p class="eyebrow">Service Center</p>
-          <h1>Detailed services for every stage of vehicle care.</h1>
+          <h1 id="services-hero-title">Detailed services for every stage of vehicle care.</h1>
           <p class="hero-copy">
             Our team delivers diagnostics, maintenance, repair, and detailing with
             clear explanations and transparent pricing.
@@ -111,8 +112,8 @@
       <div class="container footer-wrap">
         <div>
           <h3>Book a Service</h3>
-          <p>Call us: (555) 010-9241</p>
-          <p>Email: service@dzautotrade.com</p>
+          <p>Call us: <a href="tel:+15550109241">(555) 010-9241</a></p>
+          <p>Email: <a href="mailto:service@dzautotrade.com">service@dzautotrade.com</a></p>
         </div>
         <a href="index.html" class="btn-secondary">Back Home</a>
       </div>

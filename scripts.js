@@ -22,13 +22,29 @@ navLinks.forEach((link) => {
 });
 
 const shopButtons = document.querySelectorAll('.shop-btn');
+const statusRegion = document.createElement('div');
+statusRegion.className = 'sr-only';
+statusRegion.setAttribute('aria-live', 'polite');
+document.body.appendChild(statusRegion);
+
 shopButtons.forEach((button) => {
   button.addEventListener('click', () => {
+    const productName = button
+      .closest('.product')
+      ?.querySelector('h2')
+      ?.textContent?.trim();
+
     button.textContent = 'Added ✓';
     button.disabled = true;
+    button.setAttribute('aria-disabled', 'true');
+    statusRegion.textContent = productName
+      ? `${productName} added to cart.`
+      : 'Item added to cart.';
+
     setTimeout(() => {
       button.textContent = 'Add to Cart';
       button.disabled = false;
+      button.setAttribute('aria-disabled', 'false');
     }, 1500);
   });
 });

@@ -10,9 +10,10 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.cs" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <div class="container nav-wrap">
         <a href="index.html" class="brand">
@@ -36,12 +37,12 @@
       </div>
     </header>
 
-    <main>
-      <section class="hero" id="home">
+    <main id="main-content">
+      <section class="hero" id="home" aria-labelledby="hero-title">
         <div class="container hero-grid">
           <div>
             <p class="eyebrow">Trusted Auto Experts</p>
-            <h1>Premium vehicle services with a modern online shop.</h1>
+            <h1 id="hero-title">Premium vehicle services with a modern online shop.</h1>
             <p class="hero-copy">
               Keep your car in peak condition with certified maintenance,
               professional detailing, and quality parts delivered fast.
@@ -51,7 +52,7 @@
               <a href="shop.html" class="btn-secondary">Visit Shop</a>
             </div>
           </div>
-          <div class="hero-card">
+          <aside class="hero-card" aria-label="Customer trust highlights">
             <h3>Why clients choose us</h3>
             <ul>
               <li>✔ Certified technicians</li>
@@ -59,7 +60,7 @@
               <li>✔ Same-day delivery options</li>
               <li>✔ 4.9/5 average customer rating</li>
             </ul>
-          </div>
+          </aside>
         </div>
       </section>
 
@@ -143,8 +144,8 @@
       <div class="container footer-wrap">
         <div>
           <h3>DZ Auto Trade</h3>
-          <p>Call us: (555) 010-9241</p>
-          <p>Email: support@dzautotrade.com</p>
+          <p>Call us: <a href="tel:+15550109241">(555) 010-9241</a></p>
+          <p>Email: <a href="mailto:support@dzautotrade.com">support@dzautotrade.com</a></p>
         </div>
         <a href="#home" class="btn-secondary">Back to top</a>
       </div>
