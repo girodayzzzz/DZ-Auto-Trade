@@ -136,6 +136,10 @@ body {
   padding: 4.8rem 0 3rem;
 }
 
+.page-hero {
+  padding-bottom: 2rem;
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
@@ -222,6 +226,16 @@ h1 {
   color: var(--primary-2);
   text-decoration: none;
   font-weight: 600;
+}
+
+.service-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.service-list ul {
+  margin: 0;
+  padding-left: 1rem;
 }
 
 .about-grid {
