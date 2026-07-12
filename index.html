@@ -1,156 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DZ Auto Trade | Services & Shop</title>
+    <meta name="description" content="Profesionalna spletna trgovina DZ Auto Trade za avto dele, čistila in orodja." />
+    <title>DZ Auto Trade | Avto deli, čistila in orodja</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <a class="skip-link" href="#main-content">Preskoči na glavno vsebino</a>
     <header class="site-header">
+      <div class="top-bar">
+        <div class="container top-bar-wrap">
+          <span>Specialisti za avto dele, čistila in orodja</span>
+          <span>Email: <a href="mailto:info@dzautotrade.si">info@dzautotrade.si</a></span>
+        </div>
+      </div>
       <div class="container nav-wrap">
-        <a href="index.html" class="brand">
+        <a href="index.html" class="brand" aria-label="DZ Auto Trade domov">
           <span class="brand-mark">DZ</span>
-          <span class="brand-text">Auto Trade</span>
+          <span class="brand-copy"><strong>Auto Trade</strong><small>Avto deli • čistila • orodja</small></span>
         </a>
-
-        <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
-
-        <nav class="main-nav" aria-label="Main navigation">
-          <a href="index.html#home" class="nav-link active">Home</a>
-          <a href="services.html" class="nav-link">Services</a>
-          <a href="shop.html" class="nav-link">Shop</a>
-          <a href="index.html#about" class="nav-link">About</a>
-          <a href="index.html#contact" class="nav-link">Contact</a>
+        <button class="menu-toggle" aria-label="Odpri meni" aria-expanded="false"><span></span><span></span><span></span></button>
+        <nav class="main-nav" aria-label="Glavna navigacija">
+          <a href="index.html" class="nav-link active">Domov</a>
+          <div class="nav-dropdown">
+            <button class="nav-link dropdown-toggle " type="button" aria-expanded="false">Trgovina <span>▾</span></button>
+            <div class="mega-menu" aria-label="Kategorije trgovine">
+              <a href="shop.html#avto-deli"><strong>Avto deli</strong><span>Filtri, zavore, brisalci, žarnice</span></a>
+              <a href="shop.html#cistila"><strong>Čistila in nega</strong><span>Šamponi, voski, notranjost, platišča</span></a>
+              <a href="shop.html#orodja"><strong>Orodja</strong><span>Ključi, diagnostika, dvigalke</span></a>
+            </div>
+          </div>
+          <a href="about.html" class="nav-link ">O nas</a>
+          <a href="contact.html" class="nav-link ">Kontakt</a>
         </nav>
-
-        <a href="services.html" class="cta-btn">Book Now</a>
+        <div class="header-actions">
+          <a href="contact.html" class="header-link">Povpraševanje</a>
+          <a href="shop.html" class="cta-btn">V trgovino</a>
+        </div>
       </div>
     </header>
-
     <main id="main-content">
       <section class="hero" id="home" aria-labelledby="hero-title">
         <div class="container hero-grid">
-          <div>
-            <p class="eyebrow">Trusted Auto Experts</p>
-            <h1 id="hero-title">Premium vehicle services with a modern online shop.</h1>
-            <p class="hero-copy">
-              Keep your car in peak condition with certified maintenance,
-              professional detailing, and quality parts delivered fast.
-            </p>
-            <div class="hero-actions">
-              <a href="services.html" class="btn-primary">Explore Services</a>
-              <a href="shop.html" class="btn-secondary">Visit Shop</a>
-            </div>
-          </div>
-          <aside class="hero-card" aria-label="Customer trust highlights">
-            <h3>Why clients choose us</h3>
-            <ul>
-              <li>✔ Certified technicians</li>
-              <li>✔ Transparent pricing</li>
-              <li>✔ Same-day delivery options</li>
-              <li>✔ 4.9/5 average customer rating</li>
-            </ul>
-          </aside>
+          <div><p class="eyebrow">Spletna trgovina za vozila</p><h1 id="hero-title">Avto deli, čistila in orodja za zanesljivo vožnjo.</h1><p class="hero-copy">DZ Auto Trade združuje kakovostne nadomestne dele, preverjena čistila in uporabno orodje za domače mojstre, delavnice in vse voznike.</p><div class="hero-actions"><a href="shop.html" class="btn-primary">Poglej ponudbo</a><a href="contact.html" class="btn-secondary">Vprašaj za nasvet</a></div></div>
+          <aside class="hero-card"><h3>Profesionalna podpora</h3><ul><li>✔ Pravilna izbira po modelu ali VIN številki</li><li>✔ Jasne kategorije in filtriranje izdelkov</li><li>✔ Povpraševanja za izdelke po naročilu</li><li>✔ Slovenska podpora za kupce</li></ul></aside>
         </div>
       </section>
-
-      <section class="section" id="services">
-        <div class="container">
-          <div class="section-head">
-            <p class="eyebrow">Service Page Preview</p>
-            <h2>Our Services</h2>
-          </div>
-          <div class="card-grid">
-            <article class="card">
-              <h3>Diagnostics Service</h3>
-              <p>
-                Complete computer diagnostics, warning light checks, and electrical
-                system analysis with a same-day report.
-              </p>
-              <a href="services.html#diagnostics">Read full details →</a>
-            </article>
-            <article class="card">
-              <h3>General Maintenance</h3>
-              <p>
-                Oil service, filters, fluid top-ups, and preventive inspections to
-                keep your engine and systems healthy.
-              </p>
-              <a href="services.html#maintenance">Read full details →</a>
-            </article>
-            <article class="card">
-              <h3>Premium Detailing</h3>
-              <p>
-                Deep interior cleaning, paint correction, and ceramic coating for a
-                cleaner and longer-lasting finish.
-              </p>
-              <a href="services.html#detailing">Read full details →</a>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section alt" id="shop">
-        <div class="container">
-          <div class="section-head">
-            <p class="eyebrow">Shop Page Preview</p>
-            <h2>Shop</h2>
-          </div>
-          <div class="card-grid">
-            <article class="card product">
-              <h3>Performance Tires</h3>
-              <p>From $149 — top brands for daily and sport driving.</p>
-              <a href="shop.html#tires">View full details →</a>
-            </article>
-            <article class="card product">
-              <h3>Engine Oil Packs</h3>
-              <p>From $39 — synthetic oils for superior engine protection.</p>
-              <a href="shop.html#oil">View full details →</a>
-            </article>
-            <article class="card product">
-              <h3>Brake Kits</h3>
-              <p>From $89 — reliable kits for confident stopping power.</p>
-              <a href="shop.html#brakes">View full details →</a>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="about">
-        <div class="container about-grid">
-          <div>
-            <p class="eyebrow">About DZ Auto Trade</p>
-            <h2>We blend workshop quality with digital convenience.</h2>
-          </div>
-          <p>
-            Since 2014, we have helped drivers with honest advice, high-quality
-            parts, and dependable aftercare. Our team focuses on long-term
-            reliability and customer satisfaction.
-          </p>
-        </div>
-      </section>
+      <section class="section"><div class="container"><div class="section-head"><p class="eyebrow">Glavne kategorije</p><h2>Vse bistveno za vaše vozilo na enem mestu.</h2></div><div class="card-grid"><article class="card category-card"><span class="card-icon">⚙️</span><h3>Avto deli</h3><p>Filtri, zavorni elementi, brisalci, žarnice, olja in potrošni materiali.</p><a href="shop.html#avto-deli">Nakupuj dele →</a></article><article class="card category-card"><span class="card-icon">✨</span><h3>Čistila in nega</h3><p>Šamponi, voski, premazi, krpe in izdelki za urejen avtomobil.</p><a href="shop.html#cistila">Nakupuj čistila →</a></article><article class="card category-card"><span class="card-icon">🧰</span><h3>Orodja</h3><p>Ročno orodje, diagnostični pripomočki, dvigalke in kompleti.</p><a href="shop.html#orodja">Nakupuj orodja →</a></article></div></div></section>
+      <section class="section alt"><div class="container process-grid"><div><p class="eyebrow">Enostaven nakup</p><h2>Kako naročiti?</h2><p>Izberite izdelke v trgovini ali nam pošljite podatke o vozilu. Pomagali vam bomo najti ustrezen del, čistilo ali orodje.</p></div><ol class="steps"><li><strong>Izberite kategorijo</strong><span>Avto deli, čistila ali orodja.</span></li><li><strong>Filtrirajte ponudbo</strong><span>Uporabite filtre na strani trgovine.</span></li><li><strong>Pošljite povpraševanje</strong><span>Za natančno ujemanje dodajte podatke vozila.</span></li></ol></div></section>
     </main>
-
-    <footer class="site-footer" id="contact">
-      <div class="container footer-wrap">
-        <div>
-          <h3>DZ Auto Trade</h3>
-          <p>Call us: <a href="tel:+15550109241">(555) 010-9241</a></p>
-          <p>Email: <a href="mailto:support@dzautotrade.com">support@dzautotrade.com</a></p>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand"><span class="brand-mark">DZ</span><span class="brand-copy"><strong>Auto Trade</strong><small>Vse za vaše vozilo</small></span></a>
+          <p>Spletna trgovina za kakovostne avto dele, čistila in orodja z osebno podporo pri izbiri.</p>
         </div>
-        <a href="#home" class="btn-secondary">Back to top</a>
+        <div>
+          <h3>Trgovina</h3>
+          <ul class="footer-links">
+            <li><a href="shop.html#avto-deli">Avto deli</a></li>
+            <li><a href="shop.html#cistila">Čistila in nega</a></li>
+            <li><a href="shop.html#orodja">Orodja</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Podjetje</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">O nas</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+            <li><a href="services.html">Pomoč pri izbiri</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Kontakt</h3>
+          <p><a href="mailto:info@dzautotrade.si">info@dzautotrade.si</a></p>
+          <p>Pon–Pet: 8:00–17:00<br />Sobota: po dogovoru</p>
+          <a href="contact.html" class="btn-secondary">Pošlji povpraševanje</a>
+        </div>
       </div>
+      <div class="container footer-bottom"><span>© 2026 DZ Auto Trade. Vse pravice pridržane.</span><a href="#main-content">Na vrh ↑</a></div>
     </footer>
-
     <script src="scripts.js"></script>
   </body>
 </html>
