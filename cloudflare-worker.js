@@ -1,4 +1,5 @@
 const PRODUCTS_KEY = 'products';
+const CATEGORIES_KEY = 'categories';
 const DEFAULT_PRODUCTS = {
   "products": [
     {
@@ -140,12 +141,25 @@ const DEFAULT_PRODUCTS = {
 }
 ;
 
-const allowedCategories = new Set(['avto-deli', 'cistila', 'orodja']);
-const categoryLabels = {
-  'avto-deli': 'Avto deli',
-  cistila: 'Čistila',
-  orodja: 'Orodja',
+const DEFAULT_CATEGORIES = [
+  { id: 'avto-deli', label: 'Avto deli', description: 'Filtri, zavore, brisalci in potrošni deli' },
+  { id: 'cistila', label: 'Čistila', description: 'Izdelki za nego notranjosti in zunanjosti' },
+  { id: 'orodja', label: 'Orodja', description: 'Ročno orodje, diagnostika in delavnica' },
+];
+
+const slugify = (value = '') =>
+  String(value).toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+const normalizeCategory = (category) => {
+  const label = String(category.label || '').trim();
+  return {
+    id: slugify(category.id || label),
+    label,
+    description: String(category.description || '').trim(),
+  };
 };
+
+const categoryLabels = Object.fromEntries(DEFAULT_CATEGORIES.map((category) => [category.id, category.label]));
 
 const json = (data, init = {}) =>
   Response.json(data, {
@@ -159,34 +173,92 @@ const json = (data, init = {}) =>
     },
   });
 
-const normalizeProduct = (product) => {
-  const category = allowedCategories.has(product.category) ? product.category : 'avto-deli';
+const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
+  const allowedCategories = new Set(categories.map((category) => category.id));
+  const labels = Object.fromEntries(categories.map((category) => [category.id, category.label]));
+  const category = allowedCategories.has(product.category) ? product.category : categories[0]?.id || 'avto-deli';
 
   return {
     name: String(product.name || '').trim(),
     category,
-    categoryLabel: categoryLabels[category],
+    categoryLabel: labels[category] || categoryLabels[category] || category,
     description: String(product.description || '').trim(),
     price: String(product.price || 'Po povpraševanju').trim(),
     badge: String(product.badge || 'Novo').trim(),
     sku: String(product.sku || '').trim().toUpperCase(),
     availability: String(product.availability || 'Po naročilu').trim(),
     delivery: String(product.delivery || 'Po dogovoru').trim(),
+    brand: String(product.brand || '').trim(),
+    compatibility: String(product.compatibility || '').trim(),
+    orderNote: String(product.orderNote || '').trim(),
+    checkoutEnabled: Boolean(product.checkoutEnabled),
+    checkoutAmount: Math.max(0, Math.round(Number(product.checkoutAmount || 0))),
     featured: Boolean(product.featured),
     searchTerms: String(product.searchTerms || '').trim(),
     image: String(product.image || '').trim(),
+    imageAlt: String(product.imageAlt || '').trim(),
     theme: String(product.theme || 'linear-gradient(135deg, #1d4ed8, #0f172a)').trim(),
   };
 };
 
+const readCategories = async (env) => {
+  const savedCategories = await env.PRODUCTS_KV.get(CATEGORIES_KEY, 'json');
+  if (Array.isArray(savedCategories) && savedCategories.length) return savedCategories.map(normalizeCategory).filter((category) => category.id && category.label);
+  return DEFAULT_CATEGORIES;
+};
+
+const writeCategories = async (env, categories) => {
+  await env.PRODUCTS_KV.put(CATEGORIES_KEY, JSON.stringify(categories.map(normalizeCategory), null, 2));
+};
+
 const readProducts = async (env) => {
+  const categories = await readCategories(env);
   const savedProducts = await env.PRODUCTS_KV.get(PRODUCTS_KEY, 'json');
-  if (Array.isArray(savedProducts)) return savedProducts.map(normalizeProduct);
-  return DEFAULT_PRODUCTS.products.map(normalizeProduct);
+  if (Array.isArray(savedProducts)) return savedProducts.map((product) => normalizeProduct(product, categories));
+  return DEFAULT_PRODUCTS.products.map((product) => normalizeProduct(product, categories));
 };
 
 const writeProducts = async (env, products) => {
-  await env.PRODUCTS_KV.put(PRODUCTS_KEY, JSON.stringify(products.map(normalizeProduct), null, 2));
+  const categories = await readCategories(env);
+  await env.PRODUCTS_KV.put(PRODUCTS_KEY, JSON.stringify(products.map((product) => normalizeProduct(product, categories)), null, 2));
+};
+
+
+const createStripeCheckoutSession = async (request, env) => {
+  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe secret key is not configured.' }, { status: 500 });
+  const body = await request.json().catch(() => null);
+  const name = String(body?.name || '').trim().slice(0, 120);
+  const amount = Math.round(Number(body?.amount || 0));
+  const quantity = Math.max(1, Math.min(10, Number(body?.quantity || 1)));
+  const type = String(body?.type || 'order').trim().slice(0, 40);
+
+  if (!name || amount < 50) return json({ error: 'Invalid checkout item.' }, { status: 400 });
+
+  const origin = new URL(request.url).origin;
+  const params = new URLSearchParams();
+  params.append('mode', 'payment');
+  params.append('success_url', `${origin}/placilo-uspesno.html?session_id={CHECKOUT_SESSION_ID}`);
+  params.append('cancel_url', `${origin}/placilo-preklicano.html`);
+  params.append('line_items[0][quantity]', String(quantity));
+  params.append('line_items[0][price_data][currency]', 'eur');
+  params.append('line_items[0][price_data][product_data][name]', name);
+  params.append('line_items[0][price_data][unit_amount]', String(amount));
+  params.append('metadata[type]', type);
+  params.append('metadata[source]', 'dz-auto-trade');
+  params.append('billing_address_collection', 'auto');
+  params.append('phone_number_collection[enabled]', 'true');
+
+  const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params,
+  });
+  const data = await stripeResponse.json().catch(() => ({}));
+  if (!stripeResponse.ok) return json({ error: data.error?.message || 'Stripe checkout failed.' }, { status: stripeResponse.status });
+  return json({ id: data.id, url: data.url });
 };
 
 const requireAccess = (request) => {
@@ -203,7 +275,11 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'GET' && url.pathname === '/api/products') {
-      return json({ products: await readProducts(env) });
+      return json({ products: await readProducts(env), categories: await readCategories(env) });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/checkout') {
+      return createStripeCheckoutSession(request, env);
     }
 
     if (url.pathname.startsWith('/api/admin/') && !requireAccess(request)) {
@@ -212,7 +288,8 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/api/admin/products') {
       const body = await request.json().catch(() => null);
-      const product = normalizeProduct(body?.product || {});
+      const categories = await readCategories(env);
+      const product = normalizeProduct(body?.product || {}, categories);
       const originalSku = String(body?.originalSku || product.sku).trim().toUpperCase();
 
       if (!product.name || !product.sku) {
@@ -225,6 +302,29 @@ export default {
       withoutCurrent.sort((a, b) => a.name.localeCompare(b.name, 'sl'));
       await writeProducts(env, withoutCurrent);
       return json({ products: withoutCurrent });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/admin/categories') {
+      const body = await request.json().catch(() => null);
+      const category = normalizeCategory(body?.category || {});
+      const originalId = slugify(body?.originalId || category.id);
+      if (!category.id || !category.label) return json({ error: 'Category name and ID are required.' }, { status: 400 });
+      const categories = await readCategories(env);
+      const nextCategories = categories.filter((item) => item.id !== originalId && item.id !== category.id);
+      nextCategories.push(category);
+      nextCategories.sort((a, b) => a.label.localeCompare(b.label, 'sl'));
+      await writeCategories(env, nextCategories);
+      return json({ categories: nextCategories });
+    }
+
+    const categoryDeleteMatch = url.pathname.match(/^\/api\/admin\/categories\/([^/]+)$/);
+    if (request.method === 'DELETE' && categoryDeleteMatch) {
+      const id = slugify(decodeURIComponent(categoryDeleteMatch[1]));
+      const products = await readProducts(env);
+      if (products.some((product) => product.category === id)) return json({ error: 'Category contains products.' }, { status: 409 });
+      const nextCategories = (await readCategories(env)).filter((category) => category.id !== id);
+      await writeCategories(env, nextCategories);
+      return json({ categories: nextCategories });
     }
 
     const deleteMatch = url.pathname.match(/^\/api\/admin\/products\/([^/]+)$/);
