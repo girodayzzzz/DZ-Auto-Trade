@@ -36,6 +36,7 @@
             </div>
           </div>
           <a href="o-nas.html" class="nav-link ">O nas</a>
+          <a href="storitve.html" class="nav-link ">Storitve</a>
           <a href="kontakt.html" class="nav-link ">Kontakt</a>
         </nav>
         <div class="header-actions">
@@ -46,13 +47,14 @@
     </header>
     <main id="main-content">
       <section class="hero page-hero"><div class="container narrow"><p class="eyebrow">Trgovina</p><h1>Izdelki pripravljeni za hitro dodajanje in filtriranje.</h1><p class="hero-copy">Vsi izdelki se dodajajo v datoteki <code>products.js</code>. Kopirajte obstoječ izdelek, zamenjajte podatke in katalog se samodejno posodobi.</p></div></section>
-      <section class="section" id="catalog"><div class="container catalog-layout"><aside class="filter-card"><h2>Filtri</h2><button class="filter-btn active" data-filter="all">Vsi izdelki</button><button class="filter-btn" data-filter="avto-deli">Avto deli</button><button class="filter-btn" data-filter="cistila">Čistila</button><button class="filter-btn" data-filter="orodja">Orodja</button><a href="kontakt.html" class="filter-help">Ne najdete izdelka? Pošljite povpraševanje.</a></aside><div><div class="section-head split-head"><div><p class="eyebrow">Katalog</p><h2>Izdelki</h2></div><p class="product-count" data-product-count>0 izdelkov</p></div><div class="catalog-tools"><label for="product-search">Išči izdelek</label><input id="product-search" type="search" placeholder="npr. zavore, OBD, šampon..." data-product-search /><label for="product-sort">Razvrsti</label><select id="product-sort" data-product-sort><option value="featured">Priporočeno najprej</option><option value="price-asc">Cena: nizka do visoka</option><option value="price-desc">Cena: visoka do nizka</option><option value="name">Ime A–Ž</option></select></div><div class="shop-grid" data-product-grid></div></div></div></section>
+      <section class="section" id="catalog"><div class="container catalog-layout"><aside class="filter-card"><h2>Filtri</h2><div data-filter-list><button class="filter-btn active" data-filter="all">Vsi izdelki</button><button class="filter-btn" data-filter="avto-deli">Avto deli</button><button class="filter-btn" data-filter="cistila">Čistila</button><button class="filter-btn" data-filter="orodja">Orodja</button></div><a href="kontakt.html" class="filter-help">Ne najdete izdelka? Pošljite povpraševanje.</a></aside><div><div class="section-head split-head"><div><p class="eyebrow">Katalog</p><h2>Izdelki</h2></div><p class="product-count" data-product-count>0 izdelkov</p></div><div class="catalog-tools"><label for="product-search">Išči izdelek</label><input id="product-search" type="search" placeholder="npr. zavore, OBD, šampon..." data-product-search /><label for="product-sort">Razvrsti</label><select id="product-sort" data-product-sort><option value="featured">Priporočeno najprej</option><option value="price-asc">Cena: nizka do visoka</option><option value="price-desc">Cena: visoka do nizka</option><option value="name">Ime A–Ž</option></select></div><div class="shop-grid" data-product-grid></div></div></div></section>
     </main>
     <footer class="site-footer">
       <div class="container footer-grid">
         <div class="footer-brand">
           <a href="index.html" class="brand"><span class="brand-mark">DZ</span><span class="brand-copy"><strong>Auto Trade</strong><small>Vse za vaše vozilo</small></span></a>
-          <p>Spletna trgovina za kakovostne avto dele, čistila in orodja z osebno podporo pri izbiri.</p>
+          <p>DZ Auto Trade upravlja DAYZZZZ SPLETNA TRGOVINA, TIBI TOPOLINJAK MUNDA S.P. Ponudba avto delov, čistil, orodja in storitev čiščenja vozil.</p>
+          <p class="company-meta">Davčna št.: SI23492783 • Matična št.: 9216316000<br />Spodnji Ključarovci 15A, 2274 Velika Nedelja</p>
         </div>
         <div>
           <h3>Trgovina</h3>
@@ -66,20 +68,27 @@
           <h3>Podjetje</h3>
           <ul class="footer-links">
             <li><a href="o-nas.html">O nas</a></li>
+            <li><a href="storitve.html">Storitve čiščenja</a></li>
+            <li><a href="notranje-ciscenje.html">Notranje čiščenje</a></li>
+            <li><a href="globinsko-ciscenje.html">Globinsko čiščenje</a></li>
             <li><a href="kontakt.html">Kontakt</a></li>
-            <li><a href="storitve.html">Pomoč pri izbiri</a></li>
+            <li><a href="splosni-pogoji.html">Splošni pogoji</a></li>
           </ul>
         </div>
         <div>
-          <h3>Kontakt</h3>
+          <h3>Pravno</h3>
+          <ul class="footer-links">
+            <li><a href="politika-zasebnosti.html">Politika zasebnosti</a></li>
+            <li><a href="politika-piskotkov.html">Politika piškotkov</a></li>
+            <li><a href="vracila-reklamacije.html">Vračila in reklamacije</a></li>
+          </ul>
           <p><a href="mailto:info@dzautotrade.si">info@dzautotrade.si</a></p>
-          <p>Pon–Pet: 8:00–17:00<br />Sobota: po dogovoru</p>
-          <a href="kontakt.html" class="btn-secondary">Pošlji povpraševanje</a>
         </div>
       </div>
-      <div class="container footer-bottom"><span>© 2026 DZ Auto Trade. Vse pravice pridržane.</span><a href="#main-content">Na vrh ↑</a></div>
+      <div class="container footer-bottom"><span>© 2026 DZ Auto Trade / DAYZZZZ S.P. Vse pravice pridržane.</span><a href="#main-content">Na vrh ↑</a></div>
     </footer>
     <script src="products.js"></script>
+    <script src="checkout.js"></script>
     <script src="scripts.js"></script>
   </body>
 </html>
