@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" role="img" aria-labelledby="title desc">
+  <title id="title">DZ Auto Trade logo</title>
+  <desc id="desc">Silver and red DZ Auto Trade wordmark with a sports car silhouette.</desc>
+  <defs>
+    <linearGradient id="silver" x1="0" y1="35" x2="0" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset="0.34" stop-color="#d8d8d8"/>
+      <stop offset="0.62" stop-color="#747474"/>
+      <stop offset="1" stop-color="#f3f3f3"/>
+    </linearGradient>
+    <linearGradient id="red" x1="170" y1="72" x2="360" y2="178" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff2626"/>
+      <stop offset="0.48" stop-color="#e50914"/>
+      <stop offset="1" stop-color="#9b050b"/>
+    </linearGradient>
+    <filter id="glow" x="-15%" y="-35%" width="130%" height="170%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#ffffff" flood-opacity="0.35"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="13" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <rect width="640" height="220" rx="22" fill="#020202"/>
+  <g filter="url(#glow)">
+    <path d="M57 103c55-18 109-20 191-18h68c84-1 127-2 192-16 41 0 70 13 89 23-56-7-92-11-151-5-50 5-99 16-157 24l-5-2c67-17 145-39 226-36-86-53-192-67-276-39-43 14-73 43-102 64 69-10 121-14 184-12l-1 4c-78 3-158 3-258 13Z" fill="url(#silver)"/>
+    <path d="M466 99c50-4 74 9 120 7 24-1 42-7 54-15-8 11-17 20-27 29 7 8 17 16 25 25-19-8-44-16-77-19-40-3-63-15-96-13Z" fill="url(#red)"/>
+  </g>
+  <g font-family="Inter, Arial, Helvetica, sans-serif" font-style="italic" font-weight="900" filter="url(#glow)">
+    <text x="40" y="168" font-size="118" letter-spacing="-10" fill="url(#silver)">D</text>
+    <text x="175" y="168" font-size="118" letter-spacing="-11" fill="url(#red)">Z</text>
+    <text x="350" y="151" font-size="68" letter-spacing="-5" fill="url(#silver)">AUTO</text>
+    <text x="350" y="191" font-size="38" letter-spacing="19" fill="#e50914">TRADE</text>
+  </g>
+  <path d="M54 198h250l88 1 68-18H118Z" fill="url(#red)" opacity="0.95"/>
+</svg>

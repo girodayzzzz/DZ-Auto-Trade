@@ -76,15 +76,13 @@ body {
   text-decoration: none;
 }
 
-.brand-mark {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
+.brand-logo {
+  width: clamp(118px, 15vw, 150px);
+  height: auto;
+  flex: 0 0 auto;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #08101f;
-  font-size: 0.9rem;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgb(0 0 0 / 0.28));
 }
 
 .main-nav {
@@ -522,16 +520,6 @@ h1 {
   font-weight: 700;
 }
 
-.brand-copy {
-  display: grid;
-  line-height: 1.1;
-}
-
-.brand-copy small {
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-}
 
 .header-actions {
   display: inline-flex;
