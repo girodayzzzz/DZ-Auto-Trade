@@ -13,7 +13,7 @@ const createCheckoutSession = async (payload) => {
     body: JSON.stringify(payload),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.url) throw new Error(data.error || 'Plačilo trenutno ni na voljo. Pošljite povpraševanje.');
+  if (!response.ok || !data.url) throw new Error(data.error || 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje podpori.');
   return data.url;
 };
 
@@ -23,9 +23,9 @@ document.addEventListener('click', async (event) => {
   const amount = Number(button.dataset.amount);
   const name = button.dataset.name;
   const type = button.dataset.type || 'order';
-  if (!amount || !name) return setCheckoutStatus('Ta postavka še nima nastavljene cene za spletno plačilo.', 'error');
+  if (!amount || !name) return setCheckoutStatus('Ta postavka še nima nastavljene Stripe cene za spletno plačilo.', 'error');
   button.disabled = true;
-  setCheckoutStatus('Pripravljamo varno Stripe plačilno stran...', 'info');
+  setCheckoutStatus('Pripravljamo varno Stripe Checkout plačilno stran...', 'info');
   try {
     const url = await createCheckoutSession({ name, amount, type, quantity: 1 });
     window.location.href = url;

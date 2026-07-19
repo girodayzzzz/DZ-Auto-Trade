@@ -112,6 +112,17 @@ const normalizeProduct = (product) => {
   };
 };
 
+const hasBundledProducts = () => Array.isArray(window.products) && window.products.length > 0;
+
+const loadBundledCatalog = () => {
+  categories = [...defaultCategories];
+  products = hasBundledProducts() ? window.products.map(normalizeProduct) : [];
+  renderCategoryOptions();
+  renderCategories();
+  renderProducts();
+  updateStats();
+};
+
 const apiRequest = async (url, options = {}) => {
   const response = await fetch(url, { headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...options.headers }, ...options });
   const contentType = response.headers.get('content-type') || '';
@@ -133,14 +144,22 @@ const updateStats = () => {
 
 const loadProducts = async () => {
   setStatus('Nalaganje kataloga...');
-  const data = await apiRequest('/api/products');
-  categories = Array.isArray(data.categories) && data.categories.length ? data.categories.map(normalizeCategory) : [...defaultCategories];
-  products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : [];
-  renderCategoryOptions();
-  renderCategories();
-  renderProducts();
-  updateStats();
-  setStatus(`Naloženih ${products.length} izdelkov v ${categories.length} kategorijah.`, 'success');
+  try {
+    const data = await apiRequest('/api/products');
+    categories = Array.isArray(data.categories) && data.categories.length ? data.categories.map(normalizeCategory) : [...defaultCategories];
+    products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : [];
+    renderCategoryOptions();
+    renderCategories();
+    renderProducts();
+    updateStats();
+    setStatus(`Naloženih ${products.length} izdelkov v ${categories.length} kategorijah.`, 'success');
+  } catch (error) {
+    loadBundledCatalog();
+    const message = products.length
+      ? `Prikazan je lokalni katalog (${products.length} izdelkov). Shranjevanje zahteva delujoč /api/products.`
+      : `${error.message} Lokalni katalog je prazen.`;
+    setStatus(message, products.length ? 'warning' : 'error');
+  }
 };
 
 const fillForm = (product) => {
