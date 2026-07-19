@@ -36,10 +36,53 @@ const filterButtons = document.querySelectorAll('[data-filter]');
 const productCount = document.querySelector('[data-product-count]');
 const productSearch = document.querySelector('[data-product-search]');
 const productSort = document.querySelector('[data-product-sort]');
-const currentProducts = Array.isArray(window.products) ? window.products : [];
+let currentProducts = Array.isArray(window.products) ? window.products : [];
 let activeFilter = 'all';
 
+const escapeHtml = (value = '') =>
+  String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+
 const parsePrice = (price) => Number(price?.replace(/[^0-9,]/g, '').replace(',', '.') ?? 0);
+
+const normalizeProduct = (product) => ({
+  name: product.name ?? '',
+  category: product.category ?? 'avto-deli',
+  categoryLabel: product.categoryLabel ?? 'Avto deli',
+  description: product.description ?? '',
+  price: product.price ?? 'Po povpraševanju',
+  badge: product.badge ?? 'Novo',
+  sku: product.sku ?? '',
+  availability: product.availability ?? 'Po naročilu',
+  delivery: product.delivery ?? 'Po dogovoru',
+  featured: Boolean(product.featured),
+  searchTerms: product.searchTerms ?? '',
+  image: product.image ?? '',
+  theme: product.theme ?? 'linear-gradient(135deg, #1d4ed8, #0f172a)',
+});
+
+const loadProducts = async () => {
+  try {
+    const response = await fetch('/api/products', {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) throw new Error('Product API unavailable');
+
+    const data = await response.json();
+    if (!Array.isArray(data.products)) throw new Error('Invalid product API response');
+
+    currentProducts = data.products.map(normalizeProduct);
+  } catch (error) {
+    console.info('Using bundled fallback products.', error);
+    currentProducts = currentProducts.map(normalizeProduct);
+  }
+};
 
 const createInquiryUrl = (product) => {
   const params = new URLSearchParams({
@@ -75,21 +118,21 @@ const getVisibleProducts = () => {
 };
 
 const renderProductCard = (product) => `
-  <article class="product-card" id="${product.category}">
-    <div class="product-image" style="--product-bg: ${product.theme}">
-      <img src="${product.image}" alt="${product.name}" loading="lazy" />
+  <article class="product-card" id="${escapeHtml(product.category)}">
+    <div class="product-image" style="--product-bg: ${escapeHtml(product.theme)}">
+      <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy" />
     </div>
     <div class="product-body">
-      <div class="product-meta"><span class="badge">${product.categoryLabel}</span><span class="badge">${product.badge}</span></div>
-      <h3>${product.name}</h3>
-      <p>${product.description}</p>
+      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span><span class="badge">${escapeHtml(product.badge)}</span></div>
+      <h3>${escapeHtml(product.name)}</h3>
+      <p>${escapeHtml(product.description)}</p>
       <dl class="product-details">
-        <div><dt>Šifra</dt><dd>${product.sku}</dd></div>
-        <div><dt>Zaloga</dt><dd>${product.availability}</dd></div>
-        <div><dt>Dobava</dt><dd>${product.delivery}</dd></div>
+        <div><dt>Šifra</dt><dd>${escapeHtml(product.sku)}</dd></div>
+        <div><dt>Zaloga</dt><dd>${escapeHtml(product.availability)}</dd></div>
+        <div><dt>Dobava</dt><dd>${escapeHtml(product.delivery)}</dd></div>
       </dl>
-      <strong class="product-price">${product.price}</strong>
-      <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${product.name}">Pošlji povpraševanje</a>
+      <strong class="product-price">${escapeHtml(product.price)}</strong>
+      <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Pošlji povpraševanje</a>
     </div>
   </article>
 `;
@@ -126,9 +169,6 @@ filterButtons.forEach((button) => {
 productSearch?.addEventListener('input', renderProducts);
 productSort?.addEventListener('change', renderProducts);
 
-renderProducts();
-renderFeaturedProducts();
-
 const messageField = document.querySelector('#message');
 const topicField = document.querySelector('#topic');
 const selectedProductCard = document.querySelector('[data-selected-product]');
@@ -148,3 +188,8 @@ if (selectedProductCard && productFromQuery) {
   selectedProductCard.hidden = false;
   selectedProductCard.textContent = `Izbran izdelek: ${productFromQuery}${skuFromQuery ? ` • ${skuFromQuery}` : ''}`;
 }
+
+loadProducts().then(() => {
+  renderProducts();
+  renderFeaturedProducts();
+});
