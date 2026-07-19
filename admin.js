@@ -98,6 +98,10 @@ const normalizeProduct = (product) => {
     brand: product.brand?.trim() ?? '',
     compatibility: product.compatibility?.trim() ?? '',
     orderNote: product.orderNote?.trim() ?? '',
+    regularPrice: product.regularPrice?.trim() ?? '',
+    supplierPrice: product.supplierPrice?.trim() ?? '',
+    shippingNote: product.shippingNote?.trim() ?? '',
+    purchaseUrl: product.purchaseUrl?.trim() ?? '',
     checkoutEnabled: Boolean(product.checkoutEnabled),
     checkoutAmount: Number(product.checkoutAmount || 0),
     featured: Boolean(product.featured),
@@ -151,6 +155,10 @@ const fillForm = (product) => {
   form.elements.brand.value = product.brand;
   form.elements.compatibility.value = product.compatibility;
   form.elements.orderNote.value = product.orderNote;
+  form.elements.regularPrice.value = product.regularPrice;
+  form.elements.supplierPrice.value = product.supplierPrice;
+  form.elements.shippingNote.value = product.shippingNote;
+  form.elements.purchaseUrl.value = product.purchaseUrl;
   form.elements.checkoutAmount.value = product.checkoutAmount || '';
   form.elements.checkoutEnabled.checked = product.checkoutEnabled;
   form.elements.searchTerms.value = product.searchTerms;
@@ -214,7 +222,7 @@ const renderProducts = () => {
   productList.innerHTML = filteredProducts.length ? categories.map((category) => {
     const group = filteredProducts.filter((product) => product.category === category.id);
     if (!group.length) return '';
-    return `<section class="admin-product-group"><h3>${escapeHtml(category.label)} <span>${group.length}</span></h3>${group.map((product) => `<article class="admin-product-item"><div><strong>${escapeHtml(product.name)}</strong><span>${escapeHtml(product.sku)} • ${escapeHtml(product.price)} • ${product.checkoutEnabled ? `Stripe ${(product.checkoutAmount / 100).toFixed(2)} €` : 'Povpraševanje'} • ${escapeHtml(product.availability)}</span></div><div class="admin-item-actions"><button class="btn-secondary" type="button" data-edit-sku="${escapeHtml(product.sku)}">Uredi</button><button class="btn-secondary danger-btn" type="button" data-delete-sku="${escapeHtml(product.sku)}">Izbriši</button></div></article>`).join('')}</section>`;
+    return `<section class="admin-product-group"><h3>${escapeHtml(category.label)} <span>${group.length}</span></h3>${group.map((product) => `<article class="admin-product-item"><div><strong>${escapeHtml(product.name)}</strong><span>${escapeHtml(product.sku)} • ${escapeHtml(product.price)}${product.regularPrice ? ` • Redna ${escapeHtml(product.regularPrice)}` : ''}${product.supplierPrice ? ` • Dobavna ${escapeHtml(product.supplierPrice)}` : ''} • ${product.checkoutEnabled ? `Stripe ${(product.checkoutAmount / 100).toFixed(2)} €` : 'Povpraševanje'} • ${escapeHtml(product.availability)}</span></div><div class="admin-item-actions"><button class="btn-secondary" type="button" data-edit-sku="${escapeHtml(product.sku)}">Uredi</button><button class="btn-secondary danger-btn" type="button" data-delete-sku="${escapeHtml(product.sku)}">Izbriši</button></div></article>`).join('')}</section>`;
   }).join('') : '<p class="form-note">Ni izdelkov. Dodajte prvi izdelek v obrazcu.</p>';
 };
 

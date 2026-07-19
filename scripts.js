@@ -70,6 +70,8 @@ const normalizeProduct = (product) => ({
   brand: product.brand ?? '',
   compatibility: product.compatibility ?? '',
   orderNote: product.orderNote ?? '',
+  regularPrice: product.regularPrice ?? '',
+  shippingNote: product.shippingNote ?? '',
   checkoutEnabled: Boolean(product.checkoutEnabled),
   checkoutAmount: Number(product.checkoutAmount || 0),
   featured: Boolean(product.featured),
@@ -149,6 +151,8 @@ const renderProductCard = (product) => `
         <div><dt>Dobava</dt><dd>${escapeHtml(product.delivery)}</dd></div>
         ${product.brand ? `<div><dt>Znamka</dt><dd>${escapeHtml(product.brand)}</dd></div>` : ''}
         ${product.compatibility ? `<div><dt>Ustreznost</dt><dd>${escapeHtml(product.compatibility)}</dd></div>` : ''}
+        ${product.regularPrice ? `<div><dt>Redna cena</dt><dd>${escapeHtml(product.regularPrice)}</dd></div>` : ''}
+        ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
       </dl>
       <strong class="product-price">${escapeHtml(product.price)}</strong>
       <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Pošlji povpraševanje</a>
@@ -197,6 +201,8 @@ const renderProductDetail = () => {
         <div><dt>Dobava</dt><dd>${escapeHtml(product.delivery)}</dd></div>
         ${product.brand ? `<div><dt>Znamka</dt><dd>${escapeHtml(product.brand)}</dd></div>` : ''}
         ${product.compatibility ? `<div><dt>Ustreznost</dt><dd>${escapeHtml(product.compatibility)}</dd></div>` : ''}
+        ${product.regularPrice ? `<div><dt>Redna cena</dt><dd>${escapeHtml(product.regularPrice)}</dd></div>` : ''}
+        ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
       </dl>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
       <div class="hero-actions"><a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
