@@ -759,3 +759,180 @@ h1 {
     flex-direction: column;
   }
 }
+
+/* Trust, inquiry, and support content */
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.trust-card strong {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 0.8rem;
+  border-radius: 999px;
+  color: #061022;
+  background: var(--success);
+}
+
+.cta-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.4rem;
+  padding: 1.4rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 45%, var(--line));
+  border-radius: 22px;
+  background: linear-gradient(135deg, #14213a, #0d1628);
+}
+
+.cta-panel p {
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.form-grid label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.optional {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.faq-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.faq-list details {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1rem;
+  background: var(--card);
+}
+
+.faq-list summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.shop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .trust-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Catalog search, product detail metadata, and selected inquiry states */
+.catalog-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem 0.9rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--card) 82%, transparent);
+}
+
+.catalog-tools label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.catalog-tools input,
+.catalog-tools select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  color: var(--text);
+  background: #0d1628;
+  font: inherit;
+}
+
+.product-details {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1rem 0 0;
+}
+
+.product-details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.35rem;
+}
+
+.product-details dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.product-details dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 800;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  padding: 2rem;
+  border: 1px dashed var(--line);
+  border-radius: 18px;
+  text-align: center;
+  background: rgba(19, 31, 54, 0.55);
+}
+
+.form-note,
+.selected-product {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+}
+
+.form-note {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.selected-product {
+  border: 1px solid color-mix(in oklab, var(--success) 45%, var(--line));
+  color: var(--success);
+  font-weight: 800;
+  background: rgba(50, 213, 131, 0.08);
+}
+
+@media (max-width: 640px) {
+  .catalog-tools {
+    grid-template-columns: 1fr;
+  }
+}
