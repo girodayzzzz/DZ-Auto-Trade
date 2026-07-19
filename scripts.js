@@ -217,8 +217,11 @@ const renderProductCard = (product) => `
         ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
       </dl>
       <strong class="product-price">${escapeHtml(product.price)}</strong>
-      <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Pošlji povpraševanje</a>
-      ${product.checkoutEnabled && product.checkoutAmount >= 50 ? `<button class="btn-secondary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>` : ''}
+      <div class="product-actions">
+        <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
+        <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Povpraševanje</a>
+        ${product.checkoutEnabled && product.checkoutAmount >= 50 ? `<button class="btn-secondary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>` : ''}
+      </div>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
     </div>
   </article>
@@ -269,7 +272,7 @@ const renderProductDetail = () => {
         ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
       </dl>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
-      <div class="hero-actions"><a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
+      <div class="product-actions product-detail-actions"><a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
       <p class="form-note" data-checkout-status>Online plačilo je omogočeno samo prek Stripe Checkout. Za avto dele priporočamo preverjanje po VIN številki pred naročilom.</p>
     </article>
   </div>`;
