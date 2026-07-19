@@ -341,18 +341,19 @@ const writeProducts = async (env, products) => {
 
 
 const createStripeCheckoutSession = async (request, env) => {
-  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe secret key is not configured.' }, { status: 500 });
+  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe plačilo ni konfigurirano. Pišite na dzautotrade@gmail.com.' }, { status: 500 });
   const body = await request.json().catch(() => null);
   const name = String(body?.name || '').trim().slice(0, 120);
   const amount = Math.round(Number(body?.amount || 0));
   const quantity = Math.max(1, Math.min(10, Number(body?.quantity || 1)));
   const type = String(body?.type || 'order').trim().slice(0, 40);
 
-  if (!name || amount < 50) return json({ error: 'Invalid checkout item.' }, { status: 400 });
+  if (!name || amount < 50) return json({ error: 'Postavka nima veljavne Stripe cene.' }, { status: 400 });
 
   const origin = new URL(request.url).origin;
   const params = new URLSearchParams();
   params.append('mode', 'payment');
+  params.append('payment_method_types[0]', 'card');
   params.append('success_url', `${origin}/placilo-uspesno.html?session_id={CHECKOUT_SESSION_ID}`);
   params.append('cancel_url', `${origin}/placilo-preklicano.html`);
   params.append('line_items[0][quantity]', String(quantity));
@@ -361,6 +362,7 @@ const createStripeCheckoutSession = async (request, env) => {
   params.append('line_items[0][price_data][unit_amount]', String(amount));
   params.append('metadata[type]', type);
   params.append('metadata[source]', 'dz-auto-trade');
+  params.append('metadata[support_email]', 'dzautotrade@gmail.com');
   params.append('billing_address_collection', 'auto');
   params.append('phone_number_collection[enabled]', 'true');
 
@@ -373,7 +375,7 @@ const createStripeCheckoutSession = async (request, env) => {
     body: params,
   });
   const data = await stripeResponse.json().catch(() => ({}));
-  if (!stripeResponse.ok) return json({ error: data.error?.message || 'Stripe checkout failed.' }, { status: stripeResponse.status });
+  if (!stripeResponse.ok) return json({ error: data.error?.message || 'Stripe plačilo ni uspelo.' }, { status: stripeResponse.status });
   return json({ id: data.id, url: data.url });
 };
 

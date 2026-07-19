@@ -38,6 +38,12 @@ const productCount = document.querySelector('[data-product-count]');
 const productSearch = document.querySelector('[data-product-search]');
 const productSort = document.querySelector('[data-product-sort]');
 const productDetail = document.querySelector('[data-product-detail]');
+const brandFilter = document.querySelector('[data-brand-filter]');
+const availabilityFilter = document.querySelector('[data-availability-filter]');
+const priceFilter = document.querySelector('[data-price-filter]');
+const clearFiltersButton = document.querySelector('[data-clear-filters]');
+const activeFilters = document.querySelector('[data-active-filters]');
+const catalogSummary = document.querySelector('[data-catalog-summary]');
 let currentProducts = Array.isArray(window.products) ? window.products : [];
 let currentCategories = [
   { id: 'avto-deli', label: 'Avto deli' },
@@ -45,6 +51,10 @@ let currentCategories = [
   { id: 'orodja', label: 'Orodja' },
 ];
 let activeFilter = 'all';
+
+if (window.location.hash) {
+  activeFilter = window.location.hash.replace('#', '') || 'all';
+}
 
 const escapeHtml = (value = '') =>
   String(value)
@@ -56,6 +66,7 @@ const escapeHtml = (value = '') =>
 
 const parsePrice = (price) => Number(price?.replace(/[^0-9,]/g, '').replace(',', '.') ?? 0);
 const priceToCents = (price) => Math.round(parsePrice(price) * 100);
+const uniqueSorted = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'sl'));
 
 const normalizeProduct = (product) => ({
   name: product.name ?? '',
@@ -101,6 +112,32 @@ const loadProducts = async () => {
   }
 };
 
+const getCategoryLabel = (id) => currentCategories.find((category) => category.id === id)?.label || id;
+
+const renderSelectOptions = (select, values, allLabel) => {
+  if (!select) return;
+  const selected = select.value || 'all';
+  select.innerHTML = `<option value="all">${escapeHtml(allLabel)}</option>${values
+    .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
+    .join('')}`;
+  select.value = [...values, 'all'].includes(selected) ? selected : 'all';
+};
+
+const renderAdvancedFilters = () => {
+  renderSelectOptions(brandFilter, uniqueSorted(currentProducts.map((product) => product.brand)), 'Vse znamke');
+  renderSelectOptions(availabilityFilter, uniqueSorted(currentProducts.map((product) => product.availability)), 'Vsa stanja');
+};
+
+const productMatchesPrice = (product, range) => {
+  if (!range || range === 'all') return true;
+  const price = parsePrice(product.price);
+  if (range === '0-10') return price > 0 && price < 10;
+  if (range === '10-25') return price >= 10 && price < 25;
+  if (range === '25-50') return price >= 25 && price < 50;
+  if (range === '50+') return price >= 50;
+  return true;
+};
+
 const createProductUrl = (product) => `product.html?sku=${encodeURIComponent(product.sku)}`;
 
 const createInquiryUrl = (product) => {
@@ -123,9 +160,14 @@ const productMatchesSearch = (product, query) => {
 const getVisibleProducts = () => {
   const query = productSearch?.value.trim() ?? '';
   const sort = productSort?.value ?? 'featured';
+  const selectedBrand = brandFilter?.value ?? 'all';
+  const selectedAvailability = availabilityFilter?.value ?? 'all';
+  const selectedPrice = priceFilter?.value ?? 'all';
   const filtered = currentProducts.filter((product) => {
     const matchesCategory = activeFilter === 'all' || product.category === activeFilter;
-    return matchesCategory && productMatchesSearch(product, query);
+    const matchesBrand = selectedBrand === 'all' || product.brand === selectedBrand;
+    const matchesAvailability = selectedAvailability === 'all' || product.availability === selectedAvailability;
+    return matchesCategory && matchesBrand && matchesAvailability && productMatchesPrice(product, selectedPrice) && productMatchesSearch(product, query);
   });
 
   return filtered.sort((a, b) => {
@@ -134,6 +176,26 @@ const getVisibleProducts = () => {
     if (sort === 'name') return a.name.localeCompare(b.name, 'sl');
     return Number(b.featured) - Number(a.featured);
   });
+};
+
+const renderActiveFilters = (visibleCount) => {
+  if (!activeFilters) return;
+  const chips = [];
+  const query = productSearch?.value.trim() ?? '';
+  if (activeFilter !== 'all') chips.push(`Kategorija: ${getCategoryLabel(activeFilter)}`);
+  if (brandFilter?.value && brandFilter.value !== 'all') chips.push(`Znamka: ${brandFilter.value}`);
+  if (availabilityFilter?.value && availabilityFilter.value !== 'all') chips.push(`Zaloga: ${availabilityFilter.value}`);
+  if (priceFilter?.value && priceFilter.value !== 'all') chips.push(`Cena: ${priceFilter.options[priceFilter.selectedIndex]?.textContent || priceFilter.value}`);
+  if (query) chips.push(`Iskanje: ${query}`);
+
+  activeFilters.hidden = chips.length === 0;
+  activeFilters.innerHTML = chips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join('');
+
+  if (catalogSummary) {
+    catalogSummary.textContent = chips.length
+      ? `Prikazujemo ${visibleCount} izdelkov glede na izbrane filtre.`
+      : `Prikazujemo vseh ${visibleCount} izdelkov iz kataloga.`;
+  }
 };
 
 const renderProductCard = (product) => `
@@ -156,7 +218,7 @@ const renderProductCard = (product) => `
       </dl>
       <strong class="product-price">${escapeHtml(product.price)}</strong>
       <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Pošlji povpraševanje</a>
-      ${product.checkoutEnabled && product.checkoutAmount >= 50 ? `<button class="btn-secondary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj s kartico</button>` : ''}
+      ${product.checkoutEnabled && product.checkoutAmount >= 50 ? `<button class="btn-secondary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>` : ''}
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
     </div>
   </article>
@@ -173,6 +235,8 @@ const renderProducts = () => {
   if (productCount) {
     productCount.textContent = `${visibleProducts.length} izdelkov`;
   }
+
+  renderActiveFilters(visibleProducts.length);
 };
 
 
@@ -186,7 +250,7 @@ const renderProductDetail = () => {
   }
   document.title = `DZ Auto Trade | ${product.name}`;
   const checkoutButton = product.checkoutEnabled && product.checkoutAmount >= 50
-    ? `<button class="btn-primary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj s kartico</button>`
+    ? `<button class="btn-primary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>`
     : '';
   productDetail.innerHTML = `<div class="container product-detail-layout">
     <div class="product-detail-image" style="--product-bg: ${escapeHtml(product.theme)}"><img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.imageAlt || product.name)}" /></div>
@@ -206,7 +270,7 @@ const renderProductDetail = () => {
       </dl>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
       <div class="hero-actions"><a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
-      <p class="form-note" data-checkout-status>Za avto dele priporočamo preverjanje po VIN številki pred naročilom.</p>
+      <p class="form-note" data-checkout-status>Online plačilo je omogočeno samo prek Stripe Checkout. Za avto dele priporočamo preverjanje po VIN številki pred naročilom.</p>
     </article>
   </div>`;
 };
@@ -225,6 +289,11 @@ const bindFilterButtons = () => {
       filterButtons.forEach((item) => item.classList.remove('active'));
       button.classList.add('active');
       activeFilter = button.dataset.filter;
+      if (activeFilter !== 'all') {
+        history.replaceState(null, '', `#${activeFilter}`);
+      } else if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
       renderProducts();
     });
   });
@@ -232,8 +301,12 @@ const bindFilterButtons = () => {
 
 const renderFilters = () => {
   if (!filterList) return;
-  filterList.innerHTML = `<button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">Vsi izdelki</button>${currentCategories
-    .map((category) => `<button class="filter-btn ${activeFilter === category.id ? 'active' : ''}" data-filter="${escapeHtml(category.id)}">${escapeHtml(category.label)}</button>`)
+  const countByCategory = currentProducts.reduce((counts, product) => {
+    counts[product.category] = (counts[product.category] || 0) + 1;
+    return counts;
+  }, {});
+  filterList.innerHTML = `<button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-filter="all"><span>Vsi izdelki</span><strong>${currentProducts.length}</strong></button>${currentCategories
+    .map((category) => `<button class="filter-btn ${activeFilter === category.id ? 'active' : ''}" data-filter="${escapeHtml(category.id)}"><span>${escapeHtml(category.label)}</span><strong>${countByCategory[category.id] || 0}</strong></button>`)
     .join('')}`;
   bindFilterButtons();
 };
@@ -242,6 +315,19 @@ bindFilterButtons();
 
 productSearch?.addEventListener('input', renderProducts);
 productSort?.addEventListener('change', renderProducts);
+brandFilter?.addEventListener('change', renderProducts);
+availabilityFilter?.addEventListener('change', renderProducts);
+priceFilter?.addEventListener('change', renderProducts);
+clearFiltersButton?.addEventListener('click', () => {
+  activeFilter = 'all';
+  if (productSearch) productSearch.value = '';
+  if (productSort) productSort.value = 'featured';
+  if (brandFilter) brandFilter.value = 'all';
+  if (availabilityFilter) availabilityFilter.value = 'all';
+  if (priceFilter) priceFilter.value = 'all';
+  renderFilters();
+  renderProducts();
+});
 
 const messageField = document.querySelector('#message');
 const topicField = document.querySelector('#topic');
@@ -264,7 +350,11 @@ if (selectedProductCard && productFromQuery) {
 }
 
 loadProducts().then(() => {
+  if (activeFilter !== 'all' && !currentCategories.some((category) => category.id === activeFilter)) {
+    activeFilter = 'all';
+  }
   renderFilters();
+  renderAdvancedFilters();
   renderProducts();
   renderFeaturedProducts();
   renderProductDetail();
