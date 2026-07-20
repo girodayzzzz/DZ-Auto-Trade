@@ -472,12 +472,12 @@ const renderActiveFilters = (visibleCount) => {
 const renderProductCard = (product) => `
   <article class="product-card product-card-pro" id="${escapeHtml(product.category)}">
     <a class="product-image product-card-link" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
-      <span class="product-image-badge">${escapeHtml(product.badge)}</span>
       ${productImageMarkup(product)}
     </a>
     <div class="product-body">
-      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span>${product.brand ? `<span class="badge">${escapeHtml(product.brand)}</span>` : ''}</div>
+      ${product.brand ? `<div class="product-meta"><span class="product-brand-pill">${escapeHtml(product.brand)}</span></div>` : ''}
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
+      <p class="product-card-summary">${escapeHtml(product.description)}</p>
       <div class="product-card-specs">
         <span><small>Zaloga</small><strong>${escapeHtml(product.availability)}</strong></span>
         <span><small>Dobava</small><strong>${escapeHtml(product.delivery)}</strong></span>
