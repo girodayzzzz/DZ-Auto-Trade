@@ -46,7 +46,13 @@ const activeFilters = document.querySelector('[data-active-filters]');
 const catalogSummary = document.querySelector('[data-catalog-summary]');
 const shopInsights = document.querySelector('[data-shop-insights]');
 const CART_STORAGE_KEY = 'dzAutoTradeCart';
-let currentProducts = Array.isArray(window.products) ? window.products : [];
+const bundledProducts = Array.isArray(window.products) ? window.products : [];
+const bundledProductImagesBySku = new Map(
+  bundledProducts
+    .filter((product) => product?.sku && String(product.image || '').trim())
+    .map((product) => [String(product.sku).trim().toUpperCase(), String(product.image).trim()])
+);
+let currentProducts = bundledProducts;
 let currentCategories = [
   { id: 'avto-deli', label: 'Avto deli' },
   { id: 'cistila', label: 'Čistila' },
@@ -72,6 +78,40 @@ const uniqueSorted = (items) => [...new Set(items.filter(Boolean))].sort((a, b) 
 const formatCurrency = (cents = 0) =>
   new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100);
 
+
+const createProductPlaceholder = (product = {}) => {
+  const label = String(product.name || product.categoryLabel || 'DZ').trim();
+  const initials = label
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('') || 'DZ';
+  const badge = String(product.badge || product.categoryLabel || 'Izdelek').trim();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e50914"/><stop offset="1" stop-color="#0b1019"/></linearGradient></defs><rect width="260" height="260" rx="36" fill="url(#bg)"/><circle cx="196" cy="58" r="42" fill="rgba(255,255,255,.14)"/><circle cx="64" cy="206" r="52" fill="rgba(255,255,255,.10)"/><rect x="48" y="70" width="164" height="112" rx="24" fill="rgba(255,255,255,.92)"/><text x="130" y="136" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="900" fill="#0b1019">${escapeHtml(initials)}</text><text x="130" y="210" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#ffffff">${escapeHtml(badge).slice(0, 28)}</text></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
+
+const getBundledProductImage = (product = {}) => {
+  const sku = String(product.sku || '').trim().toUpperCase();
+  return sku ? bundledProductImagesBySku.get(sku) || '' : '';
+};
+
+const resolveProductImage = (product = {}) => {
+  const image = String(product.image || '').trim();
+  const bundledImage = getBundledProductImage(product);
+  if (bundledImage && (!image || image.startsWith('data:image/svg+xml'))) return bundledImage;
+  return image || bundledImage || createProductPlaceholder(product);
+};
+
+const getProductImage = (product) => resolveProductImage(product);
+
+const productImageMarkup = (product, lazy = true) => {
+  const fallback = createProductPlaceholder(product);
+  return `<img src="${escapeHtml(getProductImage(product))}" alt="${escapeHtml(product.imageAlt || product.name)}"${lazy ? ' loading="lazy"' : ''} data-product-fallback="${escapeHtml(fallback)}" />`;
+};
+
 const normalizeProduct = (product) => ({
   name: product.name ?? '',
   category: product.category ?? 'avto-deli',
@@ -94,7 +134,7 @@ const normalizeProduct = (product) => ({
     (Number(product.checkoutAmount || 0) > 0 && String(product.availability || '').toLowerCase().includes('na zalogi')),
   featured: Boolean(product.featured),
   searchTerms: product.searchTerms ?? '',
-  image: product.image ?? '',
+  image: resolveProductImage(product),
   imageAlt: product.imageAlt ?? '',
   theme: product.theme ?? 'linear-gradient(135deg, #1d4ed8, #0f172a)',
 });
@@ -355,7 +395,7 @@ const renderProductCard = (product) => `
   <article class="product-card product-card-pro" id="${escapeHtml(product.category)}">
     <a class="product-image product-card-link" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
       <span class="product-image-badge">${escapeHtml(product.badge)}</span>
-      <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.imageAlt || product.name)}" loading="lazy" />
+      ${productImageMarkup(product)}
     </a>
     <div class="product-body">
       <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span>${product.cartEnabled ? '<span class="badge">Košarica</span>' : ''}${product.checkoutEnabled && product.checkoutAmount >= 50 ? '<span class="badge">Online</span>' : ''}</div>
@@ -446,7 +486,7 @@ const renderProductDetail = () => {
       <a class="product-breadcrumb" href="trgovina.html#${escapeHtml(product.category)}">← Nazaj v ${escapeHtml(product.categoryLabel)}</a>
       <div class="product-detail-image" style="--product-bg: ${escapeHtml(product.theme)}">
         <span class="product-image-badge">${escapeHtml(product.badge)}</span>
-        <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.imageAlt || product.name)}" />
+        ${productImageMarkup(product, false)}
       </div>
       <div class="product-detail-trust">
         <span>✓ ${escapeHtml(product.availability)}</span>
@@ -599,6 +639,14 @@ document.addEventListener('click', (event) => {
 
 const messageField = document.querySelector('#message');
 const topicField = document.querySelector('#topic');
+
+document.addEventListener('error', (event) => {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement) || !image.dataset.productFallback) return;
+  if (image.src === image.dataset.productFallback) return;
+  image.src = image.dataset.productFallback;
+}, true);
+
 const selectedProductCard = document.querySelector('[data-selected-product]');
 const productFromQuery = new URLSearchParams(window.location.search).get('izdelek');
 const categoryFromQuery = new URLSearchParams(window.location.search).get('kategorija');

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="sl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Posredniška prodaja vozil DZ Auto Trade: prevzamemo predstavitev vozila, oglaševanje in komunikacijo s kupci." />
+    <title>DZ Auto Trade | Posredniška prodaja vozil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="apple-touch-icon" href="assets/logo.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Preskoči na glavno vsebino</a>
+    <header class="site-header">
+      <div class="top-bar">
+        <div class="container top-bar-wrap">
+          <span>Specialisti za avto dele, čistila in orodja</span>
+          <span>Email: <a href="mailto:dzautotrade@gmail.com">dzautotrade@gmail.com</a></span>
+        </div>
+      </div>
+      <div class="container nav-wrap">
+        <a href="index.html" class="brand" aria-label="DZ Auto Trade domov">
+          <img class="brand-logo" src="assets/logo.svg" alt="DZ Auto Trade" width="150" height="52" />
+        </a>
+        <button class="menu-toggle" aria-label="Odpri meni" aria-expanded="false"><span></span><span></span><span></span></button>
+        <nav class="main-nav" aria-label="Glavna navigacija">
+          <a href="index.html" class="nav-link ">Domov</a>
+          <div class="nav-dropdown">
+            <button class="nav-link dropdown-toggle " type="button" aria-expanded="false">Trgovina <span>▾</span></button>
+            <div class="mega-menu" aria-label="Kategorije trgovine">
+              <a href="trgovina.html#avto-deli"><strong>Avto deli</strong><span>Filtri, zavore, brisalci, žarnice</span></a>
+              <a href="trgovina.html#cistila"><strong>Čistila in nega</strong><span>Šamponi, voski, notranjost, platišča</span></a>
+              <a href="trgovina.html#orodja"><strong>Orodja</strong><span>Ključi, diagnostika, dvigalke</span></a>
+            </div>
+          </div>
+          <a href="o-nas.html" class="nav-link ">O nas</a>
+          <a href="storitve.html" class="nav-link active">Storitve</a>
+          <a href="kontakt.html" class="nav-link ">Kontakt</a>
+        </nav>
+        <div class="header-actions">
+          <a href="kontakt.html" class="header-link">Povpraševanje</a>
+          <a href="trgovina.html" class="cta-btn">V trgovino</a>
+        </div>
+      </div>
+    </header>
+    <main id="main-content">
+      <section class="services-hero page-hero"><div class="container narrow"><p class="eyebrow">Prodaja vozil</p><h1>Posredniška prodaja vozila namesto vas.</h1><p class="hero-copy">Če želite prodati vozilo brez nepotrebnih klicev, urejanja oglasa in dogovarjanja z neresnimi kupci, lahko vozilo zaupate nam. Pomagamo pri pripravi, predstavitvi in prodajnem procesu.</p><div class="hero-actions"><a class="btn-primary" href="#povprasevanje">Oddaj vozilo v prodajo</a><a class="btn-secondary" href="storitve.html">Vse storitve</a></div><div class="service-strip"><span>Priprava oglasa</span><span>Fotografije</span><span>Komunikacija s kupci</span><span>Ogledi po dogovoru</span></div></div></section>
+      <section class="section"><div class="container service-detail-layout"><article class="card service-detail-card"><span class="card-icon">🤝</span><h2>Kaj pomeni posredniška prodaja?</h2><p>Lastnik ostane lastnik vozila, DZ Auto Trade pa pomaga pri prodaji: uredimo predstavitev, pripravimo opis, pomagamo določiti realno izhodiščno ceno in filtriramo povpraševanja.</p><ul class="package-list"><li>Osnovni pregled vozila in zbiranje podatkov</li><li>Priprava oglasa z jasnim opisom opreme, stanja in servisne zgodovine</li><li>Fotografiranje oziroma svetovanje za fotografije</li><li>Komunikacija z interesenti in organizacija ogledov</li><li>Pomoč pri zaključku prodaje po dogovoru</li></ul></article><aside class="card checkout-card"><p class="eyebrow">Za koga?</p><h2>Za zasebne prodajalce</h2><p>Storitev je primerna, če nimate časa ali izkušenj s prodajo vozila in želite bolj urejen prodajni proces.</p><a class="btn-primary" href="#povprasevanje">Pošlji podatke vozila</a><a class="btn-secondary" href="avto-trznica.html">Poglej avto tržnico</a></aside></div></section>
+      <section class="section alt"><div class="container process-grid"><div><p class="eyebrow">Postopek</p><h2>Kako poteka?</h2><p>Pred objavo se dogovorimo o obsegu sodelovanja in pričakovanjih.</p></div><ol class="steps"><li><strong>Pošljete podatke</strong><span>Znamka, model, letnik, kilometri, oprema, stanje, servisna zgodovina in želena cena.</span></li><li><strong>Pripravimo prodajno predstavitev</strong><span>Uredimo opis, priporočila za fotografije in prodajne poudarke.</span></li><li><strong>Vodimo povpraševanja</strong><span>Pomagamo pri komunikaciji, ogledih in dogovorih s potencialnimi kupci.</span></li></ol></div></section>
+      <section class="section" id="povprasevanje"><div class="container booking-panel"><div><p class="eyebrow">Oddaja vozila</p><h2>Pošljite osnovne podatke vozila.</h2><p>Po prejemu se oglasimo z naslednjimi koraki in predlogom sodelovanja.</p></div><form class="contact-form booking-form" action="mailto:dzautotrade@gmail.com" method="post" enctype="text/plain"><label for="name">Ime in priimek</label><input id="name" name="Ime" type="text" required /><div class="form-grid"><label for="email">Email<input id="email" name="Email" type="email" required /></label><label for="phone">Telefon<input id="phone" name="Telefon" type="tel" /></label></div><div class="form-grid"><label for="car">Vozilo<input id="car" name="Vozilo" type="text" placeholder="npr. Audi A4 2.0 TDI, 2018" /></label><label for="price">Želena cena<input id="price" name="Želena cena" type="text" placeholder="npr. 14.500 €" /></label></div><label for="msg">Opis vozila</label><textarea id="msg" name="Sporočilo" rows="5" placeholder="Kilometri, oprema, servisna zgodovina, poškodbe, dodatne informacije..."></textarea><button class="btn-primary" type="submit">Pošlji povpraševanje</button></form></div></section>
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand"><img class="brand-logo" src="assets/logo.svg" alt="DZ Auto Trade" width="150" height="52" /></a>
+          <p>DZ Auto Trade upravlja DAYZZZZ SPLETNA TRGOVINA, TIBI TOPOLINJAK MUNDA S.P. Ponudba avto delov, čistil, orodja in storitev čiščenja vozil.</p>
+          <p class="company-meta">Davčna št.: SI23492783 • Matična št.: 9216316000<br />Spodnji Ključarovci 15A, 2274 Velika Nedelja</p>
+        </div>
+        <div>
+          <h3>Trgovina</h3>
+          <ul class="footer-links">
+            <li><a href="trgovina.html#avto-deli">Avto deli</a></li>
+            <li><a href="trgovina.html#cistila">Čistila in nega</a></li>
+            <li><a href="trgovina.html#orodja">Orodja</a></li>
+            <li><a href="avto-trznica.html">Avto tržnica</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Podjetje</h3>
+          <ul class="footer-links">
+            <li><a href="o-nas.html">O nas</a></li>
+            <li><a href="storitve.html">Vse storitve</a></li><li><a href="posredniska-prodaja.html">Posredniška prodaja</a></li><li><a href="prevozi-transport.html">Prevozi in transport</a></li>
+            <li><a href="notranje-ciscenje.html">Notranje čiščenje</a></li>
+            <li><a href="globinsko-ciscenje.html">Globinsko čiščenje</a></li>
+            <li><a href="kontakt.html">Kontakt</a></li>
+            <li><a href="vodic-za-nakup.html">Vodič za nakup</a></li>
+            <li><a href="pogosta-vprasanja.html">Pogosta vprašanja</a></li>
+            <li><a href="dostava-placila.html">Dostava in plačila</a></li>
+            <li><a href="splosni-pogoji.html">Splošni pogoji</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Pravno</h3>
+          <ul class="footer-links">
+            <li><a href="politika-zasebnosti.html">Politika zasebnosti</a></li>
+            <li><a href="politika-piskotkov.html">Politika piškotkov</a></li>
+            <li><a href="vracila-reklamacije.html">Vračila in reklamacije</a></li>
+            <li><a href="dostava-placila.html">Dostava in plačila</a></li>
+          </ul>
+          <p><a href="mailto:dzautotrade@gmail.com">dzautotrade@gmail.com</a></p>
+        </div>
+      </div>
+      <div class="container footer-bottom"><span>© 2026 DZ Auto Trade / DAYZZZZ S.P. Vse pravice pridržane.</span><a href="#main-content">Na vrh ↑</a></div>
+    </footer>
+    <script src="products.js"></script>
+    <script src="checkout.js"></script>
+    <script src="scripts.js"></script>
+  </body>
+</html>

@@ -282,6 +282,20 @@ const productImageOverrides = {
   'DZ-03': 'images/products/bilberry-wheel-cleaner-5l.avif',
 };
 
+
+const createProductPlaceholder = (product = {}) => {
+  const label = String(product.name || product.categoryLabel || 'DZ').trim();
+  const initials = label
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('') || 'DZ';
+  const badge = String(product.badge || product.categoryLabel || 'Izdelek').trim();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e50914"/><stop offset="1" stop-color="#0b1019"/></linearGradient></defs><rect width="260" height="260" rx="36" fill="url(#bg)"/><circle cx="196" cy="58" r="42" fill="rgba(255,255,255,.14)"/><circle cx="64" cy="206" r="52" fill="rgba(255,255,255,.10)"/><rect x="48" y="70" width="164" height="112" rx="24" fill="rgba(255,255,255,.92)"/><text x="130" y="136" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="900" fill="#0b1019">${initials}</text><text x="130" y="210" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#ffffff">${badge.slice(0, 28)}</text></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
 const json = (data, init = {}) =>
   Response.json(data, {
     ...init,
@@ -326,7 +340,7 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
       (Math.max(0, Math.round(Number(product.checkoutAmount || 0))) > 0 && String(product.availability || '').toLowerCase().includes('na zalogi')),
     featured: Boolean(product.featured),
     searchTerms: String(product.searchTerms || '').trim(),
-    image: imageOverride && (!image || image.startsWith('data:image/svg+xml')) ? imageOverride : image,
+    image: imageOverride && (!image || image.startsWith('data:image/svg+xml')) ? imageOverride : image || createProductPlaceholder(product),
     imageAlt: String(product.imageAlt || '').trim(),
     theme: String(product.theme || 'linear-gradient(135deg, #1d4ed8, #0f172a)').trim(),
   };
