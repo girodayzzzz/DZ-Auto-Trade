@@ -4995,3 +4995,54 @@ body {
 .vehicle-strip-grid span {
   color: var(--muted);
 }
+
+/* Make shop product cards a bit more compact. */
+body:has([data-product-grid]) .shop-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(0.85rem, 1.4vw, 1.1rem);
+}
+
+body:has([data-product-grid]) .product-card-pro {
+  border-radius: 22px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.3);
+}
+
+body:has([data-product-grid]) .product-card-pro .product-image {
+  min-height: 210px;
+  border-radius: 22px 22px 0 0;
+}
+
+body:has([data-product-grid]) .product-card-pro .product-image img {
+  width: min(82%, 205px);
+  max-height: 190px;
+}
+
+body:has([data-product-grid]) .product-card-pro .product-body {
+  padding: 0.85rem 0.85rem 0.95rem;
+}
+
+body:has([data-product-grid]) .product-card-pro h3 {
+  margin-bottom: 0.65rem;
+  font-size: 0.98rem;
+}
+
+body:has([data-product-grid]) .product-card-specs span {
+  min-height: 38px;
+  padding: 0.55rem 0.65rem;
+}
+
+body:has([data-product-grid]) .product-card-footer {
+  margin-top: 0.6rem;
+  padding: 0.65rem;
+}
+
+body:has([data-product-grid]) .product-actions .shop-btn {
+  min-height: 42px;
+  padding: 0.72rem 0.9rem;
+}
+
+@media (max-width: 760px) {
+  body:has([data-product-grid]) .product-card-pro .product-image {
+    min-height: 190px;
+  }
+}
