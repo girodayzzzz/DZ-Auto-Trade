@@ -46,7 +46,7 @@ window.products = [
     "checkoutAmount": 1795,
     "featured": true,
     "searchTerms": "tarx tar x katran smola lepilo carpro detailing",
-    "image": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20x%3D%2264%22%20y%3D%2234%22%20width%3D%2272%22%20height%3D%22130%22%20rx%3D%2218%22%20fill%3D%22%23fed7aa%22%2F%3E%3Crect%20x%3D%2278%22%20y%3D%2220%22%20width%3D%2244%22%20height%3D%2228%22%20rx%3D%228%22%20fill%3D%22%23f97316%22%2F%3E%3Cpath%20d%3D%22M84%20112c12-28%2024-44%2024-44s18%2028%2018%2048a21%2021%200%200%201-42%200z%22%20fill%3D%22%237c2d12%22%2F%3E%3C%2Fsvg%3E",
+    "image": "https://www.operi-avto.si/8947-large_default/carpro-tar-x-500ml.jpg",
     "imageAlt": "CarPro TarX 500ml",
     "theme": "linear-gradient(135deg, #9a3412, #111827)",
     "cartEnabled": true
@@ -97,7 +97,7 @@ window.products = [
     "checkoutAmount": 1399,
     "featured": false,
     "searchTerms": "gyeon q2m iron redefined zračna rja železni delci",
-    "image": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20x%3D%2262%22%20y%3D%2234%22%20width%3D%2276%22%20height%3D%22130%22%20rx%3D%2218%22%20fill%3D%22%23fee2e2%22%2F%3E%3Crect%20x%3D%2278%22%20y%3D%2220%22%20width%3D%2244%22%20height%3D%2228%22%20rx%3D%228%22%20fill%3D%22%23dc2626%22%2F%3E%3Cpath%20d%3D%22M74%20106h52%22%20stroke%3D%22%23dc2626%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22100%22%20cy%3D%22106%22%20r%3D%2224%22%20fill%3D%22%23fecaca%22%2F%3E%3C%2Fsvg%3E",
+    "image": "https://www.operi-avto.si/15394-large_default/gyeon-q2m-iron-redifined-500ml.jpg",
     "imageAlt": "Gyeon Q2M Iron Redefined 500ml",
     "theme": "linear-gradient(135deg, #b91c1c, #111827)",
     "cartEnabled": true
@@ -190,7 +190,7 @@ window.products = [
     "checkoutAmount": 1499,
     "featured": false,
     "searchTerms": "meguiar's meguiars perfect clarity glass cleaner stekla insekti smola cigaretni dim ptičji iztrebki cestna umazanija 710ml",
-    "image": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 200\"%3E%3Crect x=\"62\" y=\"34\" width=\"76\" height=\"130\" rx=\"18\" fill=\"%23fde68a\"/%3E%3Crect x=\"78\" y=\"20\" width=\"44\" height=\"28\" rx=\"8\" fill=\"%23f59e0b\"/%3E%3Cpath d=\"M78 90h44M78 116h44\" stroke=\"white\" stroke-width=\"10\" stroke-linecap=\"round\"/%3E%3Cpath d=\"M132 72c15 20 22 36 22 50a22 22 0 0 1-44 0c0-14 7-30 22-50z\" fill=\"%23fbbf24\" fill-opacity=\"0.85\"/%3E%3C/svg%3E",
+    "image": "https://www.meguiars.com/sites/default/files/images/G8224_PrfClrtyGlsClnr_10x10.png",
     "imageAlt": "Meguiar's Perfect Clarity Glass Cleaner 710ml",
     "theme": "linear-gradient(135deg, #f59e0b, #111827)"
   },
@@ -236,7 +236,7 @@ window.products = [
     "checkoutAmount": 3199,
     "featured": false,
     "searchTerms": "chemical guys hydro view hydroview glass ceramic stekla keramična zaščita čistilo vidljivost dež 473ml",
-    "image": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 200\"%3E%3Crect x=\"62\" y=\"34\" width=\"76\" height=\"130\" rx=\"18\" fill=\"%23dbeafe\"/%3E%3Crect x=\"78\" y=\"20\" width=\"44\" height=\"28\" rx=\"8\" fill=\"%230ea5e9\"/%3E%3Cpath d=\"M78 86h44M78 112h44\" stroke=\"white\" stroke-width=\"10\" stroke-linecap=\"round\"/%3E%3Cpath d=\"M126 72c18 22 26 40 26 54a26 26 0 0 1-52 0c0-14 8-32 26-54z\" fill=\"%2367e8f9\" fill-opacity=\"0.8\"/%3E%3C/svg%3E",
+    "image": "https://chemicalguys.co.uk/cdn/shop/files/CLD30116-hydroview-ceramic-glass-cleaner-coating.jpg?v=1758629278&width=1946",
     "imageAlt": "Chemical Guys Hydro View Glass Ceramic 473ml",
     "theme": "linear-gradient(135deg, #0891b2, #0f172a)"
   },
@@ -261,7 +261,7 @@ window.products = [
     "checkoutAmount": 459,
     "featured": false,
     "searchTerms": "k2 felix platišča pripravljeno čistilo zunanjost",
-    "image": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Cpath%20d%3D%22M62%2048h76l-8%20112H70z%22%20fill%3D%22%23bbf7d0%22%2F%3E%3Crect%20x%3D%2276%22%20y%3D%2230%22%20width%3D%2248%22%20height%3D%2226%22%20rx%3D%228%22%20fill%3D%22%2316a34a%22%2F%3E%3Cpath%20d%3D%22M82%2096h36M82%20122h36%22%20stroke%3D%22white%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E",
+    "image": "https://www.operi-avto.si/15821-large_default/k2-felix.jpg",
     "imageAlt": "K2 Felix 750ml",
     "theme": "linear-gradient(135deg, #15803d, #0f172a)",
     "cartEnabled": true
