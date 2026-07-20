@@ -5054,3 +5054,28 @@ body:has([data-product-grid]) .product-actions .shop-btn {
     min-height: 190px;
   }
 }
+
+/* Keep the header logo at a clear, consistent menu size. */
+.site-header .brand {
+  width: auto;
+  min-width: auto;
+  overflow: visible;
+  background-image: none;
+  background-color: transparent;
+}
+
+.site-header .brand-logo {
+  width: clamp(52px, 5vw, 62px);
+  height: clamp(52px, 5vw, 62px);
+  aspect-ratio: 1 / 1;
+  padding: 0.2rem;
+  object-fit: contain;
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .site-header .brand-logo {
+    width: 48px;
+    height: 48px;
+  }
+}
