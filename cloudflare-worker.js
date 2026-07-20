@@ -158,7 +158,7 @@ const DEFAULT_PRODUCTS = {
       "checkoutAmount": 1369,
       "featured": true,
       "searchTerms": "iron x ironx zračna rja kovinski delci platišča carpro",
-      "image": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 200\"%3E%3Crect x=\"62\" y=\"36\" width=\"76\" height=\"128\" rx=\"18\" fill=\"%23fee2e2\"/%3E%3Crect x=\"76\" y=\"22\" width=\"48\" height=\"28\" rx=\"8\" fill=\"%23ef4444\"/%3E%3Ccircle cx=\"100\" cy=\"102\" r=\"28\" fill=\"%23dc2626\"/%3E%3Cpath d=\"M86 102h28M100 88v28\" stroke=\"white\" stroke-width=\"8\" stroke-linecap=\"round\"/%3E%3C/svg%3E",
+      "image": "images/products/iron-x-univerzalno-cistilno-sredstvo.jpg",
       "imageAlt": "CarPro Iron.X 500ml",
       "theme": "linear-gradient(135deg, #991b1b, #0f172a)"
     },
@@ -273,6 +273,10 @@ const DEFAULT_CATEGORIES = [
 
 const categoryLabels = Object.fromEntries(DEFAULT_CATEGORIES.map((category) => [category.id, category.label]));
 
+const productImageOverrides = {
+  '2026-01': 'images/products/iron-x-univerzalno-cistilno-sredstvo.jpg',
+};
+
 const json = (data, init = {}) =>
   Response.json(data, {
     ...init,
@@ -289,6 +293,9 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
   const allowedCategories = new Set(categories.map((category) => category.id));
   const labels = Object.fromEntries(categories.map((category) => [category.id, category.label]));
   const category = allowedCategories.has(product.category) ? product.category : categories[0]?.id || 'avto-deli';
+  const sku = String(product.sku || '').trim().toUpperCase();
+  const image = String(product.image || '').trim();
+  const imageOverride = productImageOverrides[sku];
 
   return {
     name: String(product.name || '').trim(),
@@ -297,7 +304,7 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
     description: String(product.description || '').trim(),
     price: String(product.price || 'Po povpraševanju').trim(),
     badge: String(product.badge || 'Novo').trim(),
-    sku: String(product.sku || '').trim().toUpperCase(),
+    sku,
     availability: String(product.availability || 'Po naročilu').trim(),
     delivery: String(product.delivery || 'Po dogovoru').trim(),
     brand: String(product.brand || '').trim(),
@@ -311,7 +318,7 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
     checkoutAmount: Math.max(0, Math.round(Number(product.checkoutAmount || 0))),
     featured: Boolean(product.featured),
     searchTerms: String(product.searchTerms || '').trim(),
-    image: String(product.image || '').trim(),
+    image: imageOverride && (!image || image.startsWith('data:image/svg+xml')) ? imageOverride : image,
     imageAlt: String(product.imageAlt || '').trim(),
     theme: String(product.theme || 'linear-gradient(135deg, #1d4ed8, #0f172a)').trim(),
   };

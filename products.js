@@ -171,7 +171,7 @@ window.products = [
     "checkoutAmount": 1369,
     "featured": true,
     "searchTerms": "iron x ironx zračna rja kovinski delci platišča carpro",
-    "image": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 200\"%3E%3Crect x=\"62\" y=\"36\" width=\"76\" height=\"128\" rx=\"18\" fill=\"%23fee2e2\"/%3E%3Crect x=\"76\" y=\"22\" width=\"48\" height=\"28\" rx=\"8\" fill=\"%23ef4444\"/%3E%3Ccircle cx=\"100\" cy=\"102\" r=\"28\" fill=\"%23dc2626\"/%3E%3Cpath d=\"M86 102h28M100 88v28\" stroke=\"white\" stroke-width=\"8\" stroke-linecap=\"round\"/%3E%3C/svg%3E",
+    "image": "images/products/iron-x-univerzalno-cistilno-sredstvo.jpg",
     "imageAlt": "CarPro Iron.X 500ml",
     "theme": "linear-gradient(135deg, #991b1b, #0f172a)"
   },
