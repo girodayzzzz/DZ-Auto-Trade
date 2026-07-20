@@ -2619,3 +2619,33 @@ body {
 .card-grid {
   grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
 }
+
+.service-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.service-category-card {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  min-height: 100%;
+}
+
+.service-category-card.featured {
+  background:
+    radial-gradient(circle at top right, rgba(229, 9, 20, 0.14), transparent 15rem),
+    var(--card);
+}
+
+.service-category-card .shop-btn {
+  justify-self: start;
+  margin-top: auto;
+}
+
+@media (max-width: 900px) {
+  .service-category-grid {
+    grid-template-columns: 1fr;
+  }
+}

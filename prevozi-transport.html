@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="sl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Prevozi in transport DZ Auto Trade: prevoz vozil, avto delov, opreme in blaga po dogovoru." />
+    <title>DZ Auto Trade | Prevozi in transport</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="apple-touch-icon" href="assets/logo.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Preskoči na glavno vsebino</a>
+    <header class="site-header">
+      <div class="top-bar">
+        <div class="container top-bar-wrap">
+          <span>Specialisti za avto dele, čistila in orodja</span>
+          <span>Email: <a href="mailto:dzautotrade@gmail.com">dzautotrade@gmail.com</a></span>
+        </div>
+      </div>
+      <div class="container nav-wrap">
+        <a href="index.html" class="brand" aria-label="DZ Auto Trade domov">
+          <img class="brand-logo" src="assets/logo.svg" alt="DZ Auto Trade" width="150" height="52" />
+        </a>
+        <button class="menu-toggle" aria-label="Odpri meni" aria-expanded="false"><span></span><span></span><span></span></button>
+        <nav class="main-nav" aria-label="Glavna navigacija">
+          <a href="index.html" class="nav-link ">Domov</a>
+          <div class="nav-dropdown">
+            <button class="nav-link dropdown-toggle " type="button" aria-expanded="false">Trgovina <span>▾</span></button>
+            <div class="mega-menu" aria-label="Kategorije trgovine">
+              <a href="trgovina.html#avto-deli"><strong>Avto deli</strong><span>Filtri, zavore, brisalci, žarnice</span></a>
+              <a href="trgovina.html#cistila"><strong>Čistila in nega</strong><span>Šamponi, voski, notranjost, platišča</span></a>
+              <a href="trgovina.html#orodja"><strong>Orodja</strong><span>Ključi, diagnostika, dvigalke</span></a>
+            </div>
+          </div>
+          <a href="o-nas.html" class="nav-link ">O nas</a>
+          <a href="storitve.html" class="nav-link active">Storitve</a>
+          <a href="kontakt.html" class="nav-link ">Kontakt</a>
+        </nav>
+        <div class="header-actions">
+          <a href="kontakt.html" class="header-link">Povpraševanje</a>
+          <a href="trgovina.html" class="cta-btn">V trgovino</a>
+        </div>
+      </div>
+    </header>
+    <main id="main-content">
+      <section class="services-hero page-hero"><div class="container narrow"><p class="eyebrow">Prevozi in transport</p><h1>Prevoz vozil, delov in blaga po dogovoru.</h1><p class="hero-copy">Potrebujete prevoz kupljenega vozila, dostavo večjih avto delov ali transport blaga? Pošljite relacijo, dimenzije in termin, mi pa pripravimo ponudbo.</p><div class="hero-actions"><a class="btn-primary" href="#povprasevanje">Pridobi ponudbo</a><a class="btn-secondary" href="storitve.html">Vse storitve</a></div><div class="service-strip"><span>Prevoz vozil</span><span>Prevoz blaga</span><span>Avto deli in oprema</span><span>Dogovor po relaciji</span></div></div></section>
+      <section class="section"><div class="container service-category-grid"><article class="card service-category-card featured"><span class="card-icon">🚗</span><h2>Prevoz vozil</h2><p>Za nakupe, prodaje, okvare ali premik vozila na drugo lokacijo. Ob povpraševanju navedite ali je vozilo vozno, lokacijo prevzema in lokacijo dostave.</p><ul class="package-list"><li>Osebna vozila po dogovoru</li><li>Prevzem in dostava na določeni relaciji</li><li>Cena glede na razdaljo in zahtevnost</li></ul></article><article class="card service-category-card"><span class="card-icon">📦</span><h2>Prevoz blaga</h2><p>Prevoz avto delov, opreme, paketov in drugega blaga, kadar običajna dostava ni praktična.</p><ul class="package-list"><li>Večji ali občutljivi avto deli</li><li>Orodje, čistila in oprema</li><li>Dogovor glede prevzema in raztovora</li></ul></article><article class="card service-category-card"><span class="card-icon">🧭</span><h2>Po meri</h2><p>Vsak transport ocenimo individualno, da je dogovor jasen glede termina, relacije, odgovornosti in cene.</p><ul class="package-list"><li>Hitra ocena izvedljivosti</li><li>Dogovorjeni termini</li><li>Jasna ponudba pred potrditvijo</li></ul></article></div></section>
+      <section class="section alt"><div class="container process-grid"><div><p class="eyebrow">Postopek</p><h2>Kaj potrebujemo za ponudbo?</h2><p>Več informacij pomeni hitrejšo in natančnejšo ponudbo.</p></div><ol class="steps"><li><strong>Relacija</strong><span>Naslov ali kraj prevzema in dostave.</span></li><li><strong>Predmet prevoza</strong><span>Vozilo, blago, mere, teža in ali je potreben poseben način nakladanja.</span></li><li><strong>Termin</strong><span>Želen datum, časovni okvir in kontakt oseba na prevzemu/dostavi.</span></li></ol></div></section>
+      <section class="section" id="povprasevanje"><div class="container booking-panel"><div><p class="eyebrow">Povpraševanje</p><h2>Pošljite relacijo in opis tovora.</h2><p>Odgovorimo s ponudbo oziroma dodatnimi vprašanji.</p></div><form class="contact-form booking-form" action="mailto:dzautotrade@gmail.com" method="post" enctype="text/plain"><label for="name">Ime in priimek</label><input id="name" name="Ime" type="text" required /><div class="form-grid"><label for="email">Email<input id="email" name="Email" type="email" required /></label><label for="phone">Telefon<input id="phone" name="Telefon" type="tel" /></label></div><div class="form-grid"><label for="from">Prevzem<input id="from" name="Prevzem" type="text" placeholder="Kraj prevzema" /></label><label for="to">Dostava<input id="to" name="Dostava" type="text" placeholder="Kraj dostave" /></label></div><label for="msg">Opis prevoza</label><textarea id="msg" name="Sporočilo" rows="5" placeholder="Kaj prevažamo, mere/teža, ali je vozilo vozno, želen termin..."></textarea><button class="btn-primary" type="submit">Pošlji povpraševanje</button></form></div></section>
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand"><img class="brand-logo" src="assets/logo.svg" alt="DZ Auto Trade" width="150" height="52" /></a>
+          <p>DZ Auto Trade upravlja DAYZZZZ SPLETNA TRGOVINA, TIBI TOPOLINJAK MUNDA S.P. Ponudba avto delov, čistil, orodja in storitev čiščenja vozil.</p>
+          <p class="company-meta">Davčna št.: SI23492783 • Matična št.: 9216316000<br />Spodnji Ključarovci 15A, 2274 Velika Nedelja</p>
+        </div>
+        <div>
+          <h3>Trgovina</h3>
+          <ul class="footer-links">
+            <li><a href="trgovina.html#avto-deli">Avto deli</a></li>
+            <li><a href="trgovina.html#cistila">Čistila in nega</a></li>
+            <li><a href="trgovina.html#orodja">Orodja</a></li>
+            <li><a href="avto-trznica.html">Avto tržnica</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Podjetje</h3>
+          <ul class="footer-links">
+            <li><a href="o-nas.html">O nas</a></li>
+            <li><a href="storitve.html">Vse storitve</a></li><li><a href="posredniska-prodaja.html">Posredniška prodaja</a></li><li><a href="prevozi-transport.html">Prevozi in transport</a></li>
+            <li><a href="notranje-ciscenje.html">Notranje čiščenje</a></li>
+            <li><a href="globinsko-ciscenje.html">Globinsko čiščenje</a></li>
+            <li><a href="kontakt.html">Kontakt</a></li>
+            <li><a href="vodic-za-nakup.html">Vodič za nakup</a></li>
+            <li><a href="pogosta-vprasanja.html">Pogosta vprašanja</a></li>
+            <li><a href="dostava-placila.html">Dostava in plačila</a></li>
+            <li><a href="splosni-pogoji.html">Splošni pogoji</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Pravno</h3>
+          <ul class="footer-links">
+            <li><a href="politika-zasebnosti.html">Politika zasebnosti</a></li>
+            <li><a href="politika-piskotkov.html">Politika piškotkov</a></li>
+            <li><a href="vracila-reklamacije.html">Vračila in reklamacije</a></li>
+            <li><a href="dostava-placila.html">Dostava in plačila</a></li>
+          </ul>
+          <p><a href="mailto:dzautotrade@gmail.com">dzautotrade@gmail.com</a></p>
+        </div>
+      </div>
+      <div class="container footer-bottom"><span>© 2026 DZ Auto Trade / DAYZZZZ S.P. Vse pravice pridržane.</span><a href="#main-content">Na vrh ↑</a></div>
+    </footer>
+    <script src="products.js"></script>
+    <script src="checkout.js"></script>
+    <script src="scripts.js"></script>
+  </body>
+</html>
