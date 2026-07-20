@@ -3647,3 +3647,134 @@ body:has([data-product-grid]) {
     min-height: 230px;
   }
 }
+
+/* Store image-visibility redesign */
+.shop-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: clamp(1.4rem, 4vw, 3.4rem);
+  align-items: center;
+}
+
+.shop-hero p:not(.eyebrow) {
+  max-width: 62ch;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(1rem, 1.6vw, 1.18rem);
+  line-height: 1.75;
+}
+
+.shop-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+}
+
+.shop-hero-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 330px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.5) 34%, transparent 58%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.72), rgba(229, 9, 20, 0.32));
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.35);
+}
+
+.shop-hero-preview img {
+  width: min(74%, 310px);
+  max-height: 280px;
+  object-fit: contain;
+  filter: drop-shadow(0 28px 32px rgba(0, 0, 0, 0.34));
+}
+
+.shop-hero-preview div {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem;
+  border-radius: 22px;
+  background: rgba(2, 6, 23, 0.78);
+  color: #ffffff;
+  backdrop-filter: blur(14px);
+}
+
+.shop-hero-preview span {
+  color: rgba(255, 255, 255, 0.68);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+}
+
+.shop-hero-preview strong {
+  font-size: 1.05rem;
+}
+
+.product-image,
+.product-detail-image {
+  position: relative;
+  isolation: isolate;
+}
+
+.product-image::after,
+.product-detail-image::after {
+  content: "Slika preverjena";
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 2;
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.76);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.product-image.is-loaded::after,
+.product-detail-image.is-loaded::after,
+.product-image.is-fallback::after,
+.product-detail-image.is-fallback::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-image.is-fallback::after,
+.product-detail-image.is-fallback::after {
+  content: "Nadomestna slika";
+  background: rgba(180, 83, 9, 0.88);
+}
+
+.product-card-pro .product-image {
+  overflow: hidden;
+}
+
+.product-card-pro .product-image::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  z-index: -1;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.62), rgba(255,255,255,0.08));
+}
+
+@media (max-width: 820px) {
+  .shop-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-hero-preview {
+    min-height: 260px;
+  }
+}
