@@ -5,7 +5,7 @@ This repository is prepared for Stripe Checkout through the Cloudflare Worker en
 ## What is implemented
 
 - Product buttons and the cart call `/api/checkout` through `checkout.js`.
-- Cart checkout sends itemized products with SKU, quantity, unit amount, and a shipping line when shipping is charged.
+- Cart checkout sends only trusted identifiers (`sku` and integer `quantity`). The Worker calculates product names, EUR unit prices, totals, and shipping from its server-side checkout catalog.
 - The Worker validates cart SKUs and prices against the server-side product catalog before creating the Stripe Session, so customers cannot change prices from the browser.
 - The Worker creates a Stripe Checkout Session with card payments, required billing address, phone collection, and shipping address collection for Slovenia and nearby countries.
 - Successful payments redirect to `placilo-uspesno.html`; canceled payments redirect to `placilo-preklicano.html`.
@@ -13,7 +13,7 @@ This repository is prepared for Stripe Checkout through the Cloudflare Worker en
 ## Required Cloudflare setup
 
 1. Deploy `cloudflare-worker.js` as the site Worker.
-2. Route the Worker so `/api/checkout` is handled by the Worker on the production domain.
+2. Route the Worker so `/api/checkout` is handled by the Worker on the production domain. Keep `/api/products` routed only if the admin panel still needs Cloudflare KV catalog management; the public shop does not fetch it.
 3. Add a Worker secret named `STRIPE_SECRET_KEY`:
 
 ```bash
@@ -39,6 +39,7 @@ Use a Stripe **test** secret key first. Switch to a live secret key only after a
 - Store order details from the webhook in KV, a database, email, or an order-management tool.
 - Confirm legal pages, delivery rules, returns/complaints, and privacy/cookie wording are correct for the actual business process.
 - Make sure all direct-purchase products have a correct `checkoutAmount` in cents, `cartEnabled: true`, and `checkoutEnabled: true`.
+- When a product price changes in `products.js`, update the server-side checkout catalog source in `cloudflare-worker.js` at the same time and redeploy the Worker.
 
 ## Notes
 
