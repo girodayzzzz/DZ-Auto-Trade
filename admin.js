@@ -103,6 +103,7 @@ const normalizeProduct = (product) => {
     shippingNote: product.shippingNote?.trim() ?? '',
     purchaseUrl: product.purchaseUrl?.trim() ?? '',
     checkoutEnabled: Boolean(product.checkoutEnabled),
+    cartEnabled: Boolean(product.cartEnabled),
     checkoutAmount: Number(product.checkoutAmount || 0),
     featured: Boolean(product.featured),
     searchTerms: product.searchTerms?.trim() ?? '',
@@ -180,6 +181,7 @@ const fillForm = (product) => {
   form.elements.purchaseUrl.value = product.purchaseUrl;
   form.elements.checkoutAmount.value = product.checkoutAmount || '';
   form.elements.checkoutEnabled.checked = product.checkoutEnabled;
+  form.elements.cartEnabled.checked = product.cartEnabled;
   form.elements.searchTerms.value = product.searchTerms;
   form.elements.image.value = product.image;
   renderImagePreview(product.image);
@@ -252,6 +254,7 @@ form?.addEventListener('submit', async (event) => {
     ...Object.fromEntries(formData.entries()),
     featured: formData.get('featured') === 'on',
     checkoutEnabled: formData.get('checkoutEnabled') === 'on',
+    cartEnabled: formData.get('cartEnabled') === 'on',
   });
   if (!product.name || !product.sku) return setStatus('Naziv in SKU sta obvezna.', 'error');
   try {
