@@ -154,7 +154,7 @@ const DEFAULT_PRODUCTS = {
       "brand": "CarPro",
       "compatibility": "univerzalno za nego vozila",
       "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
-      "checkoutEnabled": false,
+      "checkoutEnabled": true,
       "cartEnabled": true,
       "checkoutAmount": 1369,
       "featured": true,
@@ -180,7 +180,7 @@ const DEFAULT_PRODUCTS = {
       "brand": "CarPro",
       "compatibility": "univerzalno za nego vozila",
       "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
-      "checkoutEnabled": false,
+      "checkoutEnabled": true,
       "cartEnabled": true,
       "checkoutAmount": 1795,
       "featured": true,
@@ -205,7 +205,7 @@ const DEFAULT_PRODUCTS = {
       "brand": "ValetPRO",
       "compatibility": "univerzalno za nego vozila",
       "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
-      "checkoutEnabled": false,
+      "checkoutEnabled": true,
       "cartEnabled": true,
       "checkoutAmount": 3599,
       "featured": true,
@@ -231,7 +231,7 @@ const DEFAULT_PRODUCTS = {
       "brand": "Gyeon",
       "compatibility": "univerzalno za nego vozila",
       "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
-      "checkoutEnabled": false,
+      "checkoutEnabled": true,
       "cartEnabled": true,
       "checkoutAmount": 1399,
       "featured": false,
@@ -254,7 +254,7 @@ const DEFAULT_PRODUCTS = {
       "brand": "Wekem",
       "compatibility": "za topila, kisline in čistila za zavore",
       "orderNote": "Volumen 1000 ml; primerno za profesionalno uporabo.",
-      "checkoutEnabled": false,
+      "checkoutEnabled": true,
       "cartEnabled": true,
       "checkoutAmount": 4299,
       "featured": false,
@@ -277,7 +277,7 @@ const DEFAULT_PRODUCTS = {
       "brand": "K2",
       "compatibility": "platišča in lakirane površine vozila",
       "orderNote": "pH-nevtralno čistilo z indikatorjem delovanja.",
-      "checkoutEnabled": false,
+      "checkoutEnabled": true,
       "cartEnabled": true,
       "checkoutAmount": 1397,
       "featured": false,
@@ -303,7 +303,7 @@ const DEFAULT_PRODUCTS = {
       "brand": "K2",
       "compatibility": "univerzalno za nego vozila",
       "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
-      "checkoutEnabled": false,
+      "checkoutEnabled": true,
       "cartEnabled": true,
       "checkoutAmount": 459,
       "featured": false,
@@ -415,16 +415,55 @@ const writeProducts = async (env, products) => {
 };
 
 
+const createCheckoutLineItems = (body, catalogProducts = []) => {
+  const productBySku = new Map(catalogProducts.map((product) => [String(product.sku || '').trim().toUpperCase(), product]));
+  const submittedItems = Array.isArray(body?.items) ? body.items : [];
+  const cartItems = submittedItems
+    .slice(0, 20)
+    .map((item) => {
+      const sku = String(item?.sku || '').trim().toUpperCase();
+      const product = productBySku.get(sku);
+      const quantity = Math.max(1, Math.min(10, Math.round(Number(item?.quantity || 1))));
+      if (!product?.cartEnabled || product.checkoutAmount < 50) return null;
+      return {
+        name: product.name,
+        sku: product.sku,
+        amount: product.checkoutAmount,
+        quantity,
+      };
+    })
+    .filter(Boolean);
+
+  const shippingAmount = Math.max(0, Math.round(Number(body?.shippingAmount || 0)));
+  if (cartItems.length) {
+    const lineItems = cartItems.map((item) => ({
+      ...item,
+      name: item.sku ? `${item.name} (${item.sku})` : item.name,
+    }));
+
+    if (shippingAmount >= 50) {
+      lineItems.push({ name: 'Dostava', sku: 'shipping', amount: shippingAmount, quantity: 1 });
+    }
+
+    return lineItems;
+  }
+
+  const name = String(body?.name || '').trim().slice(0, 120);
+  const amount = Math.round(Number(body?.amount || 0));
+  const quantity = Math.max(1, Math.min(10, Math.round(Number(body?.quantity || 1))));
+  return name && amount >= 50 ? [{ name, sku: '', amount, quantity }] : [];
+};
+
 const createStripeCheckoutSession = async (request, env) => {
   if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe plačilo ni konfigurirano. Pišite na dzautotrade@gmail.com.' }, { status: 500 });
   const body = await request.json().catch(() => null);
-  const name = String(body?.name || '').trim().slice(0, 120);
-  const amount = Math.round(Number(body?.amount || 0));
-  const quantity = Math.max(1, Math.min(10, Number(body?.quantity || 1)));
-  const type = String(body?.type || 'order').trim().slice(0, 40);
-  const cartSummary = String(body?.cartSummary || '').trim().slice(0, 500);
+  const catalogProducts = await readProducts(env);
+  const lineItems = createCheckoutLineItems(body, catalogProducts);
+  const type = String(body?.type || (lineItems.length > 1 ? 'cart' : 'order')).trim().slice(0, 40);
+  const cartSummary = String(body?.cartSummary || lineItems.map((item) => `${item.quantity}x ${item.name}`).join('; ')).trim().slice(0, 500);
+  const totalAmount = lineItems.reduce((sum, item) => sum + item.amount * item.quantity, 0);
 
-  if (!name || amount < 50) return json({ error: 'Postavka nima veljavne Stripe cene.' }, { status: 400 });
+  if (!lineItems.length || totalAmount < 50) return json({ error: 'Košarica nima veljavnih postavk za Stripe plačilo.' }, { status: 400 });
 
   const origin = new URL(request.url).origin;
   const params = new URLSearchParams();
@@ -432,16 +471,24 @@ const createStripeCheckoutSession = async (request, env) => {
   params.append('payment_method_types[0]', 'card');
   params.append('success_url', `${origin}/placilo-uspesno.html?session_id={CHECKOUT_SESSION_ID}`);
   params.append('cancel_url', `${origin}/placilo-preklicano.html`);
-  params.append('line_items[0][quantity]', String(quantity));
-  params.append('line_items[0][price_data][currency]', 'eur');
-  params.append('line_items[0][price_data][product_data][name]', name);
-  params.append('line_items[0][price_data][unit_amount]', String(amount));
+  lineItems.forEach((item, index) => {
+    params.append(`line_items[${index}][quantity]`, String(item.quantity));
+    params.append(`line_items[${index}][price_data][currency]`, 'eur');
+    params.append(`line_items[${index}][price_data][product_data][name]`, item.name);
+    params.append(`line_items[${index}][price_data][unit_amount]`, String(item.amount));
+  });
   params.append('metadata[type]', type);
   params.append('metadata[source]', 'dz-auto-trade');
   params.append('metadata[support_email]', 'dzautotrade@gmail.com');
+  params.append('metadata[order_total]', String(totalAmount));
   if (cartSummary) params.append('metadata[cart_summary]', cartSummary);
-  params.append('billing_address_collection', 'auto');
+  params.append('billing_address_collection', 'required');
   params.append('phone_number_collection[enabled]', 'true');
+  params.append('shipping_address_collection[allowed_countries][0]', 'SI');
+  params.append('shipping_address_collection[allowed_countries][1]', 'HR');
+  params.append('shipping_address_collection[allowed_countries][2]', 'AT');
+  params.append('shipping_address_collection[allowed_countries][3]', 'HU');
+  params.append('shipping_address_collection[allowed_countries][4]', 'IT');
 
   const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',

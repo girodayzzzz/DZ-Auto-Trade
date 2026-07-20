@@ -251,7 +251,7 @@ const getCartLine = (item) => {
 const getCartLines = () => readCart().map(getCartLine);
 
 const getCartSummary = () => {
-  const lines = getCartLines();
+  const lines = getCartLines().filter((item) => item.unitCents >= 50 && item.quantity > 0);
   const subtotalCents = lines.reduce((sum, item) => sum + item.lineCents, 0);
   const shippingCents = subtotalCents > 0 && subtotalCents < FREE_SHIPPING_THRESHOLD_CENTS ? STANDARD_SHIPPING_CENTS : 0;
   return {
@@ -263,6 +263,18 @@ const getCartSummary = () => {
     freeShippingRemainingCents: Math.max(FREE_SHIPPING_THRESHOLD_CENTS - subtotalCents, 0),
   };
 };
+
+const createCartCheckoutPayload = (summary) => ({
+  type: 'cart',
+  items: summary.lines.map((item) => ({
+    name: item.name,
+    sku: item.sku,
+    amount: item.unitCents,
+    quantity: item.quantity,
+  })),
+  shippingAmount: summary.shippingCents,
+  cartSummary: summary.lines.map((item) => `${item.quantity}x ${item.name} (${item.sku})`).join('; '),
+});
 
 const createCartInquiryUrl = () => {
   const { lines, totalCents } = getCartSummary();
@@ -437,6 +449,7 @@ const renderActiveFilters = (visibleCount) => {
 const renderProductCard = (product) => `
   <article class="product-card product-card-pro" id="${escapeHtml(product.category)}">
     <a class="product-image product-card-link" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
+      <span class="product-image-badge">${escapeHtml(product.badge)}</span>
       ${productImageMarkup(product)}
     </a>
     <div class="product-body">
@@ -552,7 +565,7 @@ const renderProductDetail = () => {
   document.getElementById('dz-product-schema')?.remove();
   document.head.appendChild(productSchema);
   trackEvent('product_view', { sku: product.sku, name: product.name, category: product.category });
-  const checkoutButton = product.checkoutEnabled && product.checkoutAmount >= 50
+  const checkoutButton = product.checkoutEnabled && !product.cartEnabled && product.checkoutAmount >= 50
     ? `<button class="btn-primary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>`
     : '';
   const cartButton = product.cartEnabled
@@ -720,15 +733,7 @@ document.addEventListener('click', async (event) => {
     cartCheckoutButton.disabled = true;
     window.dzCheckout.setStatus('Pripravljamo Stripe Checkout za vašo košarico...', 'info', cartCheckoutButton);
     try {
-      const cartName = summary.lines.map((item) => `${item.quantity}x ${item.name}`).join(', ').slice(0, 100);
-      const cartSummary = summary.lines.map((item) => `${item.quantity}x ${item.name} (${item.sku})`).join('; ');
-      const url = await window.dzCheckout.createSession({
-        name: `DZ Auto Trade košarica: ${cartName}`,
-        amount: summary.totalCents,
-        type: 'cart',
-        quantity: 1,
-        cartSummary,
-      });
+      const url = await window.dzCheckout.createSession(createCartCheckoutPayload(summary));
       window.location.href = url;
     } catch (error) {
       window.dzCheckout.setStatus(`${error.message} Košarico lahko pošljete kot povpraševanje.`, 'error', cartCheckoutButton);
