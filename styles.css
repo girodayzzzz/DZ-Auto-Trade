@@ -80,6 +80,13 @@ body {
   font-weight: 700;
   color: var(--text);
   text-decoration: none;
+  overflow: hidden;
+  border-radius: 14px;
+  background-color: var(--surface-dark);
+  background-image: url("assets/Logodzautotrade.si.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 125% auto;
 }
 
 .brand-logo {
@@ -90,7 +97,8 @@ body {
   object-fit: contain;
   object-position: center;
   padding: 0.25rem 0.45rem;
-  background: var(--surface-dark);
+  background: transparent;
+  opacity: 0;
   filter: drop-shadow(0 10px 18px rgb(17 24 39 / 0.18));
 }
 
