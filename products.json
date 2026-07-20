@@ -47,7 +47,7 @@
       "checkoutAmount": 1795,
       "featured": true,
       "searchTerms": "tarx tar x katran smola lepilo carpro detailing",
-      "image": "https://www.operi-avto.si/8947-large_default/carpro-tar-x-500ml.jpg",
+      "image": "images/products/carpro-tar-x-500ml.avif",
       "imageAlt": "CarPro TarX 500ml",
       "theme": "linear-gradient(135deg, #9a3412, #111827)",
       "cartEnabled": true
@@ -98,7 +98,7 @@
       "checkoutAmount": 1399,
       "featured": false,
       "searchTerms": "gyeon q2m iron redefined zračna rja železni delci",
-      "image": "https://www.operi-avto.si/15394-large_default/gyeon-q2m-iron-redifined-500ml.jpg",
+      "image": "images/products/gyeon-q2m-iron-redifined-500ml.avif",
       "imageAlt": "Gyeon Q2M Iron Redefined 500ml",
       "theme": "linear-gradient(135deg, #b91c1c, #111827)",
       "cartEnabled": true
@@ -191,7 +191,7 @@
       "checkoutAmount": 1499,
       "featured": false,
       "searchTerms": "meguiar's meguiars perfect clarity glass cleaner stekla insekti smola cigaretni dim ptičji iztrebki cestna umazanija 710ml",
-      "image": "https://www.meguiars.com/sites/default/files/images/G8224_PrfClrtyGlsClnr_10x10.png",
+      "image": "images/products/meguiar-s-perfect-clarity-glass-cleaner-710ml.avif",
       "imageAlt": "Meguiar's Perfect Clarity Glass Cleaner 710ml",
       "theme": "linear-gradient(135deg, #f59e0b, #111827)"
     },
