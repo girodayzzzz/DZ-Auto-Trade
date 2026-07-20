@@ -46,10 +46,14 @@ const activeFilters = document.querySelector('[data-active-filters]');
 const catalogSummary = document.querySelector('[data-catalog-summary]');
 const shopInsights = document.querySelector('[data-shop-insights]');
 const CART_STORAGE_KEY = 'dzAutoTradeCart';
+const PRODUCT_PLACEHOLDER_IMAGE = 'assets/product-placeholder.svg';
 const bundledProducts = Array.isArray(window.products) ? window.products : [];
 const bundledProductImagesBySku = new Map(
   bundledProducts
-    .filter((product) => product?.sku && String(product.image || '').trim())
+    .filter((product) => {
+      const image = String(product?.image || '').trim();
+      return product?.sku && image && !image.toLowerCase().startsWith('data:image/svg+xml');
+    })
     .map((product) => [String(product.sku).trim().toUpperCase(), String(product.image).trim()])
 );
 let currentProducts = bundledProducts;
@@ -79,18 +83,9 @@ const formatCurrency = (cents = 0) =>
   new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100);
 
 
-const createProductPlaceholder = (product = {}) => {
-  const label = String(product.name || product.categoryLabel || 'DZ').trim();
-  const initials = label
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || '')
-    .join('') || 'DZ';
-  const badge = String(product.badge || product.categoryLabel || 'Izdelek').trim();
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e50914"/><stop offset="1" stop-color="#0b1019"/></linearGradient></defs><rect width="260" height="260" rx="36" fill="url(#bg)"/><circle cx="196" cy="58" r="42" fill="rgba(255,255,255,.14)"/><circle cx="64" cy="206" r="52" fill="rgba(255,255,255,.10)"/><rect x="48" y="70" width="164" height="112" rx="24" fill="rgba(255,255,255,.92)"/><text x="130" y="136" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="900" fill="#0b1019">${escapeHtml(initials)}</text><text x="130" y="210" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#ffffff">${escapeHtml(badge).slice(0, 28)}</text></svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-};
+const createProductPlaceholder = () => PRODUCT_PLACEHOLDER_IMAGE;
+
+const isInlineSvgImage = (image = '') => image.trim().toLowerCase().startsWith('data:image/svg+xml');
 
 
 const getBundledProductImage = (product = {}) => {
@@ -101,7 +96,8 @@ const getBundledProductImage = (product = {}) => {
 const resolveProductImage = (product = {}) => {
   const image = String(product.image || '').trim();
   const bundledImage = getBundledProductImage(product);
-  if (bundledImage && (!image || image.startsWith('data:image/svg+xml'))) return bundledImage;
+  if (bundledImage && (!image || isInlineSvgImage(image))) return bundledImage;
+  if (isInlineSvgImage(image)) return createProductPlaceholder(product);
   return image || bundledImage || createProductPlaceholder(product);
 };
 
