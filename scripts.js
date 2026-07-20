@@ -183,24 +183,29 @@ const normalizeProduct = (product) => ({
   theme: product.theme ?? 'linear-gradient(135deg, #1d4ed8, #0f172a)',
 });
 
-const loadProducts = async () => {
-  try {
-    const response = await fetch('/api/products', {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
+const deriveCategoriesFromProducts = (products = []) => {
+  const categoriesById = new Map(currentCategories.map((category) => [category.id, category]));
+
+  products.forEach((product) => {
+    const id = String(product.category || '').trim();
+    if (!id || categoriesById.has(id)) return;
+    categoriesById.set(id, {
+      id,
+      label: String(product.categoryLabel || id).trim() || id,
     });
+  });
 
-    if (!response.ok) throw new Error('Product API unavailable');
+  return [...categoriesById.values()].filter((category) =>
+    products.some((product) => product.category === category.id)
+  );
+};
 
-    const data = await response.json();
-    if (!Array.isArray(data.products)) throw new Error('Invalid product API response');
-
-    currentCategories = Array.isArray(data.categories) && data.categories.length ? data.categories : currentCategories;
-    currentProducts = data.products.map(normalizeProduct);
-  } catch (error) {
-    console.info('Using bundled fallback products.', error);
-    currentProducts = currentProducts.map(normalizeProduct);
-  }
+const loadProducts = async () => {
+  // products.js is the single source of truth for the public shop catalog.
+  // Do not fetch /api/products here: a stale Worker/KV response can otherwise
+  // overwrite the bundled catalog after products.js has already loaded.
+  currentProducts = bundledProducts.map(normalizeProduct);
+  currentCategories = deriveCategoriesFromProducts(currentProducts);
 };
 
 const getCategoryLabel = (id) => currentCategories.find((category) => category.id === id)?.label || id;
