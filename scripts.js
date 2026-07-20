@@ -119,18 +119,38 @@ const getBundledProductImage = (product = {}) => {
   return sku ? bundledProductImagesBySku.get(sku) || '' : '';
 };
 
-const resolveProductImage = (product = {}) => {
-  const image = String(product.image || '').trim();
-  const bundledImage = getBundledProductImage(product);
-  const preferredImage = bundledImage && (!image || isInlineSvgImage(image)) ? bundledImage : image || bundledImage;
-  return resolveSiteImageUrl(preferredImage) || createProductPlaceholder(product);
+const splitImageList = (value) => {
+  if (Array.isArray(value)) return value;
+  const imageText = String(value || '').trim();
+  if (!imageText) return [];
+  if (isAbsoluteImageUrl(imageText) || isInlineSvgImage(imageText)) return [imageText];
+  return imageText
+    .split(/[\n|,]+/)
+    .map((image) => image.trim())
+    .filter(Boolean);
 };
+
+const resolveProductImages = (product = {}) => {
+  const configuredImages = [...splitImageList(product.images), ...splitImageList(product.image)];
+  const bundledImage = getBundledProductImage(product);
+  const preferredImages = bundledImage && (!configuredImages.length || configuredImages.every(isInlineSvgImage))
+    ? [bundledImage, ...configuredImages]
+    : [...configuredImages, bundledImage];
+  const images = preferredImages
+    .map(resolveSiteImageUrl)
+    .filter(Boolean)
+    .filter((image, index, list) => list.indexOf(image) === index);
+
+  return images.length ? images : [createProductPlaceholder(product)];
+};
+
+const resolveProductImage = (product = {}) => resolveProductImages(product)[0];
 
 const getProductImage = (product) => resolveProductImage(product);
 
-const productImageMarkup = (product, lazy = true) => {
+const productImageMarkup = (product, lazy = true, imageOverride = '') => {
   const fallback = createProductPlaceholder(product);
-  const image = getProductImage(product);
+  const image = imageOverride || getProductImage(product);
   const isPlaceholder = image === fallback;
   return `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.imageAlt || product.name)}"${lazy ? ' loading="lazy"' : ''} data-product-fallback="${escapeHtml(fallback)}"${isPlaceholder ? ' data-product-placeholder="true"' : ''} />`;
 };
@@ -157,6 +177,7 @@ const normalizeProduct = (product) => ({
     (Number(product.checkoutAmount || 0) > 0 && String(product.availability || '').toLowerCase().includes('na zalogi')),
   featured: Boolean(product.featured),
   searchTerms: product.searchTerms ?? '',
+  images: resolveProductImages(product),
   image: resolveProductImage(product),
   imageAlt: product.imageAlt ?? '',
   theme: product.theme ?? 'linear-gradient(135deg, #1d4ed8, #0f172a)',
@@ -578,6 +599,7 @@ const renderProductDetail = () => {
         <span class="product-image-badge">${escapeHtml(product.badge)}</span>
         ${productImageMarkup(product, false)}
       </div>
+      ${product.images.length > 1 ? `<div class="product-image-gallery" aria-label="Dodatne slike izdelka">${product.images.map((image, index) => `<button class="product-image-thumb${index === 0 ? ' active' : ''}" type="button" data-product-gallery-image="${escapeHtml(image)}" aria-label="Prikaži sliko ${index + 1} za ${escapeHtml(product.name)}">${productImageMarkup(product, true, image)}</button>`).join('')}</div>` : ''}
       <div class="product-detail-trust">
         <span>✓ ${escapeHtml(product.availability)}</span>
         <span>✓ ${escapeHtml(product.delivery)}</span>
@@ -739,6 +761,20 @@ document.addEventListener('click', async (event) => {
       window.dzCheckout.setStatus(`${error.message} Košarico lahko pošljete kot povpraševanje.`, 'error', cartCheckoutButton);
       cartCheckoutButton.disabled = false;
     }
+  }
+
+  const galleryButton = event.target.closest('[data-product-gallery-image]');
+  if (galleryButton) {
+    const imageFrame = galleryButton.closest('.product-detail-media')?.querySelector('.product-detail-image');
+    const image = imageFrame?.querySelector('img[data-product-fallback]');
+    if (image) {
+      imageFrame.classList.remove('is-loaded', 'is-fallback');
+      image.src = galleryButton.dataset.productGalleryImage;
+      galleryButton.parentElement?.querySelectorAll('[data-product-gallery-image]').forEach((button) => {
+        button.classList.toggle('active', button === galleryButton);
+      });
+    }
+    return;
   }
 
   const shortcut = event.target.closest('[data-shop-shortcut]');
