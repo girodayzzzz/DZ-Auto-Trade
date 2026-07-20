@@ -357,6 +357,18 @@ const DEFAULT_CATEGORIES = [
 
 const categoryLabels = Object.fromEntries(DEFAULT_CATEGORIES.map((category) => [category.id, category.label]));
 
+const slugify = (value = '') =>
+  String(value).toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+const normalizeCategory = (category = {}) => {
+  const label = String(category.label || '').trim();
+  return {
+    id: slugify(category.id || label),
+    label,
+    description: String(category.description || '').trim(),
+  };
+};
+
 const productImageOverrides = {
   '2026-01': 'images/products/iron-x-univerzalno-cistilno-sredstvo.jpg',
   'DZ-03': 'images/products/bilberry-wheel-cleaner-5l.avif',
