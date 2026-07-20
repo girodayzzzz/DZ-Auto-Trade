@@ -1684,3 +1684,242 @@ body {
     min-height: auto;
   }
 }
+
+/* Compact storefront cards */
+.shop-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+}
+
+.product-card {
+  height: 100%;
+  border-radius: 16px;
+}
+
+.product-image {
+  min-height: 132px;
+  padding: 0.75rem;
+}
+
+.product-image img {
+  width: min(112px, 72%);
+}
+
+.product-body {
+  padding: 0.85rem;
+}
+
+.product-meta {
+  margin-bottom: 0.55rem;
+}
+
+.product-body h3 {
+  min-height: 2.7em;
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.product-card-summary {
+  min-height: auto;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-quick-info {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.65rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.product-price {
+  padding-top: 0.75rem;
+  font-size: 1.08rem;
+}
+
+.product-actions {
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.product-actions > button,
+.product-actions > .btn-primary,
+.product-actions > .shop-btn:nth-child(3) {
+  grid-column: auto;
+}
+
+.footer-payment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.55rem 0 0;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* Homepage professional vehicle additions */
+.hero-actions {
+  flex-wrap: wrap;
+}
+
+.hero-premium .hero-card {
+  min-height: 360px;
+}
+
+.vehicle-category-card {
+  border-color: rgba(229, 9, 20, 0.18);
+  background: linear-gradient(180deg, #ffffff, #fff7f7);
+}
+
+.vehicle-preview-section {
+  padding-top: 0;
+}
+
+.vehicle-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid rgba(229, 9, 20, 0.18);
+  border-radius: 24px;
+  padding: 1.4rem;
+  background: linear-gradient(135deg, #ffffff, #f7f8fb);
+  box-shadow: 0 18px 50px rgba(17, 24, 39, 0.08);
+}
+
+.vehicle-preview p {
+  color: var(--muted);
+}
+
+.vehicle-preview-card {
+  display: grid;
+  place-items: center;
+  gap: 0.35rem;
+  min-height: 210px;
+  border-radius: 20px;
+  color: #ffffff;
+  text-align: center;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, #111827, #e50914);
+}
+
+.vehicle-preview-card span {
+  font-size: 3rem;
+}
+
+.vehicle-preview-card strong {
+  font-size: 1.25rem;
+}
+
+.vehicle-preview-card small {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 800;
+}
+
+/* Vehicle marketplace page */
+.vehicle-hero {
+  background:
+    radial-gradient(circle at 85% 10%, rgba(229, 9, 20, 0.14), transparent 30rem),
+    linear-gradient(180deg, #ffffff, #f7f8fb);
+}
+
+.vehicle-contact-card {
+  box-shadow: 0 22px 60px rgba(17, 24, 39, 0.12);
+}
+
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.vehicle-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 100%;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(17, 24, 39, 0.1);
+}
+
+.vehicle-photo {
+  display: grid;
+  min-height: 170px;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  background:
+    linear-gradient(135deg, rgba(17, 24, 39, 0.12), rgba(229, 9, 20, 0.18)),
+    linear-gradient(135deg, #111827, #303947);
+}
+
+.vehicle-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.vehicle-body p {
+  color: var(--muted);
+}
+
+.vehicle-body dl {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.75rem 0 0;
+}
+
+.vehicle-body dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.35rem;
+}
+
+.vehicle-body dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.vehicle-body dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 900;
+}
+
+.vehicle-price {
+  margin-top: auto;
+  padding: 1rem 0 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .vehicle-preview {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+}

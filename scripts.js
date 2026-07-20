@@ -204,25 +204,16 @@ const renderProductCard = (product) => `
       <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.imageAlt || product.name)}" loading="lazy" />
     </a>
     <div class="product-body">
-      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span><span class="badge">${escapeHtml(product.badge)}</span></div>
+      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span>${product.checkoutEnabled && product.checkoutAmount >= 50 ? '<span class="badge">Online</span>' : ''}</div>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
-      <p>${escapeHtml(product.description)}</p>
-      <dl class="product-details">
-        <div><dt>Šifra</dt><dd>${escapeHtml(product.sku)}</dd></div>
-        <div><dt>Zaloga</dt><dd>${escapeHtml(product.availability)}</dd></div>
-        <div><dt>Dobava</dt><dd>${escapeHtml(product.delivery)}</dd></div>
-        ${product.brand ? `<div><dt>Znamka</dt><dd>${escapeHtml(product.brand)}</dd></div>` : ''}
-        ${product.compatibility ? `<div><dt>Ustreznost</dt><dd>${escapeHtml(product.compatibility)}</dd></div>` : ''}
-        ${product.regularPrice ? `<div><dt>Redna cena</dt><dd>${escapeHtml(product.regularPrice)}</dd></div>` : ''}
-        ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
-      </dl>
+      <p class="product-card-summary">${escapeHtml(product.brand || product.availability || product.categoryLabel)}</p>
+      <div class="product-quick-info"><span>${escapeHtml(product.availability)}</span><span>${escapeHtml(product.delivery)}</span></div>
       <strong class="product-price">${escapeHtml(product.price)}</strong>
       <div class="product-actions">
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
         <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Povpraševanje</a>
         ${product.checkoutEnabled && product.checkoutAmount >= 50 ? `<button class="btn-secondary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>` : ''}
       </div>
-      ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
     </div>
   </article>
 `;
