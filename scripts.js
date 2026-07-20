@@ -452,12 +452,7 @@ const renderProductCard = (product) => `
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
         ${product.shippingNote ? `<span class="product-shipping-note">${escapeHtml(product.shippingNote)}</span>` : ''}
       </div>
-      <div class="product-actions">
-        ${product.cartEnabled ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>` : ''}
-        <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
-        <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Povpraševanje</a>
-        ${product.checkoutEnabled && product.checkoutAmount >= 50 ? `<button class="btn-secondary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>` : ''}
-      </div>
+      ${product.cartEnabled ? `<div class="product-actions"><button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button></div>` : ''}
     </div>
   </article>
 `;
