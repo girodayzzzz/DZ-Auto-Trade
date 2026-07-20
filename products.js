@@ -224,7 +224,7 @@ window.products = [
     "checkoutAmount": 3599,
     "featured": true,
     "searchTerms": "bilberry wheel cleaner platišča valetpro koncentrat alkalno čistilo zavorni prah voski premazi",
-    "image": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 200\"%3E%3Crect x=\"58\" y=\"44\" width=\"84\" height=\"118\" rx=\"16\" fill=\"%23dbeafe\"/%3E%3Ccircle cx=\"100\" cy=\"108\" r=\"34\" fill=\"%231d4ed8\"/%3E%3Cpath d=\"M74 78h52M78 140h44\" stroke=\"white\" stroke-width=\"10\" stroke-linecap=\"round\"/%3E%3C/svg%3E",
+    "image": "images/products/bilberry-wheel-cleaner-5l.avif",
     "imageAlt": "ValetPRO Bilberry Wheel Cleaner 5L",
     "theme": "linear-gradient(135deg, #1e3a8a, #0f172a)"
   },
