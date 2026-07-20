@@ -3731,39 +3731,6 @@ body:has([data-product-grid]) {
   isolation: isolate;
 }
 
-.product-image::after,
-.product-detail-image::after {
-  content: "Slika preverjena";
-  position: absolute;
-  right: 0.85rem;
-  bottom: 0.85rem;
-  z-index: 2;
-  padding: 0.38rem 0.7rem;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.76);
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.product-image.is-loaded::after,
-.product-detail-image.is-loaded::after,
-.product-image.is-fallback::after,
-.product-detail-image.is-fallback::after {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.product-image.is-fallback::after,
-.product-detail-image.is-fallback::after {
-  content: "Nadomestna slika";
-  background: rgba(180, 83, 9, 0.88);
-}
-
 .product-card-pro .product-image {
   overflow: hidden;
 }

@@ -167,8 +167,8 @@ const normalizeProduct = (product) => ({
   price: product.price ?? 'Po povpraševanju',
   badge: product.badge ?? 'Novo',
   sku: product.sku ?? '',
-  availability: product.availability ?? 'Po naročilu',
-  delivery: product.delivery ?? 'Po dogovoru',
+  availability: product.availability ?? 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
+  delivery: product.delivery ?? 'Po potrditvi dobavitelja',
   brand: product.brand ?? '',
   compatibility: product.compatibility ?? '',
   orderNote: product.orderNote ?? '',
@@ -525,13 +525,8 @@ const renderProductCard = (product) => `
       ${product.brand ? `<div class="product-meta"><span class="product-brand-pill">${escapeHtml(product.brand)}</span></div>` : ''}
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
       <p class="product-card-summary">${escapeHtml(product.description)}</p>
-      <div class="product-card-specs">
-        <span><small>Zaloga</small><strong>${escapeHtml(product.availability)}</strong></span>
-        <span><small>Dobava</small><strong>${escapeHtml(product.delivery)}</strong></span>
-      </div>
       <div class="product-card-footer">
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
-        ${product.shippingNote ? `<span class="product-shipping-note">${escapeHtml(product.shippingNote)}</span>` : ''}
       </div>
       <div class="product-actions product-card-actions">
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
@@ -683,12 +678,12 @@ const renderProductDetail = () => {
         ${product.brand ? `<div><dt>Znamka</dt><dd>${escapeHtml(product.brand)}</dd></div>` : ''}
         ${product.compatibility ? `<div><dt>Ustreznost</dt><dd>${escapeHtml(product.compatibility)}</dd></div>` : ''}
         ${product.regularPrice ? `<div><dt>Redna cena</dt><dd>${escapeHtml(product.regularPrice)}</dd></div>` : ''}
-        ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
+        <div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote || 'Poštnina se obračuna v košarici; nad 60 € je brezplačna.')}</dd></div>
       </dl>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
       <div class="product-detail-help product-info-grid">
         <section><h2>Pred naročilom</h2><ul><li>Pri avto delih priporočamo preverjanje po VIN številki.</li><li>Pri čistilih preverite namen uporabe in navodila proizvajalca.</li><li>Če niste prepričani, pošljite povpraševanje in pripravimo priporočilo.</li></ul></section>
-        <section><h2>Dostava in varnost</h2><ul><li>Poštnina je prikazana v košarici; nad 60 € je predvidena brezplačna poštnina.</li><li>Končna cena, dobava in morebitne omejitve se potrdijo pred izvedbo naročila.</li><li>Vračila, reklamacije in pogoji so povezani v nogi strani.</li></ul></section>
+        <section><h2>Dostava, zaloga in poštnina</h2><ul><li>Zaloga je lahko pri dobavitelju, zato količine ne prikazujemo, če ni ročno potrjena.</li><li>Dobavni rok in razpoložljivost potrdimo pred izvedbo naročila.</li><li>Poštnina je prikazana v košarici; nad 60 € je predvidena brezplačna poštnina.</li></ul></section>
       </div>
       <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
       <div class="product-actions product-detail-actions">${cartButton}${checkoutButton}</div>
