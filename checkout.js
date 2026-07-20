@@ -26,17 +26,15 @@ window.dzCheckout = {
 document.addEventListener('click', async (event) => {
   const button = event.target.closest('[data-checkout]');
   if (!button) return;
-  const amount = Number(button.dataset.amount);
-  const name = button.dataset.name;
-  const type = button.dataset.type || 'order';
-  if (!amount || !name) return setCheckoutStatus('Ta postavka še nima nastavljene Stripe cene za spletno plačilo.', 'error', button);
+  const sku = String(button.dataset.sku || '').trim();
+  if (!sku) return setCheckoutStatus('Ta postavka še nima nastavljene varne šifre za spletno plačilo.', 'error', button);
   button.disabled = true;
   setCheckoutStatus('Pripravljamo varno Stripe Checkout plačilno stran...', 'info', button);
   try {
-    const url = await createCheckoutSession({ name, amount, type, quantity: 1 });
+    const url = await createCheckoutSession({ sku, quantity: 1 });
     window.location.href = url;
   } catch (error) {
-    setCheckoutStatus(error.message, 'error', button);
+    setCheckoutStatus(`${error.message} Naročilo lahko pošljete kot povpraševanje.`, 'error', button);
     button.disabled = false;
   }
 });

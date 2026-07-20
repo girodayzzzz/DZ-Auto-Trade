@@ -294,6 +294,61 @@ const DEFAULT_PRODUCTS = {
     }
   ]
 };
+
+const CHECKOUT_MAX_ITEMS = 20;
+const DEFAULT_MAX_QUANTITY = 10;
+const PRODUCTION_ORIGIN = 'https://dzautotrade.si';
+const ALLOWED_CHECKOUT_ORIGINS = new Set([PRODUCTION_ORIGIN, 'https://www.dzautotrade.si', 'http://localhost:8787', 'http://localhost:8000', 'http://127.0.0.1:8787', 'http://127.0.0.1:8000']);
+
+// Server-side Stripe checkout catalog. Prices here MUST match products.js checkoutAmount/displayed prices.
+// The browser may only send SKU + quantity; product names, prices, currency and totals are resolved here.
+const SERVICE_CHECKOUT_PRODUCTS = [
+  { sku: 'SERVICE-NOTRANJE-CISCENJE', name: 'Notranje čiščenje vozila', priceCents: 3500, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
+  { sku: 'SERVICE-ZUNANJE-CISCENJE', name: 'Zunanje čiščenje po paketih', priceCents: 2500, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
+  { sku: 'SERVICE-GLOBINSKO-CISCENJE', name: 'Globinsko čiščenje vozila', priceCents: 6000, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
+];
+
+const isAvailableForCheckout = (product = {}) => /na zalogi|dobavljivo/i.test(String(product.availability || '')) && !/ni na zalogi|razprodano|sold out|out of stock|unavailable/i.test(String(product.availability || ''));
+const buildCheckoutCatalog = () => {
+  const products = DEFAULT_PRODUCTS.products
+    .filter((product) => product.checkoutEnabled && product.cartEnabled && isAvailableForCheckout(product) && Number(product.checkoutAmount || 0) >= 50)
+    .map((product) => ({
+      sku: String(product.sku || '').trim().toUpperCase(),
+      name: String(product.name || '').trim(),
+      priceCents: Math.round(Number(product.checkoutAmount || 0)),
+      currency: 'eur',
+      active: true,
+      maxQuantity: DEFAULT_MAX_QUANTITY,
+      metadata: { type: 'product', category: String(product.category || ''), brand: String(product.brand || '') },
+    }));
+  return new Map([...products, ...SERVICE_CHECKOUT_PRODUCTS].map((item) => [item.sku, item]));
+};
+const CHECKOUT_CATALOG = buildCheckoutCatalog();
+const CHECKOUT_RATE_LIMIT = new Map();
+const isRateLimited = (request) => {
+  const key = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+  const now = Date.now();
+  const windowMs = 60_000;
+  const maxRequests = 20;
+  const current = CHECKOUT_RATE_LIMIT.get(key) || { count: 0, resetAt: now + windowMs };
+  if (current.resetAt < now) { current.count = 0; current.resetAt = now + windowMs; }
+  current.count += 1;
+  CHECKOUT_RATE_LIMIT.set(key, current);
+  return current.count > maxRequests;
+};
+
+const checkoutCorsHeaders = (request) => {
+  const origin = request.headers.get('Origin') || '';
+  return {
+    'Access-Control-Allow-Origin': ALLOWED_CHECKOUT_ORIGINS.has(origin) ? origin : PRODUCTION_ORIGIN,
+    'Vary': 'Origin',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Accept',
+    'Cache-Control': 'no-store',
+  };
+};
+const checkoutJson = (request, data, init = {}) => Response.json(data, { ...init, headers: { ...checkoutCorsHeaders(request), ...(init.headers || {}) } });
+
 const DEFAULT_CATEGORIES = [
   { id: 'avto-deli', label: 'Avto deli', description: 'Filtri, zavore, brisalci in potrošni deli' },
   { id: 'cistila', label: 'Čistila', description: 'Izdelki za nego notranjosti in zunanjosti' },
@@ -399,92 +454,77 @@ const writeProducts = async (env, products) => {
 };
 
 
-const createCheckoutLineItems = (body, catalogProducts = []) => {
-  const productBySku = new Map(catalogProducts.map((product) => [String(product.sku || '').trim().toUpperCase(), product]));
-  const submittedItems = Array.isArray(body?.items) ? body.items : [];
-  const cartItems = submittedItems
-    .slice(0, 20)
-    .map((item) => {
-      const sku = String(item?.sku || '').trim().toUpperCase();
-      const product = productBySku.get(sku);
-      const quantity = Math.max(1, Math.min(10, Math.round(Number(item?.quantity || 1))));
-      if (!product?.cartEnabled || product.checkoutAmount < 50) return null;
-      return {
-        name: product.name,
-        sku: product.sku,
-        amount: product.checkoutAmount,
-        quantity,
-      };
-    })
-    .filter(Boolean);
+const parseCheckoutItems = (body) => {
+  const rawItems = Array.isArray(body?.items) ? body.items : body?.sku ? [{ sku: body.sku, quantity: body.quantity }] : [];
+  if (!rawItems.length || rawItems.length > CHECKOUT_MAX_ITEMS) throw new Error('Košarica nima veljavnih postavk za Stripe plačilo.');
 
-  const shippingAmount = Math.max(0, Math.round(Number(body?.shippingAmount || 0)));
-  if (cartItems.length) {
-    const lineItems = cartItems.map((item) => ({
-      ...item,
-      name: item.sku ? `${item.name} (${item.sku})` : item.name,
-    }));
-
-    if (shippingAmount >= 50) {
-      lineItems.push({ name: 'Dostava', sku: 'shipping', amount: shippingAmount, quantity: 1 });
-    }
-
-    return lineItems;
-  }
-
-  const name = String(body?.name || '').trim().slice(0, 120);
-  const amount = Math.round(Number(body?.amount || 0));
-  const quantity = Math.max(1, Math.min(10, Math.round(Number(body?.quantity || 1))));
-  return name && amount >= 50 ? [{ name, sku: '', amount, quantity }] : [];
+  return rawItems.map((item) => {
+    const sku = String(item?.sku || '').trim().toUpperCase();
+    const quantity = Number(item?.quantity);
+    if (!sku || !CHECKOUT_CATALOG.has(sku)) throw new Error('Izdelek ni več na voljo za spletno plačilo.');
+    if (!Number.isInteger(quantity) || quantity < 1) throw new Error('Količina izdelka ni veljavna.');
+    const product = CHECKOUT_CATALOG.get(sku);
+    if (!product.active) throw new Error('Izdelek trenutno ni na voljo za spletno plačilo.');
+    if (quantity > product.maxQuantity) throw new Error(`Največja dovoljena količina za ${product.name} je ${product.maxQuantity}.`);
+    return { ...product, quantity };
+  });
 };
 
 const createStripeCheckoutSession = async (request, env) => {
-  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe plačilo ni konfigurirano. Pišite na dzautotrade@gmail.com.' }, { status: 500 });
-  const body = await request.json().catch(() => null);
-  const catalogProducts = await readProducts(env);
-  const lineItems = createCheckoutLineItems(body, catalogProducts);
-  const type = String(body?.type || (lineItems.length > 1 ? 'cart' : 'order')).trim().slice(0, 40);
-  const cartSummary = String(body?.cartSummary || lineItems.map((item) => `${item.quantity}x ${item.name}`).join('; ')).trim().slice(0, 500);
-  const totalAmount = lineItems.reduce((sum, item) => sum + item.amount * item.quantity, 0);
+  if (request.method !== 'POST') return checkoutJson(request, { error: 'Method not allowed.' }, { status: 405, headers: { Allow: 'POST' } });
+  const origin = request.headers.get('Origin') || '';
+  if (origin && !ALLOWED_CHECKOUT_ORIGINS.has(origin)) return checkoutJson(request, { error: 'Ta izvor ni dovoljen za plačilo.' }, { status: 403 });
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return checkoutJson(request, { error: 'Zahtevek mora biti v JSON obliki.' }, { status: 415 });
+  if (isRateLimited(request)) return checkoutJson(request, { error: 'Preveč poskusov plačila. Poskusite znova čez nekaj minut.' }, { status: 429 });
+  if (!env.STRIPE_SECRET_KEY) return checkoutJson(request, { error: 'Stripe plačilo ni konfigurirano. Pišite na dzautotrade@gmail.com.' }, { status: 500 });
 
-  if (!lineItems.length || totalAmount < 50) return json({ error: 'Košarica nima veljavnih postavk za Stripe plačilo.' }, { status: 400 });
+  let lineItems;
+  try {
+    const body = await request.json();
+    lineItems = parseCheckoutItems(body);
+  } catch (error) {
+    const safeMessage = error instanceof SyntaxError ? 'Zahtevek za plačilo ni veljaven JSON.' : error.message || 'Zahtevek za plačilo ni veljaven.';
+    return checkoutJson(request, { error: safeMessage }, { status: 400 });
+  }
 
-  const origin = new URL(request.url).origin;
+  const subtotal = lineItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
+  const shipping = lineItems.some((item) => item.metadata?.type === 'product') && subtotal > 0 && subtotal < 6000 ? 590 : 0;
+  const stripeLineItems = [...lineItems];
+  if (shipping) stripeLineItems.push({ sku: 'SHIPPING-SI', name: 'Dostava', priceCents: shipping, currency: 'eur', quantity: 1, metadata: { type: 'shipping' } });
+
   const params = new URLSearchParams();
   params.append('mode', 'payment');
   params.append('payment_method_types[0]', 'card');
-  params.append('success_url', `${origin}/placilo-uspesno.html?session_id={CHECKOUT_SESSION_ID}`);
-  params.append('cancel_url', `${origin}/placilo-preklicano.html`);
-  lineItems.forEach((item, index) => {
+  params.append('success_url', `${PRODUCTION_ORIGIN}/placilo-uspesno.html?session_id={CHECKOUT_SESSION_ID}`);
+  params.append('cancel_url', `${PRODUCTION_ORIGIN}/placilo-preklicano.html`);
+  stripeLineItems.forEach((item, index) => {
     params.append(`line_items[${index}][quantity]`, String(item.quantity));
     params.append(`line_items[${index}][price_data][currency]`, 'eur');
-    params.append(`line_items[${index}][price_data][product_data][name]`, item.name);
-    params.append(`line_items[${index}][price_data][unit_amount]`, String(item.amount));
+    params.append(`line_items[${index}][price_data][product_data][name]`, item.sku ? `${item.name} (${item.sku})` : item.name);
+    params.append(`line_items[${index}][price_data][unit_amount]`, String(item.priceCents));
+    Object.entries(item.metadata || {}).forEach(([key, value]) => params.append(`line_items[${index}][price_data][product_data][metadata][${key}]`, String(value).slice(0, 120)));
+    if (item.sku) params.append(`line_items[${index}][price_data][product_data][metadata][sku]`, item.sku);
   });
-  params.append('metadata[type]', type);
   params.append('metadata[source]', 'dz-auto-trade');
-  params.append('metadata[support_email]', 'dzautotrade@gmail.com');
-  params.append('metadata[order_total]', String(totalAmount));
-  if (cartSummary) params.append('metadata[cart_summary]', cartSummary);
+  params.append('metadata[order_total]', String(subtotal + shipping));
+  params.append('metadata[skus]', lineItems.map((item) => `${item.quantity}x${item.sku}`).join(','));
   params.append('billing_address_collection', 'required');
   params.append('phone_number_collection[enabled]', 'true');
-  params.append('shipping_address_collection[allowed_countries][0]', 'SI');
-  params.append('shipping_address_collection[allowed_countries][1]', 'HR');
-  params.append('shipping_address_collection[allowed_countries][2]', 'AT');
-  params.append('shipping_address_collection[allowed_countries][3]', 'HU');
-  params.append('shipping_address_collection[allowed_countries][4]', 'IT');
+  ['SI', 'HR', 'AT', 'HU', 'IT'].forEach((country, index) => params.append(`shipping_address_collection[allowed_countries][${index}]`, country));
 
-  const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params,
-  });
-  const data = await stripeResponse.json().catch(() => ({}));
-  if (!stripeResponse.ok) return json({ error: data.error?.message || 'Stripe plačilo ni uspelo.' }, { status: stripeResponse.status });
-  return json({ id: data.id, url: data.url });
+  try {
+    const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params,
+    });
+    const data = await stripeResponse.json().catch(() => ({}));
+    if (!stripeResponse.ok) return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.' }, { status: 502 });
+    return checkoutJson(request, { url: data.url });
+  } catch (error) {
+    return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.' }, { status: 502 });
+  }
 };
 
 const requireAccess = (request) => {
@@ -496,15 +536,16 @@ const requireAccess = (request) => {
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+    if (request.method === 'OPTIONS' && url.pathname === '/api/checkout') return checkoutJson(request, { ok: true });
     if (request.method === 'OPTIONS') return json({ ok: true });
 
-    const url = new URL(request.url);
 
     if (request.method === 'GET' && url.pathname === '/api/products') {
       return json({ products: await readProducts(env), categories: await readCategories(env) });
     }
 
-    if (request.method === 'POST' && url.pathname === '/api/checkout') {
+    if (url.pathname === '/api/checkout') {
       return createStripeCheckoutSession(request, env);
     }
 

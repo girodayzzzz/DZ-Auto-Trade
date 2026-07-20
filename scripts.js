@@ -49,6 +49,10 @@ const CART_STORAGE_KEY = 'dzAutoTradeCart';
 const ANALYTICS_STORAGE_KEY = 'dzAutoTradeEvents';
 const FREE_SHIPPING_THRESHOLD_CENTS = 6000;
 const STANDARD_SHIPPING_CENTS = 590;
+const MAX_CART_QUANTITY = 10;
+const VALID_AVAILABILITY_RE = /(na zalogi|dobavljivo)/i;
+const isProductAvailable = (product = {}) => VALID_AVAILABILITY_RE.test(String(product.availability || '')) && !/(ni na zalogi|razprodano|sold out|out of stock|unavailable)/i.test(String(product.availability || ''));
+const isCheckoutReady = (product = {}) => Boolean(product.checkoutEnabled) && Boolean(product.cartEnabled) && isProductAvailable(product) && Number(product.checkoutAmount || 0) >= 50;
 const PRODUCT_PLACEHOLDER_IMAGE = 'assets/product-placeholder.svg';
 const LOCAL_IMAGE_PATH_PATTERN = /^(?:\.{1,2}\/|\/|images\/|assets\/)/i;
 const bundledProducts = Array.isArray(window.products) ? window.products : [];
@@ -170,11 +174,9 @@ const normalizeProduct = (product) => ({
   orderNote: product.orderNote ?? '',
   regularPrice: product.regularPrice ?? '',
   shippingNote: product.shippingNote ?? '',
-  checkoutEnabled: Boolean(product.checkoutEnabled),
+  checkoutEnabled: Boolean(product.checkoutEnabled) && isProductAvailable(product) && Number(product.checkoutAmount || 0) >= 50,
   checkoutAmount: Number(product.checkoutAmount || 0),
-  cartEnabled:
-    product.cartEnabled ??
-    (Number(product.checkoutAmount || 0) > 0 && String(product.availability || '').toLowerCase().includes('na zalogi')),
+  cartEnabled: Boolean(product.cartEnabled) && Boolean(product.checkoutEnabled) && isProductAvailable(product) && Number(product.checkoutAmount || 0) >= 50,
   featured: Boolean(product.featured),
   searchTerms: product.searchTerms ?? '',
   images: resolveProductImages(product),
@@ -200,12 +202,38 @@ const deriveCategoriesFromProducts = (products = []) => {
   );
 };
 
+
+const validateProductsForDevelopment = (products = []) => {
+  const isLocal = ['localhost', '127.0.0.1', ''].includes(window.location.hostname) || new URLSearchParams(window.location.search).has('debugProducts');
+  if (!isLocal) return;
+  const seen = new Set();
+  const categoryIds = new Set(currentCategories.map((category) => category.id));
+  products.forEach((product, index) => {
+    const label = product.sku || product.name || `product #${index + 1}`;
+    const warnings = [];
+    if (!product.sku) warnings.push('missing SKU');
+    if (product.sku && seen.has(product.sku)) warnings.push(`duplicate SKU ${product.sku}`);
+    seen.add(product.sku);
+    if (!product.name) warnings.push('missing product name');
+    if (!product.category || !categoryIds.has(product.category)) warnings.push(`missing/unknown category ${product.category || '(empty)'}`);
+    if (!product.categoryLabel) warnings.push('missing category label');
+    if (!parsePrice(product.price)) warnings.push(`invalid display price ${product.price || '(empty)'}`);
+    if (product.checkoutEnabled && (!Number.isInteger(product.checkoutAmount) || product.checkoutAmount < 50)) warnings.push('checkout enabled without valid checkout amount');
+    if (product.checkoutEnabled && priceToCents(product.price) !== product.checkoutAmount) warnings.push(`checkout amount ${product.checkoutAmount} does not match displayed price ${product.price}`);
+    if (!product.image) warnings.push('missing image');
+    if (!product.availability) warnings.push('missing availability');
+    if (product.cartEnabled && !isCheckoutReady(product)) warnings.push('cart enabled but product is not checkout-ready or available');
+    if (warnings.length) console.warn(`[products.js] ${label}: ${warnings.join('; ')}`);
+  });
+};
+
 const loadProducts = async () => {
   // products.js is the single source of truth for the public shop catalog.
   // Do not fetch /api/products here: a stale Worker/KV response can otherwise
   // overwrite the bundled catalog after products.js has already loaded.
   currentProducts = bundledProducts.map(normalizeProduct);
   currentCategories = deriveCategoriesFromProducts(currentProducts);
+  validateProductsForDevelopment(currentProducts);
 };
 
 const getCategoryLabel = (id) => currentCategories.find((category) => category.id === id)?.label || id;
@@ -246,10 +274,28 @@ const createInquiryUrl = (product) => {
   return `kontakt.html?${params.toString()}`;
 };
 
+const normalizeCart = (cart = []) => {
+  let changed = false;
+  const next = [];
+  cart.forEach((item) => {
+    const sku = String(item?.sku || '').trim();
+    const product = getCartProduct(sku);
+    const quantity = Number(item?.quantity);
+    if (!sku || !product || !isCheckoutReady(product) || !Number.isInteger(quantity) || quantity < 1) { changed = true; return; }
+    const safeQuantity = Math.min(quantity, MAX_CART_QUANTITY);
+    if (safeQuantity !== quantity) changed = true;
+    next.push({ sku, quantity: safeQuantity, name: product.name, price: product.price });
+  });
+  return { cart: next, changed };
+};
+
 const readCart = () => {
   try {
     const cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-    return Array.isArray(cart) ? cart.filter((item) => item.sku && item.quantity > 0) : [];
+    if (!Array.isArray(cart)) return [];
+    const normalized = normalizeCart(cart);
+    if (normalized.changed) saveCart(normalized.cart);
+    return normalized.cart;
   } catch (error) {
     console.warn('Košarice ni bilo mogoče prebrati.', error);
     return [];
@@ -264,7 +310,7 @@ const getCartProduct = (sku) => currentProducts.find((product) => product.sku ==
 
 const getCartLine = (item) => {
   const product = getCartProduct(item.sku) || {};
-  const quantity = Number(item.quantity || 1);
+  const quantity = Math.min(MAX_CART_QUANTITY, Math.max(1, Math.trunc(Number(item.quantity || 1))));
   const unitCents = Number(product.checkoutAmount || priceToCents(product.price || item.price || '0'));
   return {
     ...item,
@@ -276,7 +322,7 @@ const getCartLine = (item) => {
   };
 };
 
-const getCartLines = () => readCart().map(getCartLine);
+const getCartLines = () => readCart().map(getCartLine).filter((line) => isCheckoutReady(getCartProduct(line.sku)));
 
 const getCartSummary = () => {
   const lines = getCartLines().filter((item) => item.unitCents >= 50 && item.quantity > 0);
@@ -295,13 +341,9 @@ const getCartSummary = () => {
 const createCartCheckoutPayload = (summary) => ({
   type: 'cart',
   items: summary.lines.map((item) => ({
-    name: item.name,
     sku: item.sku,
-    amount: item.unitCents,
     quantity: item.quantity,
   })),
-  shippingAmount: summary.shippingCents,
-  cartSummary: summary.lines.map((item) => `${item.quantity}x ${item.name} (${item.sku})`).join('; '),
 });
 
 const createCartInquiryUrl = () => {
@@ -400,11 +442,11 @@ const setCartDrawerOpen = (isOpen) => {
 
 const addToCart = (sku) => {
   const product = getCartProduct(sku);
-  if (!product || !product.cartEnabled) return;
+  if (!isCheckoutReady(product)) { window.dzCheckout?.setStatus('Izdelek trenutno ni na voljo za spletni nakup. Pošljite povpraševanje.', 'error'); return; }
   const cart = readCart();
   const existing = cart.find((item) => item.sku === sku);
   if (existing) {
-    existing.quantity += 1;
+    existing.quantity = Math.min(MAX_CART_QUANTITY, Number(existing.quantity || 1) + 1);
   } else {
     cart.push({ sku, quantity: 1, name: product.name, price: product.price });
   }
@@ -416,7 +458,7 @@ const addToCart = (sku) => {
 
 const updateCartQuantity = (sku, change) => {
   const cart = readCart()
-    .map((item) => (item.sku === sku ? { ...item, quantity: Number(item.quantity || 1) + change } : item))
+    .map((item) => (item.sku === sku ? { ...item, quantity: Math.min(MAX_CART_QUANTITY, Math.max(0, Number(item.quantity || 1) + change)) } : item))
     .filter((item) => item.quantity > 0);
   saveCart(cart);
   trackEvent('cart_quantity', { sku, change });
@@ -493,7 +535,7 @@ const renderProductCard = (product) => `
       </div>
       <div class="product-actions product-card-actions">
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
-        ${product.cartEnabled ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>` : '<a class="shop-btn" href="kontakt.html">Povpraševanje</a>'}
+        ${isCheckoutReady(product) ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>` : `<a class="shop-btn" href="${createInquiryUrl(product)}">Povpraševanje</a>`}
       </div>
     </div>
   </article>
@@ -517,7 +559,7 @@ const renderProducts = () => {
 const renderShopInsights = () => {
   if (!shopInsights) return;
   const inStockCount = currentProducts.filter((product) => product.availability.toLowerCase().includes('na zalogi')).length;
-  const cartReadyCount = currentProducts.filter((product) => product.cartEnabled).length;
+  const cartReadyCount = currentProducts.filter(isCheckoutReady).length;
   const brandCount = uniqueSorted(currentProducts.map((product) => product.brand)).length;
   const countByCategory = currentProducts.reduce((counts, product) => {
     counts[product.category] = (counts[product.category] || 0) + 1;
@@ -594,10 +636,10 @@ const renderProductDetail = () => {
   document.getElementById('dz-product-schema')?.remove();
   document.head.appendChild(productSchema);
   trackEvent('product_view', { sku: product.sku, name: product.name, category: product.category });
-  const checkoutButton = product.checkoutEnabled && !product.cartEnabled && product.checkoutAmount >= 50
-    ? `<button class="btn-primary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>`
+  const checkoutButton = product.checkoutEnabled && !product.cartEnabled && isProductAvailable(product) && product.checkoutAmount >= 50
+    ? `<button class="btn-primary" type="button" data-checkout data-sku="${escapeHtml(product.sku)}">Plačaj prek Stripe</button>`
     : '';
-  const cartButton = product.cartEnabled
+  const cartButton = isCheckoutReady(product)
     ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>`
     : '';
   productDetail.innerHTML = `<div class="container product-detail-layout">
@@ -617,7 +659,7 @@ const renderProductDetail = () => {
     <article class="card product-detail-info">
       <div class="product-detail-kicker">
         <span class="badge">${escapeHtml(product.categoryLabel)}</span>
-        ${product.cartEnabled ? '<span class="badge">Košarica</span>' : ''}
+        ${isCheckoutReady(product) ? '<span class="badge">Košarica</span>' : '<span class="badge">Povpraševanje</span>'}
       </div>
       <h1>${escapeHtml(product.name)}</h1>
       <p class="product-detail-lead">${escapeHtml(product.description)}</p>
