@@ -4591,6 +4591,33 @@ body {
   transform: translateY(-1px);
 }
 
+.mega-menu {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(16, 23, 36, 0.98), rgba(5, 7, 11, 0.98));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+}
+
+.mega-menu a {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.mega-menu a:hover,
+.mega-menu a:focus-visible {
+  border-color: rgba(223, 6, 17, 0.45);
+  background:
+    linear-gradient(180deg, rgba(223, 6, 17, 0.18), rgba(255, 255, 255, 0.055));
+  transform: translateY(-1px);
+}
+
+.mega-menu span {
+  color: #aeb7c5;
+}
+
 .cta-btn,
 .btn-primary,
 .shop-btn,
