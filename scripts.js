@@ -50,6 +50,7 @@ const ANALYTICS_STORAGE_KEY = 'dzAutoTradeEvents';
 const FREE_SHIPPING_THRESHOLD_CENTS = 6000;
 const STANDARD_SHIPPING_CENTS = 590;
 const PRODUCT_PLACEHOLDER_IMAGE = 'assets/product-placeholder.svg';
+const LOCAL_IMAGE_PATH_PATTERN = /^(?:\.{1,2}\/|\/|images\/|assets\/)/i;
 const bundledProducts = Array.isArray(window.products) ? window.products : [];
 const bundledProductImagesBySku = new Map(
   bundledProducts
@@ -97,7 +98,18 @@ const trackEvent = (name, detail = {}) => {
 };
 
 
-const createProductPlaceholder = () => PRODUCT_PLACEHOLDER_IMAGE;
+const isAbsoluteImageUrl = (image = '') => /^(?:https?:|data:|blob:)/i.test(image.trim());
+
+const resolveSiteImageUrl = (image = '') => {
+  const trimmedImage = String(image || '').trim();
+  if (!trimmedImage || /^c:\\fakepath\\/i.test(trimmedImage)) return '';
+  if (isAbsoluteImageUrl(trimmedImage)) return trimmedImage;
+  if (!LOCAL_IMAGE_PATH_PATTERN.test(trimmedImage)) return '';
+
+  return new URL(trimmedImage.replace(/^\//, ''), document.baseURI).href;
+};
+
+const createProductPlaceholder = () => resolveSiteImageUrl(PRODUCT_PLACEHOLDER_IMAGE);
 
 const isInlineSvgImage = (image = '') => image.trim().toLowerCase().startsWith('data:image/svg+xml');
 
@@ -110,8 +122,8 @@ const getBundledProductImage = (product = {}) => {
 const resolveProductImage = (product = {}) => {
   const image = String(product.image || '').trim();
   const bundledImage = getBundledProductImage(product);
-  if (bundledImage && (!image || isInlineSvgImage(image))) return bundledImage;
-  return image || bundledImage || createProductPlaceholder(product);
+  const preferredImage = bundledImage && (!image || isInlineSvgImage(image)) ? bundledImage : image || bundledImage;
+  return resolveSiteImageUrl(preferredImage) || createProductPlaceholder(product);
 };
 
 const getProductImage = (product) => resolveProductImage(product);
@@ -745,7 +757,7 @@ const topicField = document.querySelector('#topic');
 document.addEventListener('error', (event) => {
   const image = event.target;
   if (!(image instanceof HTMLImageElement) || !image.dataset.productFallback) return;
-  if (image.src === image.dataset.productFallback) return;
+  if (image.currentSrc === image.dataset.productFallback || image.src === image.dataset.productFallback) return;
   image.src = image.dataset.productFallback;
 }, true);
 
