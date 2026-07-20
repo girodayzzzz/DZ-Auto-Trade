@@ -486,7 +486,10 @@ const renderProductCard = (product) => `
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
         ${product.shippingNote ? `<span class="product-shipping-note">${escapeHtml(product.shippingNote)}</span>` : ''}
       </div>
-      ${product.cartEnabled ? `<div class="product-actions"><button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button></div>` : ''}
+      <div class="product-actions product-card-actions">
+        <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
+        ${product.cartEnabled ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>` : '<a class="shop-btn" href="kontakt.html">Povpraševanje</a>'}
+      </div>
     </div>
   </article>
 `;
@@ -836,6 +839,7 @@ loadProducts().then(() => {
   renderFeaturedProducts();
   renderProductDetail();
   renderCart();
+  enhanceInteractiveCards();
 });
 
 const vehicleFilters = document.querySelectorAll('[data-vehicle-filter]');
@@ -852,3 +856,34 @@ const renderVehicleFilters = () => {
 };
 vehicleFilters.forEach((filter) => filter.addEventListener('change', renderVehicleFilters));
 renderVehicleFilters();
+
+const interactiveCardSelector = '.card, .vehicle-card, .product-card, .home-intro-card, .service-category-card, .detailing-card';
+const ignoredCardTargets = 'a, button, input, select, textarea, label, summary, [role="button"]';
+
+const enhanceInteractiveCards = (root = document) => {
+  root.querySelectorAll(interactiveCardSelector).forEach((card) => {
+    if (card.dataset.cardEnhanced) return;
+    const primaryLink = card.querySelector('a[href]');
+    if (!primaryLink || card.querySelector('input, select, textarea')) return;
+
+    card.dataset.cardEnhanced = 'true';
+    card.dataset.cardLink = primaryLink.href;
+    card.tabIndex = card.tabIndex >= 0 ? card.tabIndex : 0;
+    card.setAttribute('role', card.getAttribute('role') || 'link');
+
+    card.addEventListener('click', (event) => {
+      if (event.target.closest(ignoredCardTargets)) return;
+      window.location.href = primaryLink.href;
+    });
+
+    card.addEventListener('keydown', (event) => {
+      if (event.target.closest(ignoredCardTargets)) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        primaryLink.click();
+      }
+    });
+  });
+};
+
+enhanceInteractiveCards();

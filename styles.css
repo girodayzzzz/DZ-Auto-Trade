@@ -3837,3 +3837,189 @@ body:has([data-product-grid]) {
   max-height: 70px;
   filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.2));
 }
+
+/* Site-wide card interaction refresh */
+.card,
+.product-card,
+.vehicle-card,
+.home-intro-card,
+.service-category-card,
+.detailing-card,
+.trust-card,
+.contact-card,
+.legal-card,
+.service-detail-card,
+.checkout-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  border-radius: 24px;
+  border-color: rgba(148, 163, 184, 0.22);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(17, 25, 40, 0.96), rgba(9, 13, 22, 0.96));
+  box-shadow: 0 22px 60px rgba(2, 6, 23, 0.22);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.card::before,
+.product-card::before,
+.vehicle-card::before,
+.home-intro-card::before,
+.service-category-card::before,
+.detailing-card::before,
+.trust-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(229, 9, 20, 0.22), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 42%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.card:hover,
+.card:focus-within,
+.product-card:hover,
+.product-card:focus-within,
+.vehicle-card:hover,
+.vehicle-card:focus-within,
+.home-intro-card:hover,
+.home-intro-card:focus-within,
+.service-category-card:hover,
+.service-category-card:focus-within,
+.detailing-card:hover,
+.detailing-card:focus-within,
+.trust-card:hover,
+.trust-card:focus-within {
+  transform: translateY(-5px);
+  border-color: rgba(229, 9, 20, 0.42);
+  box-shadow: 0 30px 85px rgba(2, 6, 23, 0.32);
+}
+
+.card:hover::before,
+.card:focus-within::before,
+.product-card:hover::before,
+.product-card:focus-within::before,
+.vehicle-card:hover::before,
+.vehicle-card:focus-within::before,
+.home-intro-card:hover::before,
+.home-intro-card:focus-within::before,
+.service-category-card:hover::before,
+.service-category-card:focus-within::before,
+.detailing-card:hover::before,
+.detailing-card:focus-within::before,
+.trust-card:hover::before,
+.trust-card:focus-within::before {
+  opacity: 1;
+}
+
+.card > a:last-child,
+.detailing-card > a:last-child,
+.category-card > a:last-child,
+.vehicle-body .shop-btn,
+.service-category-card .shop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 2.65rem;
+  margin-top: auto;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111827;
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.18);
+}
+
+.card-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.75rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.18), rgba(255, 255, 255, 0.08));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.product-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.product-card-actions .btn-secondary,
+.product-card-actions .shop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding-inline: 0.75rem;
+  text-align: center;
+}
+
+.vehicle-body .shop-btn,
+.service-category-card .shop-btn,
+.product-card-actions .shop-btn {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), #9b050b);
+}
+
+.vehicle-card dl,
+.product-card-specs,
+.package-list {
+  margin-bottom: 1rem;
+}
+
+.card[data-card-link],
+.vehicle-card[data-card-link],
+.product-card[data-card-link] {
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .product-card-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .card,
+  .product-card,
+  .vehicle-card,
+  .home-intro-card,
+  .service-category-card,
+  .detailing-card {
+    border-radius: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .product-card,
+  .vehicle-card,
+  .home-intro-card,
+  .service-category-card,
+  .detailing-card,
+  .trust-card,
+  .card::before,
+  .product-card::before,
+  .vehicle-card::before {
+    transition: none;
+  }
+
+  .card:hover,
+  .product-card:hover,
+  .vehicle-card:hover,
+  .home-intro-card:hover,
+  .service-category-card:hover,
+  .detailing-card:hover,
+  .trust-card:hover {
+    transform: none;
+  }
+}
