@@ -453,13 +453,11 @@ const renderProductCard = (product) => `
       ${productImageMarkup(product)}
     </a>
     <div class="product-body">
-      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span>${product.cartEnabled ? '<span class="badge">Košarica</span>' : ''}${product.checkoutEnabled && product.checkoutAmount >= 50 ? '<span class="badge">Online</span>' : ''}</div>
+      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span>${product.brand ? `<span class="badge">${escapeHtml(product.brand)}</span>` : ''}</div>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
-      <p class="product-card-summary">${escapeHtml(product.description)}</p>
       <div class="product-card-specs">
         <span><small>Zaloga</small><strong>${escapeHtml(product.availability)}</strong></span>
         <span><small>Dobava</small><strong>${escapeHtml(product.delivery)}</strong></span>
-        ${product.brand ? `<span><small>Znamka</small><strong>${escapeHtml(product.brand)}</strong></span>` : ''}
       </div>
       <div class="product-card-footer">
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
@@ -476,7 +474,7 @@ const renderProducts = () => {
   const visibleProducts = getVisibleProducts();
   productGrid.innerHTML = visibleProducts.length
     ? visibleProducts.map(renderProductCard).join('')
-    : '<div class="empty-state"><h3>Ni najdenih izdelkov</h3><p>Poskusite z drugim iskalnim izrazom ali nam pošljite povpraševanje.</p><a class="btn-secondary" href="kontakt.html">Pošlji povpraševanje</a></div>';
+    : '<div class="empty-state"><h3>Ni najdenih izdelkov</h3><p>Poskusite z drugim iskalnim izrazom ali filtrom.</p></div>';
 
   if (productCount) {
     productCount.textContent = `${visibleProducts.length} izdelkov`;
@@ -499,8 +497,8 @@ const renderShopInsights = () => {
     <div class="shop-insight-stats" aria-label="Pregled trgovine">
       <div><strong>${currentProducts.length}</strong><span>izdelkov v katalogu</span></div>
       <div><strong>${inStockCount}</strong><span>označenih na zalogi</span></div>
-      <div><strong>${cartReadyCount}</strong><span>primernih za košarico</span></div>
-      <div><strong>${brandCount}</strong><span>znamk v ponudbi</span></div>
+      <div><strong>${cartReadyCount}</strong><span>za takojšen nakup</span></div>
+      <div><strong>${brandCount}</strong><span>znamk</span></div>
     </div>
     <div class="shop-category-shortcuts" aria-label="Hitre kategorije">
       ${currentCategories
@@ -587,7 +585,7 @@ const renderProductDetail = () => {
     <article class="card product-detail-info">
       <div class="product-detail-kicker">
         <span class="badge">${escapeHtml(product.categoryLabel)}</span>
-        ${product.cartEnabled ? '<span class="badge">Košarica</span>' : '<span class="badge">Povpraševanje</span>'}
+        ${product.cartEnabled ? '<span class="badge">Košarica</span>' : ''}
       </div>
       <h1>${escapeHtml(product.name)}</h1>
       <p class="product-detail-lead">${escapeHtml(product.description)}</p>
@@ -619,7 +617,7 @@ const renderProductDetail = () => {
         <section><h2>Dostava in varnost</h2><ul><li>Poštnina je prikazana v košarici; nad 60 € je predvidena brezplačna poštnina.</li><li>Končna cena, dobava in morebitne omejitve se potrdijo pred izvedbo naročila.</li><li>Vračila, reklamacije in pogoji so povezani v nogi strani.</li></ul></section>
       </div>
       <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
-      <div class="product-actions product-detail-actions">${cartButton}<a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
+      <div class="product-actions product-detail-actions">${cartButton}${checkoutButton}</div>
       <p class="form-note" data-checkout-status>Online plačilo je omogočeno samo prek Stripe Checkout. Za avto dele priporočamo preverjanje po VIN številki pred naročilom.</p>
     </article>
   </div>`;
