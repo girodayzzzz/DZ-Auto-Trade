@@ -292,8 +292,9 @@ const renderCart = () => {
             <strong data-cart-total>0,00 €</strong>
           </div>
           <p class="cart-note" data-cart-shipping-note>Brezplačna poštnina nad 60 €.</p>
-          <button class="shop-btn" type="button" data-cart-checkout>Varno plačilo / povpraševanje</button>
+          <button class="shop-btn" type="button" data-cart-checkout>Varno plačilo prek Stripe</button>
           <a class="btn-secondary" href="kontakt.html" data-cart-inquiry>Pošlji povpraševanje</a>
+          <p class="cart-note" data-checkout-status>Če Stripe ni konfiguriran, lahko košarico pošljete kot povpraševanje.</p>
           <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
         </div>
       </aside>`
@@ -619,7 +620,7 @@ clearFiltersButton?.addEventListener('click', () => {
   renderProducts();
 });
 
-document.addEventListener('click', (event) => {
+document.addEventListener('click', async (event) => {
   const addButton = event.target.closest('[data-add-to-cart]');
   if (addButton) {
     addToCart(addButton.dataset.addToCart);
@@ -655,9 +656,38 @@ document.addEventListener('click', (event) => {
     renderCart();
   }
 
-  if (event.target.closest('[data-cart-checkout]')) {
-    trackEvent('cart_checkout_intent', getCartSummary());
-    window.location.href = createCartInquiryUrl();
+  const cartCheckoutButton = event.target.closest('[data-cart-checkout]');
+  if (cartCheckoutButton) {
+    const summary = getCartSummary();
+    trackEvent('cart_checkout_intent', summary);
+
+    if (!summary.lines.length) {
+      window.dzCheckout?.setStatus('Košarica je prazna. Najprej dodajte izdelek.', 'error', cartCheckoutButton);
+      return;
+    }
+
+    if (!window.dzCheckout?.createSession) {
+      window.location.href = createCartInquiryUrl();
+      return;
+    }
+
+    cartCheckoutButton.disabled = true;
+    window.dzCheckout.setStatus('Pripravljamo Stripe Checkout za vašo košarico...', 'info', cartCheckoutButton);
+    try {
+      const cartName = summary.lines.map((item) => `${item.quantity}x ${item.name}`).join(', ').slice(0, 100);
+      const cartSummary = summary.lines.map((item) => `${item.quantity}x ${item.name} (${item.sku})`).join('; ');
+      const url = await window.dzCheckout.createSession({
+        name: `DZ Auto Trade košarica: ${cartName}`,
+        amount: summary.totalCents,
+        type: 'cart',
+        quantity: 1,
+        cartSummary,
+      });
+      window.location.href = url;
+    } catch (error) {
+      window.dzCheckout.setStatus(`${error.message} Košarico lahko pošljete kot povpraševanje.`, 'error', cartCheckoutButton);
+      cartCheckoutButton.disabled = false;
+    }
   }
 
   const shortcut = event.target.closest('[data-shop-shortcut]');
