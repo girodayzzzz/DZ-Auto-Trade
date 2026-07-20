@@ -1,6 +1,6 @@
 const menuToggle = document.querySelector('.menu-toggle');
 const nav = document.querySelector('.main-nav');
-const navLinks = document.querySelectorAll('.nav-link');
+const navLinks = document.querySelectorAll('.main-nav a.nav-link');
 const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 
 if (menuToggle && nav) {
