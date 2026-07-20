@@ -505,6 +505,45 @@ const renderProductDetail = () => {
     return;
   }
   document.title = `DZ Auto Trade | ${product.name}`;
+  const productUrl = `https://dzautotrade.si/${createProductUrl(product)}`;
+  const productImage = getProductImage(product);
+  const absoluteProductImage = productImage.startsWith('http') || productImage.startsWith('data:')
+    ? productImage
+    : `https://dzautotrade.si/${productImage.replace(/^\//, '')}`;
+  if (window.dzApplySeo) {
+    window.dzApplySeo({
+      title: `DZ Auto Trade | ${product.name}`,
+      description: `${product.description} Cena: ${product.price}. ${product.availability}, dobava ${product.delivery}.`,
+      url: productUrl,
+      image: absoluteProductImage,
+      type: 'product',
+    });
+  }
+  const productSchema = document.createElement('script');
+  productSchema.type = 'application/ld+json';
+  productSchema.id = 'dz-product-schema';
+  productSchema.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    sku: product.sku,
+    category: product.categoryLabel,
+    description: product.description,
+    image: absoluteProductImage,
+    brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+    offers: {
+      '@type': 'Offer',
+      url: productUrl,
+      priceCurrency: 'EUR',
+      price: String(parsePrice(product.price) || '').replace(',', '.'),
+      availability: product.availability?.toLowerCase().includes('zalogi')
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/PreOrder',
+      seller: { '@id': 'https://dzautotrade.si/#business' }
+    }
+  });
+  document.getElementById('dz-product-schema')?.remove();
+  document.head.appendChild(productSchema);
   trackEvent('product_view', { sku: product.sku, name: product.name, category: product.category });
   const checkoutButton = product.checkoutEnabled && product.checkoutAmount >= 50
     ? `<button class="btn-primary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>`
