@@ -5509,3 +5509,179 @@ textarea:focus {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Visual polish: depth, readable motion, and section reveal */
+::selection {
+  color: #ffffff;
+  background: rgba(229, 9, 20, 0.82);
+}
+
+.section,
+.hero,
+.page-hero,
+.shop-cart-intro,
+.shop-overview,
+.vehicle-strip {
+  scroll-margin-top: 96px;
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(22px) scale(0.985);
+  transition: opacity 0.58s ease, transform 0.58s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.card-grid > *,
+.shop-grid > *,
+.trust-grid > *,
+.home-intro-grid > *,
+.service-category-grid > *,
+.before-after-grid > *,
+.vehicle-grid > *,
+.shop-trust-grid > *,
+.shop-cart-intro-grid > *,
+.shop-insight-stats > *,
+.shop-category-shortcuts > * {
+  --reveal-delay: calc(min(var(--reveal-index, 0), 6) * 70ms);
+}
+
+.card,
+.product-card-pro,
+.vehicle-card,
+.home-intro-card,
+.service-category-card,
+.trust-card,
+.detailing-card {
+  overflow: hidden;
+}
+
+.card::after,
+.product-card-pro::after,
+.vehicle-card::after,
+.home-intro-card::after,
+.service-category-card::after,
+.trust-card::after,
+.detailing-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 0 38%, rgba(255, 255, 255, 0.12) 46%, transparent 56% 100%);
+  transform: translateX(-130%);
+  transition: transform 0.65s ease;
+}
+
+.card:hover::after,
+.product-card-pro:hover::after,
+.vehicle-card:hover::after,
+.home-intro-card:hover::after,
+.service-category-card:hover::after,
+.trust-card:hover::after,
+.detailing-card:hover::after {
+  transform: translateX(130%);
+}
+
+.page-hero::after,
+.hero-premium::after,
+.shop-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 8% -3rem 8%;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), rgba(229, 9, 20, 0.44), transparent);
+  filter: blur(0.2px);
+}
+
+.hero-proof-list span,
+.shop-trust-grid div,
+.vehicle-strip-grid,
+.product-detail-trust span {
+  backdrop-filter: blur(16px) saturate(1.15);
+}
+
+.product-card-pro .product-image::after,
+.product-detail-image::after,
+.shop-hero-preview::after,
+.vehicle-photo::after {
+  content: '';
+  position: absolute;
+  inset: auto 14% 10% 14%;
+  height: 16%;
+  border-radius: 999px;
+  background: radial-gradient(ellipse, rgba(15, 23, 42, 0.28), transparent 70%);
+  filter: blur(8px);
+  z-index: -1;
+}
+
+.product-card-pro .product-image img,
+.shop-hero-preview img,
+.product-detail-image img {
+  animation: productFloat 6s ease-in-out infinite;
+}
+
+@keyframes productFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .product-card-pro .product-image img,
+  .shop-hero-preview img,
+  .product-detail-image img {
+    animation: none;
+  }
+
+  .card::after,
+  .product-card-pro::after,
+  .vehicle-card::after,
+  .home-intro-card::after,
+  .service-category-card::after,
+  .trust-card::after,
+  .detailing-card::after {
+    display: none;
+  }
+}
+
+.card::after,
+.product-card-pro::after,
+.vehicle-card::after,
+.home-intro-card::after,
+.service-category-card::after,
+.trust-card::after,
+.detailing-card::after {
+  display: block;
+}
+
+.product-card-pro .product-image,
+.product-detail-image,
+.shop-hero-preview,
+.vehicle-photo {
+  position: relative;
+  isolation: isolate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card::after,
+  .product-card-pro::after,
+  .vehicle-card::after,
+  .home-intro-card::after,
+  .service-category-card::after,
+  .trust-card::after,
+  .detailing-card::after {
+    display: none;
+  }
+}

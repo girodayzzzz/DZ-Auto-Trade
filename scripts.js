@@ -929,3 +929,31 @@ const enhanceInteractiveCards = (root = document) => {
 };
 
 enhanceInteractiveCards();
+
+const revealTargets = document.querySelectorAll(
+  '.section, .hero, .page-hero, .shop-cart-intro, .shop-overview, .vehicle-strip, .card-grid > *, .shop-grid > *, .trust-grid > *, .home-intro-grid > *, .service-category-grid > *, .before-after-grid > *, .vehicle-grid > *, .shop-trust-grid > *, .shop-cart-intro-grid > *, .shop-insight-stats > *, .shop-category-shortcuts > *'
+);
+
+if (revealTargets.length) {
+  revealTargets.forEach((target, index) => {
+    target.setAttribute('data-reveal', '');
+    target.style.setProperty('--reveal-index', String(index % 8));
+  });
+
+  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        });
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: 0.12 }
+    );
+
+    revealTargets.forEach((target) => revealObserver.observe(target));
+  } else {
+    revealTargets.forEach((target) => target.classList.add('is-visible'));
+  }
+}
