@@ -44,6 +44,8 @@ const priceFilter = document.querySelector('[data-price-filter]');
 const clearFiltersButton = document.querySelector('[data-clear-filters]');
 const activeFilters = document.querySelector('[data-active-filters]');
 const catalogSummary = document.querySelector('[data-catalog-summary]');
+const shopInsights = document.querySelector('[data-shop-insights]');
+const CART_STORAGE_KEY = 'dzAutoTradeCart';
 let currentProducts = Array.isArray(window.products) ? window.products : [];
 let currentCategories = [
   { id: 'avto-deli', label: 'Avto deli' },
@@ -67,6 +69,8 @@ const escapeHtml = (value = '') =>
 const parsePrice = (price) => Number(price?.replace(/[^0-9,]/g, '').replace(',', '.') ?? 0);
 const priceToCents = (price) => Math.round(parsePrice(price) * 100);
 const uniqueSorted = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'sl'));
+const formatCurrency = (cents = 0) =>
+  new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100);
 
 const normalizeProduct = (product) => ({
   name: product.name ?? '',
@@ -85,6 +89,9 @@ const normalizeProduct = (product) => ({
   shippingNote: product.shippingNote ?? '',
   checkoutEnabled: Boolean(product.checkoutEnabled),
   checkoutAmount: Number(product.checkoutAmount || 0),
+  cartEnabled:
+    product.cartEnabled ??
+    (Number(product.checkoutAmount || 0) > 0 && String(product.availability || '').toLowerCase().includes('na zalogi')),
   featured: Boolean(product.featured),
   searchTerms: product.searchTerms ?? '',
   image: product.image ?? '',
@@ -150,6 +157,152 @@ const createInquiryUrl = (product) => {
   return `kontakt.html?${params.toString()}`;
 };
 
+const readCart = () => {
+  try {
+    const cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+    return Array.isArray(cart) ? cart.filter((item) => item.sku && item.quantity > 0) : [];
+  } catch (error) {
+    console.warn('Košarice ni bilo mogoče prebrati.', error);
+    return [];
+  }
+};
+
+const saveCart = (cart) => {
+  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+};
+
+const getCartProduct = (sku) => currentProducts.find((product) => product.sku === sku);
+
+const getCartLine = (item) => {
+  const product = getCartProduct(item.sku) || {};
+  const quantity = Number(item.quantity || 1);
+  const unitCents = Number(product.checkoutAmount || priceToCents(product.price || item.price || '0'));
+  return {
+    ...item,
+    name: product.name || item.name || item.sku,
+    price: product.price || item.price || 'Po povpraševanju',
+    unitCents,
+    quantity,
+    lineCents: unitCents * quantity,
+  };
+};
+
+const getCartLines = () => readCart().map(getCartLine);
+
+const getCartSummary = () => {
+  const lines = getCartLines();
+  return {
+    lines,
+    count: lines.reduce((sum, item) => sum + item.quantity, 0),
+    subtotalCents: lines.reduce((sum, item) => sum + item.lineCents, 0),
+  };
+};
+
+const createCartInquiryUrl = () => {
+  const { lines, subtotalCents } = getCartSummary();
+  const itemList = lines.map((item) => `${item.quantity}x ${item.name} (${item.sku})`).join(', ');
+  return `kontakt.html?${new URLSearchParams({
+    izdelek: lines.length ? `Košarica: ${itemList}` : 'Košarica',
+    kategorija: 'Splošno vprašanje',
+    sku: lines.map((item) => item.sku).join(', '),
+    skupaj: formatCurrency(subtotalCents),
+  }).toString()}`;
+};
+
+const renderCart = () => {
+  let cartPanel = document.querySelector('[data-cart-panel]');
+  if (!cartPanel) {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `<aside class="cart-panel" data-cart-panel aria-label="Košarica" aria-live="polite">
+        <button class="cart-toggle" type="button" data-cart-toggle aria-expanded="false">
+          <span>🛒</span>
+          <strong>Košarica</strong>
+          <em data-cart-count>0</em>
+        </button>
+        <div class="cart-drawer" data-cart-drawer hidden>
+          <div class="cart-head">
+            <div>
+              <p class="eyebrow">Nakup</p>
+              <h2>Vaša košarica</h2>
+            </div>
+            <button class="cart-close" type="button" data-cart-close aria-label="Zapri košarico">×</button>
+          </div>
+          <div data-cart-items></div>
+          <div class="cart-summary">
+            <span>Skupaj</span>
+            <strong data-cart-subtotal>0,00 €</strong>
+          </div>
+          <p class="cart-note">Stripe Checkout bo dodan kasneje. Za zdaj lahko košarico pošljete kot povpraševanje.</p>
+          <a class="shop-btn" href="kontakt.html" data-cart-inquiry>Pošlji povpraševanje</a>
+          <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
+        </div>
+      </aside>`
+    );
+    cartPanel = document.querySelector('[data-cart-panel]');
+  }
+
+  const { lines, count, subtotalCents } = getCartSummary();
+  const cartCount = cartPanel.querySelector('[data-cart-count]');
+  const cartItems = cartPanel.querySelector('[data-cart-items]');
+  const cartSubtotal = cartPanel.querySelector('[data-cart-subtotal]');
+  const inquiryLink = cartPanel.querySelector('[data-cart-inquiry]');
+
+  if (cartCount) cartCount.textContent = String(count);
+  if (cartSubtotal) cartSubtotal.textContent = formatCurrency(subtotalCents);
+  if (inquiryLink) inquiryLink.href = createCartInquiryUrl();
+  if (cartItems) {
+    cartItems.innerHTML = lines.length
+      ? lines
+          .map(
+            (item) => `<article class="cart-item">
+              <div>
+                <strong>${escapeHtml(item.name)}</strong>
+                <span>${escapeHtml(item.price)} • ${escapeHtml(item.sku)}</span>
+              </div>
+              <div class="cart-quantity" aria-label="Količina za ${escapeHtml(item.name)}">
+                <button type="button" data-cart-decrease="${escapeHtml(item.sku)}">−</button>
+                <span>${item.quantity}</span>
+                <button type="button" data-cart-increase="${escapeHtml(item.sku)}">+</button>
+              </div>
+            </article>`
+          )
+          .join('')
+      : '<div class="empty-state cart-empty"><h3>Košarica je prazna</h3><p>Dodajte izdelek iz trgovine in ga nato pošljite kot povpraševanje.</p></div>';
+  }
+};
+
+const setCartDrawerOpen = (isOpen) => {
+  const drawer = document.querySelector('[data-cart-drawer]');
+  const toggle = document.querySelector('[data-cart-toggle]');
+  if (!drawer || !toggle) return;
+  drawer.hidden = !isOpen;
+  toggle.setAttribute('aria-expanded', String(isOpen));
+};
+
+const addToCart = (sku) => {
+  const product = getCartProduct(sku);
+  if (!product || !product.cartEnabled) return;
+  const cart = readCart();
+  const existing = cart.find((item) => item.sku === sku);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ sku, quantity: 1, name: product.name, price: product.price });
+  }
+  saveCart(cart);
+  renderCart();
+  setCartDrawerOpen(true);
+};
+
+const updateCartQuantity = (sku, change) => {
+  const cart = readCart()
+    .map((item) => (item.sku === sku ? { ...item, quantity: Number(item.quantity || 1) + change } : item))
+    .filter((item) => item.quantity > 0);
+  saveCart(cart);
+  renderCart();
+};
+
 const productMatchesSearch = (product, query) => {
   if (!query) return true;
 
@@ -199,17 +352,26 @@ const renderActiveFilters = (visibleCount) => {
 };
 
 const renderProductCard = (product) => `
-  <article class="product-card" id="${escapeHtml(product.category)}">
+  <article class="product-card product-card-pro" id="${escapeHtml(product.category)}">
     <a class="product-image product-card-link" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
+      <span class="product-image-badge">${escapeHtml(product.badge)}</span>
       <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.imageAlt || product.name)}" loading="lazy" />
     </a>
     <div class="product-body">
-      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span>${product.checkoutEnabled && product.checkoutAmount >= 50 ? '<span class="badge">Online</span>' : ''}</div>
+      <div class="product-meta"><span class="badge">${escapeHtml(product.categoryLabel)}</span>${product.cartEnabled ? '<span class="badge">Košarica</span>' : ''}${product.checkoutEnabled && product.checkoutAmount >= 50 ? '<span class="badge">Online</span>' : ''}</div>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
-      <p class="product-card-summary">${escapeHtml(product.brand || product.availability || product.categoryLabel)}</p>
-      <div class="product-quick-info"><span>${escapeHtml(product.availability)}</span><span>${escapeHtml(product.delivery)}</span></div>
-      <strong class="product-price">${escapeHtml(product.price)}</strong>
+      <p class="product-card-summary">${escapeHtml(product.description)}</p>
+      <div class="product-card-specs">
+        <span><small>Zaloga</small><strong>${escapeHtml(product.availability)}</strong></span>
+        <span><small>Dobava</small><strong>${escapeHtml(product.delivery)}</strong></span>
+        ${product.brand ? `<span><small>Znamka</small><strong>${escapeHtml(product.brand)}</strong></span>` : ''}
+      </div>
+      <div class="product-card-footer">
+        <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
+        ${product.shippingNote ? `<span class="product-shipping-note">${escapeHtml(product.shippingNote)}</span>` : ''}
+      </div>
       <div class="product-actions">
+        ${product.cartEnabled ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>` : ''}
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
         <a class="shop-btn" href="${createInquiryUrl(product)}" data-product-name="${escapeHtml(product.name)}">Povpraševanje</a>
         ${product.checkoutEnabled && product.checkoutAmount >= 50 ? `<button class="btn-secondary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>` : ''}
@@ -233,6 +395,36 @@ const renderProducts = () => {
   renderActiveFilters(visibleProducts.length);
 };
 
+const renderShopInsights = () => {
+  if (!shopInsights) return;
+  const inStockCount = currentProducts.filter((product) => product.availability.toLowerCase().includes('na zalogi')).length;
+  const cartReadyCount = currentProducts.filter((product) => product.cartEnabled).length;
+  const brandCount = uniqueSorted(currentProducts.map((product) => product.brand)).length;
+  const countByCategory = currentProducts.reduce((counts, product) => {
+    counts[product.category] = (counts[product.category] || 0) + 1;
+    return counts;
+  }, {});
+
+  shopInsights.innerHTML = `
+    <div class="shop-insight-stats" aria-label="Pregled trgovine">
+      <div><strong>${currentProducts.length}</strong><span>izdelkov v katalogu</span></div>
+      <div><strong>${inStockCount}</strong><span>označenih na zalogi</span></div>
+      <div><strong>${cartReadyCount}</strong><span>primernih za košarico</span></div>
+      <div><strong>${brandCount}</strong><span>znamk v ponudbi</span></div>
+    </div>
+    <div class="shop-category-shortcuts" aria-label="Hitre kategorije">
+      ${currentCategories
+        .map(
+          (category) => `<a href="trgovina.html#${escapeHtml(category.id)}" data-shop-shortcut="${escapeHtml(category.id)}">
+            <span>${escapeHtml(category.label)}</span>
+            <strong>${countByCategory[category.id] || 0} izdelkov</strong>
+          </a>`
+        )
+        .join('')}
+    </div>
+  `;
+};
+
 
 const renderProductDetail = () => {
   if (!productDetail) return;
@@ -246,12 +438,41 @@ const renderProductDetail = () => {
   const checkoutButton = product.checkoutEnabled && product.checkoutAmount >= 50
     ? `<button class="btn-primary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>`
     : '';
+  const cartButton = product.cartEnabled
+    ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>`
+    : '';
   productDetail.innerHTML = `<div class="container product-detail-layout">
-    <div class="product-detail-image" style="--product-bg: ${escapeHtml(product.theme)}"><img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.imageAlt || product.name)}" /></div>
+    <div class="product-detail-media">
+      <a class="product-breadcrumb" href="trgovina.html#${escapeHtml(product.category)}">← Nazaj v ${escapeHtml(product.categoryLabel)}</a>
+      <div class="product-detail-image" style="--product-bg: ${escapeHtml(product.theme)}">
+        <span class="product-image-badge">${escapeHtml(product.badge)}</span>
+        <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.imageAlt || product.name)}" />
+      </div>
+      <div class="product-detail-trust">
+        <span>✓ ${escapeHtml(product.availability)}</span>
+        <span>✓ ${escapeHtml(product.delivery)}</span>
+        <span>✓ Podpora pred nakupom</span>
+      </div>
+    </div>
     <article class="card product-detail-info">
-      <p class="eyebrow">${escapeHtml(product.categoryLabel)}</p>
+      <div class="product-detail-kicker">
+        <span class="badge">${escapeHtml(product.categoryLabel)}</span>
+        ${product.cartEnabled ? '<span class="badge">Košarica</span>' : '<span class="badge">Povpraševanje</span>'}
+      </div>
       <h1>${escapeHtml(product.name)}</h1>
-      <p>${escapeHtml(product.description)}</p>
+      <p class="product-detail-lead">${escapeHtml(product.description)}</p>
+      <div class="product-buy-panel">
+        <div>
+          <small>Cena</small>
+          <strong>${escapeHtml(product.price)}</strong>
+          ${product.regularPrice ? `<span>Redna cena: ${escapeHtml(product.regularPrice)}</span>` : ''}
+        </div>
+        <div>
+          <small>Dobava</small>
+          <strong>${escapeHtml(product.delivery)}</strong>
+          <span>${escapeHtml(product.availability)}</span>
+        </div>
+      </div>
       <dl class="product-details">
         <div><dt>Šifra</dt><dd>${escapeHtml(product.sku)}</dd></div>
         <div><dt>Cena</dt><dd>${escapeHtml(product.price)}</dd></div>
@@ -263,7 +484,15 @@ const renderProductDetail = () => {
         ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
       </dl>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
-      <div class="product-actions product-detail-actions"><a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
+      <div class="product-detail-help">
+        <h2>Pred naročilom</h2>
+        <ul>
+          <li>Pri avto delih priporočamo preverjanje po VIN številki.</li>
+          <li>Pri čistilih preverite namen uporabe in navodila proizvajalca.</li>
+          <li>Če niste prepričani, pošljite povpraševanje in pripravimo priporočilo.</li>
+        </ul>
+      </div>
+      <div class="product-actions product-detail-actions">${cartButton}<a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
       <p class="form-note" data-checkout-status>Online plačilo je omogočeno samo prek Stripe Checkout. Za avto dele priporočamo preverjanje po VIN številki pred naročilom.</p>
     </article>
   </div>`;
@@ -323,6 +552,51 @@ clearFiltersButton?.addEventListener('click', () => {
   renderProducts();
 });
 
+document.addEventListener('click', (event) => {
+  const addButton = event.target.closest('[data-add-to-cart]');
+  if (addButton) {
+    addToCart(addButton.dataset.addToCart);
+    return;
+  }
+
+  if (event.target.closest('[data-cart-toggle]')) {
+    const drawer = document.querySelector('[data-cart-drawer]');
+    setCartDrawerOpen(drawer?.hidden ?? true);
+    return;
+  }
+
+  if (event.target.closest('[data-cart-close]')) {
+    setCartDrawerOpen(false);
+    return;
+  }
+
+  const increaseButton = event.target.closest('[data-cart-increase]');
+  if (increaseButton) {
+    updateCartQuantity(increaseButton.dataset.cartIncrease, 1);
+    return;
+  }
+
+  const decreaseButton = event.target.closest('[data-cart-decrease]');
+  if (decreaseButton) {
+    updateCartQuantity(decreaseButton.dataset.cartDecrease, -1);
+    return;
+  }
+
+  if (event.target.closest('[data-cart-clear]')) {
+    saveCart([]);
+    renderCart();
+  }
+
+  const shortcut = event.target.closest('[data-shop-shortcut]');
+  if (shortcut) {
+    event.preventDefault();
+    activeFilter = shortcut.dataset.shopShortcut;
+    history.replaceState(null, '', `#${activeFilter}`);
+    renderFilters();
+    renderProducts();
+  }
+});
+
 const messageField = document.querySelector('#message');
 const topicField = document.querySelector('#topic');
 const selectedProductCard = document.querySelector('[data-selected-product]');
@@ -331,7 +605,8 @@ const categoryFromQuery = new URLSearchParams(window.location.search).get('kateg
 const skuFromQuery = new URLSearchParams(window.location.search).get('sku');
 
 if (messageField && productFromQuery) {
-  messageField.value = `Pozdravljeni, zanima me izdelek: ${productFromQuery}${skuFromQuery ? ` (${skuFromQuery})` : ''}. Prosim za več informacij.`;
+  const totalFromQuery = new URLSearchParams(window.location.search).get('skupaj');
+  messageField.value = `Pozdravljeni, zanima me izdelek: ${productFromQuery}${skuFromQuery ? ` (${skuFromQuery})` : ''}${totalFromQuery ? `. Ocenjen znesek: ${totalFromQuery}` : ''}. Prosim za več informacij.`;
 }
 
 if (topicField && categoryFromQuery) {
@@ -349,7 +624,9 @@ loadProducts().then(() => {
   }
   renderFilters();
   renderAdvancedFilters();
+  renderShopInsights();
   renderProducts();
   renderFeaturedProducts();
   renderProductDetail();
+  renderCart();
 });
