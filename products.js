@@ -12,6 +12,7 @@
   - orodja
 
   Set featured: true to show the product on the homepage.
+  Set cartEnabled: true only for products with a fixed price that can be added to the cart now.
 */
 
 window.products = [
@@ -168,6 +169,7 @@ window.products = [
     "compatibility": "univerzalno za nego vozila",
     "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
     "checkoutEnabled": false,
+    "cartEnabled": true,
     "checkoutAmount": 1369,
     "featured": true,
     "searchTerms": "iron x ironx zračna rja kovinski delci platišča carpro",
@@ -193,6 +195,7 @@ window.products = [
     "compatibility": "univerzalno za nego vozila",
     "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
     "checkoutEnabled": false,
+    "cartEnabled": true,
     "checkoutAmount": 1795,
     "featured": true,
     "searchTerms": "tarx tar x katran smola lepilo carpro detailing",
@@ -218,6 +221,7 @@ window.products = [
     "compatibility": "univerzalno za nego vozila",
     "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
     "checkoutEnabled": false,
+    "cartEnabled": true,
     "checkoutAmount": 3599,
     "featured": true,
     "searchTerms": "bilberry wheel cleaner platišča valetpro koncentrat",
@@ -243,6 +247,7 @@ window.products = [
     "compatibility": "univerzalno za nego vozila",
     "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
     "checkoutEnabled": false,
+    "cartEnabled": true,
     "checkoutAmount": 1399,
     "featured": false,
     "searchTerms": "gyeon q2m iron redefined zračna rja železni delci",
@@ -268,6 +273,7 @@ window.products = [
     "compatibility": "univerzalno za nego vozila",
     "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
     "checkoutEnabled": false,
+    "cartEnabled": true,
     "checkoutAmount": 459,
     "featured": false,
     "searchTerms": "k2 felix platišča pripravljeno čistilo zunanjost",
