@@ -54,15 +54,19 @@
           </aside>
 
           <div class="admin-main-column">
-            <form id="product-editor" class="contact-form admin-form glass-card" data-product-form>
+            <form id="product-editor" class="contact-form admin-form shopify-product-form" data-product-form>
               <input type="hidden" name="originalSku" data-original-sku />
-              <div class="section-head split-head">
+              <div class="section-head split-head admin-editor-toolbar">
                 <div>
-                  <p class="eyebrow">Izdelek</p>
+                  <p class="eyebrow">Shopify-style urejanje</p>
                   <h2 data-form-title>Dodaj nov izdelek</h2>
                 </div>
-                <span class="admin-pill">CRUD urejanje</span>
+                <span class="admin-pill">Produktni studio</span>
               </div>
+              <div class="shopify-editor-grid">
+                <div class="shopify-editor-main">
+                  <section class="shopify-card">
+                    <div class="shopify-card-head"><h3>Osnovni podatki</h3><span>Title & description</span></div>
               <label for="admin-name">Naziv izdelka</label>
               <input id="admin-name" name="name" type="text" required />
               <div class="form-grid">
@@ -89,6 +93,10 @@
               <textarea id="admin-description" name="description" rows="4" required></textarea>
               <label for="admin-search">Iskalni izrazi</label>
               <input id="admin-search" name="searchTerms" type="text" placeholder="servis filter oljni..." />
+                  </section>
+
+                  <section class="shopify-card">
+                    <div class="shopify-card-head"><h3>Mediji</h3><span>Slike in SEO opis</span></div>
               <label for="admin-image">Slika URL ali prilepljena slika</label>
               <input id="admin-image" name="image" type="text" placeholder="images/products/sku-ime-izdelka.jpg ali https://..." data-image-input />
               <p class="form-note">Lahko prilepiš URL slike. Če prilepiš dejansko sliko iz odložišča, jo admin pretvori v data URL. Za profesionalno uporabo shrani slike v images/products/ ali na svoj CDN/hosting in uporabljaj slike z dovoljenjem dobavitelja.</p>
@@ -97,6 +105,10 @@
               <input id="admin-image-alt" name="imageAlt" type="text" placeholder="npr. Bosch zavorne ploščice za osebno vozilo" />
               <label for="admin-theme">Barvno ozadje kartice</label>
               <input id="admin-theme" name="theme" type="text" value="linear-gradient(135deg, #1d4ed8, #0f172a)" />
+                  </section>
+
+                  <section class="shopify-card">
+                    <div class="shopify-card-head"><h3>Cene in nakup</h3><span>Stripe, marža in dobavitelj</span></div>
               <div class="form-grid">
                 <label for="admin-brand">Znamka / proizvajalec
                   <input id="admin-brand" name="brand" type="text" placeholder="npr. Bosch, Sonax, Turtle Wax" />
@@ -123,9 +135,23 @@
                   <input id="admin-purchase-url" name="purchaseUrl" type="url" placeholder="https://..." />
                 </label>
               </div>
-              <label class="checkbox-row"><input name="featured" type="checkbox" /> Prikaži kot priporočeni izdelek</label>
               <label class="checkbox-row"><input name="checkoutEnabled" type="checkbox" /> Omogoči Stripe plačilo za ta izdelek</label>
-              <div class="admin-actions">
+              <label class="checkbox-row"><input name="cartEnabled" type="checkbox" /> Omogoči dodajanje v košarico</label>
+                  </section>
+                </div>
+                <aside class="shopify-editor-side">
+                  <section class="shopify-card">
+                    <div class="shopify-card-head"><h3>Status objave</h3><span>Vidnost izdelka</span></div>
+                    <label class="checkbox-row"><input name="featured" type="checkbox" /> Prikaži kot priporočeni izdelek</label>
+                    <p class="form-note">Izdelki se po shranjevanju pojavijo v katalogu, če je API aktiven. Lokalni katalog služi kot varnostna kopija.</p>
+                  </section>
+                  <section class="shopify-card">
+                    <div class="shopify-card-head"><h3>Organizacija</h3><span>Kategorije in iskanje</span></div>
+                    <p class="form-note">Kategorijo izberete v osnovnih podatkih. SKU mora biti unikaten za urejanje in brisanje izdelkov.</p>
+                  </section>
+                </aside>
+              </div>
+              <div class="admin-actions shopify-sticky-actions">
                 <button class="btn-primary" type="submit">Shrani izdelek</button>
                 <button class="btn-secondary" type="button" data-reset-form>Nov izdelek</button>
               </div>

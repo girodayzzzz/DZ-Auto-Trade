@@ -1,20 +1,3 @@
-/*
-  DZ Auto Trade product list
-  --------------------------
-  Simple way to add a product:
-  1. Copy one product object between the { } brackets.
-  2. Paste it before the closing ]; at the bottom.
-  3. Change the text values: name, category, description, price, sku, availability, delivery.
-
-  Category values must be one of:
-  - avto-deli
-  - cistila
-  - orodja
-
-  Set featured: true to show the product on the homepage.
-  Set cartEnabled: true only for products with a fixed price that can be added to the cart now.
-*/
-
 window.products = [
   {
     "name": "Set filtrov za redni servis",
@@ -299,6 +282,29 @@ window.products = [
     "image": "images/products/k2-roton-pro-1000ml.avif",
     "imageAlt": "K2 Roton PRO čistilo za platišča 1000 ml",
     "theme": "linear-gradient(135deg, #dc2626, #111827)"
+  },
+  {
+    "name": "Chemical Guys Hydro View Glass Ceramic 473ml",
+    "category": "cistila",
+    "categoryLabel": "Čistila",
+    "description": "Chemical Guys Hydroview ceramic glass Cleaner je moderno sredstvo za čiščenje stekel, katero vsebuje zaščito za stekla. Gre za kombinacijo čistila in keramičnega premaza, ki je izredno enostaven za nanos. V enem koraku z njim stekla očistimo in ob enem še zaščitimo. Znatno izboljša vidljivost v slabih vremenskih pogojih. Unikatne sestavine, katere vsebujejo keramične delce odbijajo vodo in zagotavljajo dobro zaščito stekel. Ravno tako pa omogoča enostavneje čiščenje stekel po predhodnem nanosu sredstva Hydroview. Vrhunsko sredstvo, katero v enem koraku omogoča hitro in enostavno čiščenje stekel brez sledi ter zaščito za stekla v enem.\n\nNavodila za uporabo:\nPred uporabo plastenko dobro pretresemo. Napršimo iz razdalje 15-20 cm direktno na stekla ali na mikro krpo. Čistilo nato z krpo razmažemo po steklu in obrišemo do suhega. V kolikor je potrebno uporabimo še eno suho mikro krpo. V kolikor so stekla zelo umazana priporočamo predhodno čiščenje z namenskim čistilom za stekla.\n\nVarnostni napotki:\nP101 Če je potreben zdravniški nasvet, mora biti na voljo posoda ali etiketa proizvod. P102 Hraniti zunaj dosega otrok. P301 + P312 PRI ZAUŽITJU: ob slabem počutju pokličite CENTER ZA ZASTRUPITVE ali zdravnika. P305 + P351 + P338 PRI STIKU Z OČMI: previdno izpirajte z vodo nekaj minut. Odstranite kontaktne leče, če jih imate in če to lahko storite brez težav. Nadaljujte z izpiranjem. P337 + P313 Če draženje oči ne preneha: poiščite zdravniško pomoč/oskrbo.",
+    "price": "31,99 €",
+    "badge": "Keramična zaščita stekel",
+    "sku": "DZ-CP032",
+    "availability": "Na zalogi",
+    "delivery": "1–3 delovne dni",
+    "shippingNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
+    "brand": "Chemical Guys",
+    "compatibility": "stekla in zunanje steklene površine vozila",
+    "orderNote": "473 ml; čistilo in keramična zaščita stekel v enem koraku.",
+    "checkoutEnabled": true,
+    "cartEnabled": true,
+    "checkoutAmount": 3199,
+    "featured": false,
+    "searchTerms": "chemical guys hydro view hydroview glass ceramic stekla keramična zaščita čistilo vidljivost dež 473ml",
+    "image": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 200\"%3E%3Crect x=\"62\" y=\"34\" width=\"76\" height=\"130\" rx=\"18\" fill=\"%23dbeafe\"/%3E%3Crect x=\"78\" y=\"20\" width=\"44\" height=\"28\" rx=\"8\" fill=\"%230ea5e9\"/%3E%3Cpath d=\"M78 86h44M78 112h44\" stroke=\"white\" stroke-width=\"10\" stroke-linecap=\"round\"/%3E%3Cpath d=\"M126 72c18 22 26 40 26 54a26 26 0 0 1-52 0c0-14 8-32 26-54z\" fill=\"%2367e8f9\" fill-opacity=\"0.8\"/%3E%3C/svg%3E",
+    "imageAlt": "Chemical Guys Hydro View Glass Ceramic 473ml",
+    "theme": "linear-gradient(135deg, #0891b2, #0f172a)"
   },
   {
     "name": "K2 Felix 750ml",
