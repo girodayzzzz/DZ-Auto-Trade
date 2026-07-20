@@ -2649,3 +2649,134 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Site-wide dark premium theme */
+:root {
+  --bg: #070a10;
+  --bg-soft: #0d1421;
+  --text: #f8fafc;
+  --muted: #aab6c8;
+  --card: rgba(13, 20, 33, 0.92);
+  --line: rgba(255, 255, 255, 0.12);
+  --primary-2: #f8fafc;
+  --success: #32d583;
+  --surface-dark: #05070b;
+}
+
+body {
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(229, 9, 20, 0.2) 0%, transparent 28rem),
+    radial-gradient(circle at 88% 8%, rgba(50, 213, 131, 0.1) 0%, transparent 26rem),
+    linear-gradient(180deg, #05070b 0%, #0a101a 42%, #070a10 100%);
+}
+
+.site-header {
+  background: rgba(5, 7, 11, 0.9);
+}
+
+.section.alt,
+.home-intro-section,
+.shop-overview,
+.product-detail-shell,
+.vehicle-preview-section {
+  background: transparent;
+}
+
+.card,
+.filter-card,
+.product-card,
+.product-card-pro,
+.contact-card,
+.legal-card,
+.service-detail-card,
+.checkout-card,
+.before-after-card,
+.vehicle-card,
+.admin-products-card,
+.glass-card,
+.home-intro-card,
+.shop-trust-grid,
+.vehicle-strip-grid,
+.cart-drawer {
+  color: var(--text);
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, rgba(17, 25, 40, 0.94), rgba(9, 13, 22, 0.94));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.card p,
+.product-body > p,
+.product-card-summary,
+.product-shipping-note,
+.hero-copy,
+.vehicle-strip-grid span,
+.shop-trust-grid span,
+.vehicle-body p,
+.vehicle-body dt,
+.product-card-specs small,
+.product-card-footer small,
+.product-buy-panel small {
+  color: var(--muted);
+}
+
+.card a,
+.product-card h3 a,
+.product-card-specs strong,
+.shop-trust-grid strong,
+.vehicle-body dd,
+.product-price,
+.product-card-footer .product-price,
+.vehicle-strip-grid a,
+.text-link {
+  color: var(--text);
+}
+
+.product-card-specs span,
+.product-card-footer,
+.shop-trust-grid div,
+.catalog-tools input,
+.catalog-tools select,
+.contact-form input,
+.contact-form select,
+.contact-form textarea,
+.filter-card .filter-btn,
+.admin-search-input,
+.admin-product-item,
+.admin-category-item {
+  color: var(--text);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.catalog-tools input::placeholder,
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  color: #7f8da3;
+}
+
+.btn-secondary,
+.filter-reset {
+  color: var(--text);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.btn-secondary:hover,
+.filter-reset:hover,
+.filter-card .filter-btn:hover,
+.filter-card .filter-btn.active {
+  color: #ffffff;
+  background: rgba(229, 9, 20, 0.16);
+}
+
+.mega-menu {
+  color: var(--text);
+  border-color: var(--line);
+  background: rgba(8, 12, 20, 0.98);
+}
+
+.mega-menu a:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
