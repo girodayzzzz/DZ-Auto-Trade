@@ -376,6 +376,7 @@ const createStripeCheckoutSession = async (request, env) => {
   const amount = Math.round(Number(body?.amount || 0));
   const quantity = Math.max(1, Math.min(10, Number(body?.quantity || 1)));
   const type = String(body?.type || 'order').trim().slice(0, 40);
+  const cartSummary = String(body?.cartSummary || '').trim().slice(0, 500);
 
   if (!name || amount < 50) return json({ error: 'Postavka nima veljavne Stripe cene.' }, { status: 400 });
 
@@ -392,6 +393,7 @@ const createStripeCheckoutSession = async (request, env) => {
   params.append('metadata[type]', type);
   params.append('metadata[source]', 'dz-auto-trade');
   params.append('metadata[support_email]', 'dzautotrade@gmail.com');
+  if (cartSummary) params.append('metadata[cart_summary]', cartSummary);
   params.append('billing_address_collection', 'auto');
   params.append('phone_number_collection[enabled]', 'true');
 
