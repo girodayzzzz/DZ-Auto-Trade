@@ -97,7 +97,6 @@ const resolveProductImage = (product = {}) => {
   const image = String(product.image || '').trim();
   const bundledImage = getBundledProductImage(product);
   if (bundledImage && (!image || isInlineSvgImage(image))) return bundledImage;
-  if (isInlineSvgImage(image)) return createProductPlaceholder(product);
   return image || bundledImage || createProductPlaceholder(product);
 };
 
@@ -390,7 +389,6 @@ const renderActiveFilters = (visibleCount) => {
 const renderProductCard = (product) => `
   <article class="product-card product-card-pro" id="${escapeHtml(product.category)}">
     <a class="product-image product-card-link" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
-      <span class="product-image-badge">${escapeHtml(product.badge)}</span>
       ${productImageMarkup(product)}
     </a>
     <div class="product-body">
