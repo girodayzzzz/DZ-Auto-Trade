@@ -46,6 +46,9 @@ const activeFilters = document.querySelector('[data-active-filters]');
 const catalogSummary = document.querySelector('[data-catalog-summary]');
 const shopInsights = document.querySelector('[data-shop-insights]');
 const CART_STORAGE_KEY = 'dzAutoTradeCart';
+const ANALYTICS_STORAGE_KEY = 'dzAutoTradeEvents';
+const FREE_SHIPPING_THRESHOLD_CENTS = 6000;
+const STANDARD_SHIPPING_CENTS = 590;
 const PRODUCT_PLACEHOLDER_IMAGE = 'assets/product-placeholder.svg';
 const bundledProducts = Array.isArray(window.products) ? window.products : [];
 const bundledProductImagesBySku = new Map(
@@ -81,6 +84,17 @@ const priceToCents = (price) => Math.round(parsePrice(price) * 100);
 const uniqueSorted = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'sl'));
 const formatCurrency = (cents = 0) =>
   new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100);
+
+const trackEvent = (name, detail = {}) => {
+  try {
+    const events = JSON.parse(localStorage.getItem(ANALYTICS_STORAGE_KEY) || '[]');
+    const nextEvents = Array.isArray(events) ? events.slice(-49) : [];
+    nextEvents.push({ name, detail, path: window.location.pathname, timestamp: new Date().toISOString() });
+    localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(nextEvents));
+  } catch (error) {
+    console.warn('Analitičnega dogodka ni bilo mogoče shraniti.', error);
+  }
+};
 
 
 const createProductPlaceholder = () => PRODUCT_PLACEHOLDER_IMAGE;
@@ -226,21 +240,26 @@ const getCartLines = () => readCart().map(getCartLine);
 
 const getCartSummary = () => {
   const lines = getCartLines();
+  const subtotalCents = lines.reduce((sum, item) => sum + item.lineCents, 0);
+  const shippingCents = subtotalCents > 0 && subtotalCents < FREE_SHIPPING_THRESHOLD_CENTS ? STANDARD_SHIPPING_CENTS : 0;
   return {
     lines,
     count: lines.reduce((sum, item) => sum + item.quantity, 0),
-    subtotalCents: lines.reduce((sum, item) => sum + item.lineCents, 0),
+    subtotalCents,
+    shippingCents,
+    totalCents: subtotalCents + shippingCents,
+    freeShippingRemainingCents: Math.max(FREE_SHIPPING_THRESHOLD_CENTS - subtotalCents, 0),
   };
 };
 
 const createCartInquiryUrl = () => {
-  const { lines, subtotalCents } = getCartSummary();
+  const { lines, totalCents } = getCartSummary();
   const itemList = lines.map((item) => `${item.quantity}x ${item.name} (${item.sku})`).join(', ');
   return `kontakt.html?${new URLSearchParams({
     izdelek: lines.length ? `Košarica: ${itemList}` : 'Košarica',
     kategorija: 'Splošno vprašanje',
     sku: lines.map((item) => item.sku).join(', '),
-    skupaj: formatCurrency(subtotalCents),
+    skupaj: formatCurrency(totalCents),
   }).toString()}`;
 };
 
@@ -265,11 +284,16 @@ const renderCart = () => {
           </div>
           <div data-cart-items></div>
           <div class="cart-summary">
-            <span>Skupaj</span>
+            <span>Izdelki</span>
             <strong data-cart-subtotal>0,00 €</strong>
+            <span>Poštnina</span>
+            <strong data-cart-shipping>0,00 €</strong>
+            <span>Skupaj</span>
+            <strong data-cart-total>0,00 €</strong>
           </div>
-          <p class="cart-note">Stripe Checkout bo dodan kasneje. Za zdaj lahko košarico pošljete kot povpraševanje.</p>
-          <a class="shop-btn" href="kontakt.html" data-cart-inquiry>Pošlji povpraševanje</a>
+          <p class="cart-note" data-cart-shipping-note>Brezplačna poštnina nad 60 €.</p>
+          <button class="shop-btn" type="button" data-cart-checkout>Varno plačilo / povpraševanje</button>
+          <a class="btn-secondary" href="kontakt.html" data-cart-inquiry>Pošlji povpraševanje</a>
           <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
         </div>
       </aside>`
@@ -277,14 +301,20 @@ const renderCart = () => {
     cartPanel = document.querySelector('[data-cart-panel]');
   }
 
-  const { lines, count, subtotalCents } = getCartSummary();
+  const { lines, count, subtotalCents, shippingCents, totalCents, freeShippingRemainingCents } = getCartSummary();
   const cartCount = cartPanel.querySelector('[data-cart-count]');
   const cartItems = cartPanel.querySelector('[data-cart-items]');
   const cartSubtotal = cartPanel.querySelector('[data-cart-subtotal]');
   const inquiryLink = cartPanel.querySelector('[data-cart-inquiry]');
+  const cartShipping = cartPanel.querySelector('[data-cart-shipping]');
+  const cartTotal = cartPanel.querySelector('[data-cart-total]');
+  const shippingNote = cartPanel.querySelector('[data-cart-shipping-note]');
 
   if (cartCount) cartCount.textContent = String(count);
   if (cartSubtotal) cartSubtotal.textContent = formatCurrency(subtotalCents);
+  if (cartShipping) cartShipping.textContent = shippingCents ? formatCurrency(shippingCents) : 'Brezplačno';
+  if (cartTotal) cartTotal.textContent = formatCurrency(totalCents);
+  if (shippingNote) shippingNote.textContent = subtotalCents === 0 ? 'Brezplačna poštnina nad 60 €.' : freeShippingRemainingCents > 0 ? `Do brezplačne poštnine manjka še ${formatCurrency(freeShippingRemainingCents)}.` : 'Dosegli ste brezplačno poštnino.';
   if (inquiryLink) inquiryLink.href = createCartInquiryUrl();
   if (cartItems) {
     cartItems.innerHTML = lines.length
@@ -326,6 +356,7 @@ const addToCart = (sku) => {
     cart.push({ sku, quantity: 1, name: product.name, price: product.price });
   }
   saveCart(cart);
+  trackEvent('cart_add', { sku });
   renderCart();
   setCartDrawerOpen(true);
 };
@@ -335,6 +366,7 @@ const updateCartQuantity = (sku, change) => {
     .map((item) => (item.sku === sku ? { ...item, quantity: Number(item.quantity || 1) + change } : item))
     .filter((item) => item.quantity > 0);
   saveCart(cart);
+  trackEvent('cart_quantity', { sku, change });
   renderCart();
 };
 
@@ -374,7 +406,10 @@ const renderActiveFilters = (visibleCount) => {
   if (brandFilter?.value && brandFilter.value !== 'all') chips.push(`Znamka: ${brandFilter.value}`);
   if (availabilityFilter?.value && availabilityFilter.value !== 'all') chips.push(`Zaloga: ${availabilityFilter.value}`);
   if (priceFilter?.value && priceFilter.value !== 'all') chips.push(`Cena: ${priceFilter.options[priceFilter.selectedIndex]?.textContent || priceFilter.value}`);
-  if (query) chips.push(`Iskanje: ${query}`);
+  if (query) {
+    chips.push(`Iskanje: ${query}`);
+    trackEvent('product_search', { query });
+  }
 
   activeFilters.hidden = chips.length === 0;
   activeFilters.innerHTML = chips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join('');
@@ -469,6 +504,7 @@ const renderProductDetail = () => {
     return;
   }
   document.title = `DZ Auto Trade | ${product.name}`;
+  trackEvent('product_view', { sku: product.sku, name: product.name, category: product.category });
   const checkoutButton = product.checkoutEnabled && product.checkoutAmount >= 50
     ? `<button class="btn-primary" type="button" data-checkout data-name="${escapeHtml(product.name)}" data-amount="${product.checkoutAmount}" data-type="product">Plačaj prek Stripe</button>`
     : '';
@@ -518,14 +554,11 @@ const renderProductDetail = () => {
         ${product.shippingNote ? `<div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote)}</dd></div>` : ''}
       </dl>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
-      <div class="product-detail-help">
-        <h2>Pred naročilom</h2>
-        <ul>
-          <li>Pri avto delih priporočamo preverjanje po VIN številki.</li>
-          <li>Pri čistilih preverite namen uporabe in navodila proizvajalca.</li>
-          <li>Če niste prepričani, pošljite povpraševanje in pripravimo priporočilo.</li>
-        </ul>
+      <div class="product-detail-help product-info-grid">
+        <section><h2>Pred naročilom</h2><ul><li>Pri avto delih priporočamo preverjanje po VIN številki.</li><li>Pri čistilih preverite namen uporabe in navodila proizvajalca.</li><li>Če niste prepričani, pošljite povpraševanje in pripravimo priporočilo.</li></ul></section>
+        <section><h2>Dostava in varnost</h2><ul><li>Poštnina je prikazana v košarici; nad 60 € je predvidena brezplačna poštnina.</li><li>Končna cena, dobava in morebitne omejitve se potrdijo pred izvedbo naročila.</li><li>Vračila, reklamacije in pogoji so povezani v nogi strani.</li></ul></section>
       </div>
+      <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
       <div class="product-actions product-detail-actions">${cartButton}<a class="btn-secondary" href="${createInquiryUrl(product)}">Pošlji povpraševanje</a>${checkoutButton}</div>
       <p class="form-note" data-checkout-status>Online plačilo je omogočeno samo prek Stripe Checkout. Za avto dele priporočamo preverjanje po VIN številki pred naročilom.</p>
     </article>
@@ -618,7 +651,13 @@ document.addEventListener('click', (event) => {
 
   if (event.target.closest('[data-cart-clear]')) {
     saveCart([]);
+    trackEvent('cart_clear');
     renderCart();
+  }
+
+  if (event.target.closest('[data-cart-checkout]')) {
+    trackEvent('cart_checkout_intent', getCartSummary());
+    window.location.href = createCartInquiryUrl();
   }
 
   const shortcut = event.target.closest('[data-shop-shortcut]');
@@ -672,3 +711,18 @@ loadProducts().then(() => {
   renderProductDetail();
   renderCart();
 });
+
+const vehicleFilters = document.querySelectorAll('[data-vehicle-filter]');
+const vehicleGrid = document.querySelector('[data-vehicle-grid]');
+const renderVehicleFilters = () => {
+  if (!vehicleGrid || !vehicleFilters.length) return;
+  const values = Object.fromEntries([...vehicleFilters].map((filter) => [filter.dataset.vehicleFilter, filter.value]));
+  vehicleGrid.querySelectorAll('.vehicle-card').forEach((card) => {
+    const fuelMatch = !values.fuel || values.fuel === 'all' || card.dataset.fuel === values.fuel;
+    const transmissionMatch = !values.transmission || values.transmission === 'all' || card.dataset.transmission === values.transmission;
+    const priceMatch = !values.price || values.price === 'all' || Number(card.dataset.price || 0) <= Number(values.price);
+    card.hidden = !(fuelMatch && transmissionMatch && priceMatch);
+  });
+};
+vehicleFilters.forEach((filter) => filter.addEventListener('change', renderVehicleFilters));
+renderVehicleFilters();
