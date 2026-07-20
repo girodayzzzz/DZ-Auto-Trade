@@ -1,7 +1,7 @@
 (() => {
   const SITE_URL = 'https://dzautotrade.si';
   const SITE_NAME = 'DZ Auto Trade';
-  const LOGO_URL = `${SITE_URL}/assets/logo.svg`;
+  const LOGO_URL = `${SITE_URL}/assets/Logodzautotrade.si.png`;
   const DEFAULT_DESCRIPTION = 'DZ Auto Trade je slovenska spletna trgovina za avto dele, detailing izdelke, orodja, vozila in storitve čiščenja vozil.';
   const PUBLIC_PAGES = new Set([
     '/', '/index.html', '/trgovina.html', '/product.html', '/avto-trznica.html', '/storitve.html',

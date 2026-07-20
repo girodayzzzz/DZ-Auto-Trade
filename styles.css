@@ -1843,7 +1843,7 @@ body {
 .btn-primary:hover,
 .shop-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(229, 9, 20, 0.25);
+  box-shadow: 0 10px 24px rgba(151, 4, 11, 0.22);
 }
 
 .btn-secondary:hover,
@@ -4184,7 +4184,7 @@ body::after {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.12), transparent);
   transform: translateX(-120%);
   transition: transform 0.42s ease;
 }
@@ -4507,9 +4507,9 @@ body:has([data-product-grid]) .product-card-pro {
   --text: #090d14;
   --muted: #5f6877;
   --primary: #df0611;
-  --primary-hover: #b8050d;
+  --primary-hover: #97040b;
   --primary-dark: #750309;
-  --accent: #ff2d38;
+  --accent: #c80711;
   --card: #ffffff;
   --line: #d5dbe6;
   --success: #9ca3af;
@@ -4633,8 +4633,8 @@ body {
 .btn-primary:hover,
 .shop-btn:hover,
 .cart-toggle:hover {
-  background: linear-gradient(135deg, var(--accent), var(--primary-hover));
-  box-shadow: 0 16px 36px rgba(223, 6, 17, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary-dark));
+  box-shadow: 0 14px 30px rgba(151, 4, 11, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .btn-secondary,
