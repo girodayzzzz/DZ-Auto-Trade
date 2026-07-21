@@ -451,7 +451,7 @@ const renderCart = () => {
             (item) => `<article class="cart-item">
               <div>
                 <strong>${escapeHtml(item.name)}</strong>
-                <span>${escapeHtml(item.price)} • ${escapeHtml(item.sku)}</span>
+                <span>${escapeHtml(item.price)}</span>
               </div>
               <div class="cart-quantity" aria-label="Količina za ${escapeHtml(item.name)}">
                 <button type="button" data-cart-decrease="${escapeHtml(item.sku)}">−</button>
