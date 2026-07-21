@@ -7291,7 +7291,7 @@ body.shop-page {
   margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
 }
 
-.shop-page .catalog-tools-sticky {
+.shop-page .catalog-tools-stationary {
   position: static;
   z-index: 1;
   display: grid;
@@ -7307,8 +7307,8 @@ body.shop-page {
   backdrop-filter: blur(18px);
 }
 
-.shop-page .catalog-tools-sticky,
-.shop-page .catalog-tools-sticky * {
+.shop-page .catalog-tools-stationary,
+.shop-page .catalog-tools-stationary * {
   transform: none;
 }
 
@@ -7319,7 +7319,7 @@ body.shop-page {
   align-items: end;
 }
 
-.shop-page .catalog-tools-sticky label {
+.shop-page .catalog-tools-stationary label {
   gap: 0.32rem;
   margin: 0;
   font-size: 0.66rem;
@@ -7328,15 +7328,15 @@ body.shop-page {
   text-transform: uppercase;
 }
 
-.shop-page .catalog-tools-sticky input,
-.shop-page .catalog-tools-sticky select {
+.shop-page .catalog-tools-stationary input,
+.shop-page .catalog-tools-stationary select {
   min-height: 2.35rem;
   padding: 0.58rem 0.75rem;
   border-radius: 12px;
   font-size: 0.9rem;
 }
 
-.shop-page .catalog-tools-sticky .btn-secondary {
+.shop-page .catalog-tools-stationary .btn-secondary {
   min-height: 2.35rem;
   padding: 0.58rem 0.85rem;
   border-radius: 12px;
@@ -7390,14 +7390,14 @@ body.shop-page {
 }
 
 @media (max-width: 920px) {
-  .shop-page .catalog-tools-sticky {
+  .shop-page .catalog-tools-stationary {
     grid-template-columns: 1fr;
     align-items: stretch;
   }
 }
 
 @media (max-width: 680px) {
-  .shop-page .catalog-tools-sticky {
+  .shop-page .catalog-tools-stationary {
     padding: 0.55rem;
     border-radius: 16px;
   }
