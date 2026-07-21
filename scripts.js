@@ -559,8 +559,13 @@ const renderProductCard = (product) => `
       ${product.brand ? `<div class="product-meta"><span class="product-brand-pill">${escapeHtml(product.brand)}</span></div>` : ''}
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
       <p class="product-card-summary">${escapeHtml(product.description)}</p>
+      <div class="product-card-specs" aria-label="Podatki izdelka">
+        <span><small>Kategorija</small><strong>${escapeHtml(product.categoryLabel)}</strong></span>
+        <span><small>SKU</small><strong>${escapeHtml(product.sku)}</strong></span>
+      </div>
       <div class="product-card-footer">
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
+        <p class="product-shipping-note">${escapeHtml(product.delivery || product.availability || 'Dobava po potrditvi')}</p>
       </div>
       <div class="product-actions product-card-actions">
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>

@@ -6967,3 +6967,287 @@ body.shop-page {
     grid-template-columns: 104px minmax(0, 1fr);
   }
 }
+
+/* Professional shop roadmap section: visible guidance for building a more complete store experience. */
+.shop-page .professional-shop-section {
+  padding: clamp(2rem, 4vw, 3.8rem) 0 0;
+  background: linear-gradient(180deg, rgba(9, 14, 25, 0.9), rgba(9, 14, 25, 0.72));
+}
+
+.shop-page .professional-shop-panel {
+  padding: clamp(1rem, 2.6vw, 1.7rem);
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  border-radius: 30px;
+  background:
+    linear-gradient(135deg, rgba(229, 9, 20, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(20, 29, 47, 0.96), rgba(8, 13, 24, 0.96));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.34);
+}
+
+.shop-page .professional-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.shop-page .professional-shop-grid article {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1.1rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 22px;
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.shop-page .professional-shop-grid span {
+  width: max-content;
+  padding: 0.28rem 0.58rem;
+  color: #111827;
+  font-size: 0.78rem;
+  font-weight: 900;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.shop-page .professional-shop-grid h3 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.shop-page .professional-shop-grid p {
+  margin: 0;
+  color: #b8c2d4;
+}
+
+@media (max-width: 780px) {
+  .shop-page .professional-shop-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Shop cleanup: product-first layout without oversized promotional roadmap blocks. */
+.shop-page .shop-hero-refined {
+  padding: clamp(3.6rem, 7vw, 6.4rem) 0 clamp(2.6rem, 5vw, 4.4rem);
+}
+
+.shop-page .shop-hero-grid {
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.72fr);
+  gap: clamp(1.2rem, 3vw, 2rem);
+  align-items: stretch;
+}
+
+.shop-page .shop-hero-copy,
+.shop-page .shop-hero-featured,
+.shop-page .shop-category-panel,
+.shop-page .bestsellers-panel,
+.shop-page .catalog-results-panel {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(8, 13, 24, 0.94));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+}
+
+.shop-page .shop-hero-copy {
+  padding: clamp(1.35rem, 3vw, 2.2rem);
+  border-radius: 30px;
+}
+
+.shop-page .shop-hero-copy h1 {
+  max-width: 12ch;
+  margin-bottom: 1rem;
+  letter-spacing: -0.055em;
+}
+
+.shop-page .shop-hero-featured {
+  position: relative;
+  display: grid;
+  align-content: end;
+  min-height: 360px;
+  overflow: hidden;
+  padding: clamp(1.25rem, 3vw, 1.8rem);
+  border-radius: 30px;
+}
+
+.shop-page .shop-hero-featured::before {
+  content: '';
+  position: absolute;
+  inset: 1rem;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.9), rgba(226, 232, 240, 0.36) 32%, transparent 58%),
+    url('images/products/iron-x-univerzalno-cistilno-sredstvo.jpg') center / contain no-repeat;
+  filter: drop-shadow(0 26px 32px rgba(0, 0, 0, 0.34));
+  opacity: 0.9;
+}
+
+.shop-page .shop-hero-featured > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shop-page .hero-product-kicker {
+  width: max-content;
+  padding: 0.34rem 0.7rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  background: rgba(229, 9, 20, 0.92);
+}
+
+.shop-page .shop-hero-featured h2,
+.shop-page .shop-hero-featured p {
+  max-width: 26rem;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.5);
+}
+
+.shop-page .shop-category-section,
+.shop-page .bestsellers-section,
+.shop-page .shop-catalog-section {
+  padding-top: clamp(1.5rem, 3vw, 2.7rem);
+}
+
+.shop-page .shop-category-filter-grid .filter-btn {
+  min-height: 104px;
+  border-radius: 18px;
+}
+
+.shop-page .catalog-tools {
+  margin-bottom: 1.1rem;
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.shop-page .catalog-tools label {
+  color: #dbeafe;
+}
+
+.shop-page .catalog-tools input,
+.shop-page .catalog-tools select {
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.92);
+}
+
+.shop-page .shop-grid {
+  gap: clamp(0.9rem, 2vw, 1.25rem);
+}
+
+.shop-page .product-card-pro {
+  border-radius: 24px;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.shop-page .product-card-pro:hover {
+  border-color: rgba(248, 113, 113, 0.44) !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+  transform: translateY(-4px);
+}
+
+.shop-page .product-card-pro .product-image {
+  min-height: 235px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.shop-page .product-card-pro .product-body {
+  gap: 0.78rem;
+  padding: 1.05rem;
+}
+
+.shop-page .product-card-pro h3 {
+  min-height: 2.6em;
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.shop-page .product-card-summary {
+  display: -webkit-box;
+  min-height: 3.9em;
+  margin: 0;
+  overflow: hidden;
+  line-height: 1.55;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.product-card-specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.product-card-specs span {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.62rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.product-card-specs small,
+.product-shipping-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.product-card-specs strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shop-page .product-card-pro .product-card-footer {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding: 0.75rem;
+  border-radius: 16px;
+}
+
+.shop-page .product-card-actions {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 0.55rem;
+}
+
+.shop-page .product-card-actions > * {
+  justify-content: center;
+  min-height: 2.8rem;
+  text-align: center;
+}
+
+@media (max-width: 980px) {
+  .shop-page .shop-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-page .shop-hero-featured {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 560px) {
+  .shop-page .shop-hero-copy {
+    padding: 1.1rem;
+  }
+
+  .shop-page .shop-hero-featured {
+    min-height: 260px;
+  }
+
+  .shop-page .product-card-pro .product-image {
+    min-height: 220px;
+  }
+
+  .shop-page .product-card-actions,
+  .product-card-specs {
+    grid-template-columns: 1fr;
+  }
+}
