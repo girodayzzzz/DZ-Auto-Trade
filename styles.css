@@ -6093,3 +6093,47 @@ canvas {
     border-radius: 22px;
   }
 }
+
+/* Darker shop product cards for improved product name readability. */
+body:has([data-product-grid]) .product-card-pro {
+  border-color: rgba(148, 163, 184, 0.26);
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at top left, rgba(229, 9, 20, 0.2), transparent 38%),
+    linear-gradient(180deg, #172033 0%, #0b1120 100%);
+  box-shadow: 0 22px 58px rgba(2, 6, 23, 0.46);
+}
+
+body:has([data-product-grid]) .product-card-pro .product-body {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.2), rgba(2, 6, 23, 0.34));
+}
+
+body:has([data-product-grid]) .product-card-pro h3 a,
+body:has([data-product-grid]) .product-card-pro .product-card-specs strong,
+body:has([data-product-grid]) .product-card-pro .product-price {
+  color: #ffffff;
+}
+
+body:has([data-product-grid]) .product-card-pro .product-card-summary,
+body:has([data-product-grid]) .product-card-pro .product-card-specs small,
+body:has([data-product-grid]) .product-card-pro .product-shipping-note {
+  color: #cbd5e1;
+}
+
+body:has([data-product-grid]) .product-card-pro .product-card-footer,
+body:has([data-product-grid]) .product-card-pro .product-card-specs span,
+body:has([data-product-grid]) .product-card-pro .badge {
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.72);
+}
+
+body:has([data-product-grid]) .product-card-pro .product-brand-pill {
+  color: #ffffff;
+  border-color: rgba(248, 250, 252, 0.2);
+  background: rgba(229, 9, 20, 0.22);
+}
+
+.shop-overview:has([data-shop-insights]:empty) {
+  display: none;
+}

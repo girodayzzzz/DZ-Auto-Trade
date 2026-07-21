@@ -582,27 +582,7 @@ const renderProducts = () => {
 
 const renderShopInsights = () => {
   if (!shopInsights) return;
-  const cartReadyProducts = currentProducts.filter(isCheckoutReady);
-  const cartReadyCount = cartReadyProducts.length;
-  const brandCount = uniqueSorted(currentProducts.map((product) => product.brand)).length;
-  shopInsights.innerHTML = `
-    <div class="shop-insight-stats" aria-label="Pregled trgovine">
-      <div><strong>${cartReadyCount}</strong><span>izdelkov za košarico</span></div>
-      <div><strong>1 klik</strong><span>dodajanje v košarico</span></div>
-      <div><strong>Stripe</strong><span>varno spletno plačilo</span></div>
-      <div><strong>${brandCount}</strong><span>znamk</span></div>
-    </div>
-    <div class="shop-category-shortcuts" aria-label="Hitre kategorije">
-      ${currentCategories
-        .map(
-          (category) => `<a href="trgovina.html#${escapeHtml(category.id)}" data-shop-shortcut="${escapeHtml(category.id)}">
-            <span>${escapeHtml(category.label)}</span>
-            <strong>${cartReadyProducts.filter((product) => product.category === category.id).length} izdelkov</strong>
-          </a>`
-        )
-        .join('')}
-    </div>
-  `;
+  shopInsights.innerHTML = '';
 };
 
 
