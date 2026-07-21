@@ -556,9 +556,7 @@ const renderProductCard = (product) => `
       ${productImageMarkup(product)}
     </a>
     <div class="product-body">
-      ${product.brand ? `<div class="product-meta"><span class="product-brand-pill">${escapeHtml(product.brand)}</span></div>` : ''}
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
-      <p class="product-card-summary">${escapeHtml(product.description)}</p>
       <div class="product-card-footer">
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
       </div>
