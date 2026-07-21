@@ -72,20 +72,28 @@
       </div>
     </header>
     <main id="main-content">
-      <section class="section shop-category-section" aria-labelledby="category-title">
-        <div class="container shop-category-panel">
+      <section class="section shop-catalog-section" id="catalog">
+        <div class="container catalog-results-panel">
           <div class="section-head split-head">
             <div>
-              <p class="eyebrow">Kategorije izdelkov</p>
-              <h2 id="category-title">Hitreje do pravega izdelka.</h2>
-              <p>Uporabite kategorije kot vizualne filtre. Brez dodatnih prodajnih blokov — samo pot do izdelkov.</p>
+              <p class="eyebrow">Katalog</p>
+              <h2>Vsi izdelki</h2>
+              <p data-catalog-summary>Urejen pregled izdelkov z iskanjem, razvrščanjem in filtri.</p>
             </div>
-            <a class="btn-secondary" href="#catalog">Prikaži katalog</a>
+            <p class="product-count" data-product-count>0 izdelkov</p>
           </div>
-          <div class="shop-category-shortcuts shop-category-filter-grid" data-filter-list aria-label="Filtriranje po kategorijah izdelkov"></div>
+          <div class="catalog-tools catalog-tools-sticky" aria-label="Iskanje, kategorije in razvrščanje izdelkov">
+            <div class="catalog-search-wrap">
+              <label for="product-search">Iskanje<input id="product-search" type="search" placeholder="Poišči izdelek, znamko ali SKU" data-product-search /></label>
+              <label for="product-sort">Razvrsti<select id="product-sort" data-product-sort><option value="featured">Priporočeno</option><option value="price-asc">Cena: najprej nižja</option><option value="price-desc">Cena: najprej višja</option><option value="name">Ime izdelka</option></select></label>
+              <button class="btn-secondary" type="button" data-clear-filters>Počisti filtre</button>
+            </div>
+            <div class="shop-category-shortcuts shop-category-filter-grid catalog-filter-rail" data-filter-list aria-label="Filtriranje po kategorijah izdelkov"></div>
+          </div>
+          <div class="active-filters" data-active-filters hidden></div>
+          <div class="shop-grid" data-product-grid></div>
         </div>
       </section>
-
       <section class="section bestsellers-section" aria-labelledby="shop-bestsellers-title">
         <div class="container bestsellers-panel">
           <div class="section-head split-head">
@@ -97,25 +105,6 @@
             <a href="#catalog" class="text-link">Celoten katalog →</a>
           </div>
           <div class="featured-row" data-featured-products aria-label="Najbolj prodajani izdelki"></div>
-        </div>
-      </section>
-      <section class="section shop-catalog-section" id="catalog">
-        <div class="container catalog-results-panel">
-          <div class="section-head split-head">
-            <div>
-              <p class="eyebrow">Katalog</p>
-              <h2>Vsi izdelki</h2>
-              <p data-catalog-summary>Urejen pregled izdelkov z iskanjem, razvrščanjem in filtri.</p>
-            </div>
-            <p class="product-count" data-product-count>0 izdelkov</p>
-          </div>
-          <div class="catalog-tools" aria-label="Iskanje in razvrščanje izdelkov">
-            <label for="product-search">Iskanje<input id="product-search" type="search" placeholder="Poišči izdelek, znamko ali SKU" data-product-search /></label>
-            <label for="product-sort">Razvrsti<select id="product-sort" data-product-sort><option value="featured">Priporočeno</option><option value="price-asc">Cena: najprej nižja</option><option value="price-desc">Cena: najprej višja</option><option value="name">Ime izdelka</option></select></label>
-            <button class="btn-secondary" type="button" data-clear-filters>Počisti filtre</button>
-          </div>
-          <div class="active-filters" data-active-filters hidden></div>
-          <div class="shop-grid" data-product-grid></div>
         </div>
       </section>
     </main>
