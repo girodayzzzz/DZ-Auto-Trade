@@ -59,7 +59,7 @@ navLinks.forEach((link) => {
 });
 
 const productGrid = document.querySelector('[data-product-grid]');
-const featuredGrid = document.querySelector('[data-featured-products]');
+const featuredGrids = document.querySelectorAll('[data-featured-products]');
 const filterList = document.querySelector('[data-filter-list]');
 let filterButtons = document.querySelectorAll('[data-filter]');
 const productCount = document.querySelector('[data-product-count]');
@@ -686,11 +686,32 @@ const renderProductDetail = () => {
   </div>`;
 };
 
-const renderFeaturedProducts = () => {
-  if (!featuredGrid) return;
+const renderFeaturedProductCard = (product) => `
+  <article class="featured-product-card">
+    <a class="featured-product-image" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
+      ${productImageMarkup(product)}
+    </a>
+    <div class="featured-product-content">
+      <span>${escapeHtml(product.badge || product.categoryLabel)}</span>
+      <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
+      <p>${escapeHtml(product.description)}</p>
+      <div class="featured-product-footer">
+        <strong>${escapeHtml(product.price)}</strong>
+        <button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj</button>
+      </div>
+    </div>
+  </article>
+`;
 
-  const featuredProducts = currentProducts.filter((product) => product.featured).slice(0, 4);
-  featuredGrid.innerHTML = featuredProducts.map(renderProductCard).join('');
+const renderFeaturedProducts = () => {
+  if (!featuredGrids.length) return;
+
+  const featuredProducts = currentProducts.filter((product) => product.featured && isCheckoutReady(product)).slice(0, 8);
+  featuredGrids.forEach((grid) => {
+    grid.innerHTML = featuredProducts.length
+      ? featuredProducts.map(renderFeaturedProductCard).join('')
+      : '<div class="empty-state"><h3>Izpostavljeni izdelki bodo kmalu dodani.</h3><p>Medtem si oglejte celoten katalog.</p></div>';
+  });
 };
 
 const bindFilterButtons = () => {
@@ -712,11 +733,13 @@ const bindFilterButtons = () => {
 
 const renderFilters = () => {
   if (!filterList) return;
-  const countByCategory = currentProducts.reduce((counts, product) => {
+  const purchasableProducts = currentProducts.filter(isCheckoutReady);
+  const countByCategory = purchasableProducts.reduce((counts, product) => {
     counts[product.category] = (counts[product.category] || 0) + 1;
     return counts;
   }, {});
-  filterList.innerHTML = `<button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-filter="all"><span>Vsi izdelki</span><strong>${currentProducts.length}</strong></button>${currentCategories
+  filterList.innerHTML = `<button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-filter="all"><span>Vsi izdelki</span><strong>${purchasableProducts.length}</strong></button>${currentCategories
+    .filter((category) => countByCategory[category.id])
     .map((category) => `<button class="filter-btn ${activeFilter === category.id ? 'active' : ''}" data-filter="${escapeHtml(category.id)}"><span>${escapeHtml(category.label)}</span><strong>${countByCategory[category.id] || 0}</strong></button>`)
     .join('')}`;
   bindFilterButtons();
