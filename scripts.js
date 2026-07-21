@@ -10,12 +10,40 @@ if (menuToggle && nav) {
   });
 }
 
-dropdownToggles.forEach((toggle) => {
-  toggle.addEventListener('click', () => {
-    const wrapper = toggle.closest('.nav-dropdown');
-    const isOpen = wrapper?.classList.toggle('open') ?? false;
-    toggle.setAttribute('aria-expanded', String(isOpen));
+const closeDropdown = (dropdown) => {
+  if (!dropdown) return;
+  dropdown.classList.remove('open');
+  dropdown.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded', 'false');
+};
+
+const closeAllDropdowns = (except = null) => {
+  document.querySelectorAll('.nav-dropdown.open').forEach((dropdown) => {
+    if (dropdown !== except) closeDropdown(dropdown);
   });
+};
+
+dropdownToggles.forEach((toggle) => {
+  toggle.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const wrapper = toggle.closest('.nav-dropdown');
+    const willOpen = !wrapper?.classList.contains('open');
+    closeAllDropdowns(wrapper);
+    wrapper?.classList.toggle('open', willOpen);
+    toggle.setAttribute('aria-expanded', String(willOpen));
+  });
+});
+
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.nav-dropdown')) closeAllDropdowns();
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  closeAllDropdowns();
+  if (nav?.classList.contains('open')) {
+    nav.classList.remove('open');
+    menuToggle?.setAttribute('aria-expanded', 'false');
+  }
 });
 
 navLinks.forEach((link) => {

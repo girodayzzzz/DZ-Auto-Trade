@@ -5685,3 +5685,192 @@ textarea:focus {
     display: none;
   }
 }
+
+/* Cross-device functionality fixes: prevent horizontal overflow and make mobile navigation truly collapsible. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.main-nav,
+.header-actions,
+.hero-content,
+.hero-card,
+.card,
+.product-card,
+.product-card-pro,
+.vehicle-card,
+.contact-form,
+.catalog-tools,
+.cart-drawer {
+  min-width: 0;
+}
+
+.nav-link,
+.dropdown-toggle,
+.btn-primary,
+.btn-secondary,
+.shop-btn,
+.cta-btn {
+  min-width: 0;
+  text-align: center;
+  white-space: normal;
+}
+
+@media (max-width: 900px) {
+  .site-header {
+    position: sticky;
+  }
+
+  .nav-wrap {
+    position: relative;
+  }
+
+  .main-nav {
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-height: min(72vh, calc(100dvh - 88px));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0 0 22px 22px;
+    overscroll-behavior: contain;
+  }
+
+  .main-nav .nav-link,
+  .main-nav .dropdown-toggle {
+    justify-content: space-between;
+    min-height: 48px;
+    padding: 0.72rem 0.9rem;
+    text-align: left;
+  }
+
+  .nav-dropdown .mega-menu {
+    display: none;
+    width: 100%;
+    margin: 0.35rem 0 0.55rem;
+    padding: 0.55rem;
+    border-radius: 18px;
+  }
+
+  .nav-dropdown.open .mega-menu {
+    display: grid;
+  }
+
+  .mega-menu a {
+    min-height: auto;
+    padding: 0.85rem;
+  }
+
+  .hero-grid,
+  .product-detail-layout,
+  .vehicle-preview,
+  .service-highlight,
+  .booking-panel,
+  .detailing-grid,
+  .before-after-grid,
+  .service-packages,
+  .admin-hero-grid,
+  .admin-dashboard,
+  .legal-layout,
+  .service-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  h1,
+  .hero-content h1 {
+    max-width: 18ch;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    width: min(100% - 1rem, var(--max-width));
+  }
+
+  h1,
+  .hero-content h1 {
+    max-width: none;
+    font-size: clamp(2rem, 11vw, 2.85rem);
+    overflow-wrap: anywhere;
+  }
+
+  h2,
+  h3,
+  p,
+  a,
+  button,
+  strong,
+  span,
+  small,
+  label,
+  input,
+  select,
+  textarea {
+    overflow-wrap: anywhere;
+  }
+
+  .hero-actions,
+  .product-actions,
+  .product-detail-actions,
+  .form-grid,
+  .catalog-tools,
+  .product-buy-panel,
+  .product-detail-trust,
+  .shop-insight-stats,
+  .shop-category-shortcuts,
+  .shop-trust-grid,
+  .footer-grid,
+  .trust-grid,
+  .card-grid,
+  .home-intro-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .shop-btn,
+  .cta-btn {
+    width: 100%;
+  }
+
+  .showcase-topline,
+  .product-card-footer > div,
+  .cart-head,
+  .cart-summary,
+  .cart-item,
+  .vehicle-strip-grid,
+  .footer-bottom,
+  .split-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .showcase-product {
+    grid-template-columns: 1fr;
+  }
+
+  .showcase-product img {
+    max-height: 210px;
+  }
+
+  .product-detail-image {
+    min-height: 240px;
+  }
+
+  .cart-panel {
+    max-width: none;
+  }
+
+  .cart-drawer {
+    max-height: min(70vh, calc(100dvh - 7rem));
+  }
+}
