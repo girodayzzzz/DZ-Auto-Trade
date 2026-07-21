@@ -507,10 +507,11 @@ const getVisibleProducts = () => {
   const selectedAvailability = availabilityFilter?.value ?? 'all';
   const selectedPrice = priceFilter?.value ?? 'all';
   const filtered = currentProducts.filter((product) => {
+    const purchasable = isCheckoutReady(product);
     const matchesCategory = activeFilter === 'all' || product.category === activeFilter;
     const matchesBrand = selectedBrand === 'all' || product.brand === selectedBrand;
     const matchesAvailability = selectedAvailability === 'all' || product.availability === selectedAvailability;
-    return matchesCategory && matchesBrand && matchesAvailability && productMatchesPrice(product, selectedPrice) && productMatchesSearch(product, query);
+    return purchasable && matchesCategory && matchesBrand && matchesAvailability && productMatchesPrice(product, selectedPrice) && productMatchesSearch(product, query);
   });
 
   return filtered.sort((a, b) => {
@@ -558,7 +559,7 @@ const renderProductCard = (product) => `
       </div>
       <div class="product-actions product-card-actions">
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
-        ${isCheckoutReady(product) ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>` : `<a class="shop-btn" href="${createInquiryUrl(product)}">Povpraševanje</a>`}
+        <button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>
       </div>
     </div>
   </article>
@@ -581,19 +582,14 @@ const renderProducts = () => {
 
 const renderShopInsights = () => {
   if (!shopInsights) return;
-  const inStockCount = currentProducts.filter((product) => product.availability.toLowerCase().includes('na zalogi')).length;
-  const cartReadyCount = currentProducts.filter(isCheckoutReady).length;
+  const cartReadyProducts = currentProducts.filter(isCheckoutReady);
+  const cartReadyCount = cartReadyProducts.length;
   const brandCount = uniqueSorted(currentProducts.map((product) => product.brand)).length;
-  const countByCategory = currentProducts.reduce((counts, product) => {
-    counts[product.category] = (counts[product.category] || 0) + 1;
-    return counts;
-  }, {});
-
   shopInsights.innerHTML = `
     <div class="shop-insight-stats" aria-label="Pregled trgovine">
-      <div><strong>${currentProducts.length}</strong><span>izdelkov v katalogu</span></div>
-      <div><strong>${inStockCount}</strong><span>označenih na zalogi</span></div>
-      <div><strong>${cartReadyCount}</strong><span>za takojšen nakup</span></div>
+      <div><strong>${cartReadyCount}</strong><span>izdelkov za košarico</span></div>
+      <div><strong>1 klik</strong><span>dodajanje v košarico</span></div>
+      <div><strong>Stripe</strong><span>varno spletno plačilo</span></div>
       <div><strong>${brandCount}</strong><span>znamk</span></div>
     </div>
     <div class="shop-category-shortcuts" aria-label="Hitre kategorije">
@@ -601,7 +597,7 @@ const renderShopInsights = () => {
         .map(
           (category) => `<a href="trgovina.html#${escapeHtml(category.id)}" data-shop-shortcut="${escapeHtml(category.id)}">
             <span>${escapeHtml(category.label)}</span>
-            <strong>${countByCategory[category.id] || 0} izdelkov</strong>
+            <strong>${cartReadyProducts.filter((product) => product.category === category.id).length} izdelkov</strong>
           </a>`
         )
         .join('')}
@@ -674,15 +670,15 @@ const renderProductDetail = () => {
       </div>
       ${product.images.length > 1 ? `<div class="product-image-gallery" aria-label="Dodatne slike izdelka">${product.images.map((image, index) => `<button class="product-image-thumb${index === 0 ? ' active' : ''}" type="button" data-product-gallery-image="${escapeHtml(image)}" aria-label="Prikaži sliko ${index + 1} za ${escapeHtml(product.name)}">${productImageMarkup(product, true, image)}</button>`).join('')}</div>` : ''}
       <div class="product-detail-trust">
-        <span>✓ ${escapeHtml(product.availability)}</span>
-        <span>✓ ${escapeHtml(product.delivery)}</span>
-        <span>✓ Podpora pred nakupom</span>
+        <span>✓ Dodaj v košarico</span>
+        <span>✓ Stripe Checkout</span>
+        <span>✓ Dostava se obračuna v košarici</span>
       </div>
     </div>
     <article class="card product-detail-info">
       <div class="product-detail-kicker">
         <span class="badge">${escapeHtml(product.categoryLabel)}</span>
-        ${isCheckoutReady(product) ? '<span class="badge">Košarica</span>' : '<span class="badge">Povpraševanje</span>'}
+        <span class="badge">Košarica</span>
       </div>
       <h1>${escapeHtml(product.name)}</h1>
       <p class="product-detail-lead">${escapeHtml(product.description)}</p>
@@ -692,30 +688,15 @@ const renderProductDetail = () => {
           <strong>${escapeHtml(product.price)}</strong>
           ${product.regularPrice ? `<span>Redna cena: ${escapeHtml(product.regularPrice)}</span>` : ''}
         </div>
-        <div>
-          <small>Dobava</small>
-          <strong>${escapeHtml(product.delivery)}</strong>
-          <span>${escapeHtml(product.availability)}</span>
-        </div>
+
       </div>
-      <dl class="product-details">
-        <div><dt>Šifra</dt><dd>${escapeHtml(product.sku)}</dd></div>
-        <div><dt>Cena</dt><dd>${escapeHtml(product.price)}</dd></div>
-        <div><dt>Zaloga</dt><dd>${escapeHtml(product.availability)}</dd></div>
-        <div><dt>Dobava</dt><dd>${escapeHtml(product.delivery)}</dd></div>
-        ${product.brand ? `<div><dt>Znamka</dt><dd>${escapeHtml(product.brand)}</dd></div>` : ''}
-        ${product.compatibility ? `<div><dt>Ustreznost</dt><dd>${escapeHtml(product.compatibility)}</dd></div>` : ''}
-        ${product.regularPrice ? `<div><dt>Redna cena</dt><dd>${escapeHtml(product.regularPrice)}</dd></div>` : ''}
-        <div><dt>Poštnina</dt><dd>${escapeHtml(product.shippingNote || 'Poštnina se obračuna v košarici; nad 60 € je brezplačna.')}</dd></div>
-      </dl>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
       <div class="product-detail-help product-info-grid">
-        <section><h2>Pred naročilom</h2><ul><li>Pri avto delih priporočamo preverjanje po VIN številki.</li><li>Pri čistilih preverite namen uporabe in navodila proizvajalca.</li><li>Če niste prepričani, pošljite povpraševanje in pripravimo priporočilo.</li></ul></section>
-        <section><h2>Dostava, zaloga in poštnina</h2><ul><li>Zaloga je lahko pri dobavitelju, zato količine ne prikazujemo, če ni ročno potrjena.</li><li>Dobavni rok in razpoložljivost potrdimo pred izvedbo naročila.</li><li>Poštnina je prikazana v košarici; nad 60 € je predvidena brezplačna poštnina.</li></ul></section>
+        <section><h2>Kako kupiti?</h2><ul><li>Kliknite »Dodaj v košarico«.</li><li>V košarici preverite količino in poštnino.</li><li>Nakup zaključite prek varnega Stripe Checkout plačila.</li></ul></section>
       </div>
       <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
-      <div class="product-actions product-detail-actions">${cartButton}${checkoutButton}</div>
-      <p class="form-note" data-checkout-status>Online plačilo je omogočeno samo prek Stripe Checkout. Za avto dele priporočamo preverjanje po VIN številki pred naročilom.</p>
+      <div class="product-actions product-detail-actions">${cartButton || `<button class="shop-btn" type="button" disabled>Trenutno ni za košarico</button>`}${checkoutButton}</div>
+      <p class="form-note" data-checkout-status>Online nakup je omogočen prek košarice in varnega Stripe Checkout plačila.</p>
     </article>
   </div>`;
 };
