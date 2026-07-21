@@ -6315,3 +6315,59 @@ body:has([data-product-grid]) .product-card-pro .product-brand-pill {
   background: #ffffff;
   box-shadow: 30px 0 0 #ffffff;
 }
+
+.cart-terms {
+  display: block;
+  margin: 0.85rem 0;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #dbe4f0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.cart-terms input {
+  margin-right: 0.45rem;
+  accent-color: #e50914;
+}
+
+.cart-terms a {
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(229, 9, 20, 0.75);
+}
+
+.admin-orders-card {
+  grid-column: 1 / -1;
+}
+
+.admin-order-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.admin-order-item {
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.64);
+}
+
+.admin-order-item strong,
+.admin-order-item span {
+  display: block;
+}
+
+.admin-order-item span {
+  margin-top: 0.25rem;
+  color: #b9c4d6;
+  font-size: 0.9rem;
+}
+
+.admin-order-item p {
+  margin: 0.7rem 0 0;
+  color: #f8fafc;
+}

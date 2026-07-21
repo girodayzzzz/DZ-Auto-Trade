@@ -1,5 +1,6 @@
 const PRODUCTS_KEY = 'products';
 const CATEGORIES_KEY = 'categories';
+const ORDERS_PREFIX = 'orders:';
 const DEFAULT_PRODUCTS = {
   "products": [
     {
@@ -349,6 +350,45 @@ const checkoutCorsHeaders = (request) => {
 };
 const checkoutJson = (request, data, init = {}) => Response.json(data, { ...init, headers: { ...checkoutCorsHeaders(request), ...(init.headers || {}) } });
 
+const bytesToHex = (buffer) => [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+const timingSafeEqual = (a = '', b = '') => {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let index = 0; index < a.length; index += 1) mismatch |= a.charCodeAt(index) ^ b.charCodeAt(index);
+  return mismatch === 0;
+};
+
+const verifyStripeSignature = async (payload, signatureHeader, secret) => {
+  if (!signatureHeader || !secret) return false;
+  const parts = Object.fromEntries(signatureHeader.split(',').map((part) => {
+    const [key, value] = part.split('=');
+    return [key, value];
+  }));
+  const timestamp = parts.t;
+  const expected = parts.v1;
+  if (!timestamp || !expected) return false;
+  const signedPayload = `${timestamp}.${payload}`;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const signature = bytesToHex(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedPayload)));
+  return timingSafeEqual(signature, expected);
+};
+
+const createOrderId = () => `dz-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+
+const saveOrder = async (env, order) => {
+  if (!env.PRODUCTS_KV) throw new Error('PRODUCTS_KV binding is required for orders.');
+  const savedAt = new Date().toISOString();
+  await env.PRODUCTS_KV.put(`${ORDERS_PREFIX}${order.id}`, JSON.stringify({ ...order, updatedAt: savedAt }, null, 2));
+};
+
+const readOrder = async (env, id) => env.PRODUCTS_KV.get(`${ORDERS_PREFIX}${id}`, 'json');
+
+const listOrders = async (env, limit = 50) => {
+  const list = await env.PRODUCTS_KV.list({ prefix: ORDERS_PREFIX, limit });
+  const orders = await Promise.all(list.keys.map((key) => env.PRODUCTS_KV.get(key.name, 'json')));
+  return orders.filter(Boolean).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+};
+
 const DEFAULT_CATEGORIES = [
   { id: 'avto-deli', label: 'Avto deli', description: 'Filtri, zavore, brisalci in potrošni deli' },
   { id: 'cistila', label: 'Čistila', description: 'Izdelki za nego notranjosti in zunanjosti' },
@@ -500,6 +540,8 @@ const createStripeCheckoutSession = async (request, env) => {
     return checkoutJson(request, { error: safeMessage }, { status: 400 });
   }
 
+  const orderId = createOrderId();
+  const createdAt = new Date().toISOString();
   const subtotal = lineItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
   const shipping = lineItems.some((item) => item.metadata?.type === 'product') && subtotal > 0 && subtotal < 6000 ? 590 : 0;
   const stripeLineItems = [...lineItems];
@@ -518,7 +560,9 @@ const createStripeCheckoutSession = async (request, env) => {
     Object.entries(item.metadata || {}).forEach(([key, value]) => params.append(`line_items[${index}][price_data][product_data][metadata][${key}]`, String(value).slice(0, 120)));
     if (item.sku) params.append(`line_items[${index}][price_data][product_data][metadata][sku]`, item.sku);
   });
+  params.append('client_reference_id', orderId);
   params.append('metadata[source]', 'dz-auto-trade');
+  params.append('metadata[order_id]', orderId);
   params.append('metadata[order_total]', String(subtotal + shipping));
   params.append('metadata[skus]', lineItems.map((item) => `${item.quantity}x${item.sku}`).join(','));
   params.append('billing_address_collection', 'required');
@@ -526,6 +570,19 @@ const createStripeCheckoutSession = async (request, env) => {
   ['SI', 'HR', 'AT', 'HU', 'IT'].forEach((country, index) => params.append(`shipping_address_collection[allowed_countries][${index}]`, country));
 
   try {
+    await saveOrder(env, {
+      id: orderId,
+      status: 'checkout_created',
+      paymentStatus: 'pending',
+      createdAt,
+      source: 'stripe_checkout',
+      currency: 'eur',
+      subtotalCents: subtotal,
+      shippingCents: shipping,
+      totalCents: subtotal + shipping,
+      lineItems: stripeLineItems.map((item) => ({ sku: item.sku, name: item.name, quantity: item.quantity, unitAmountCents: item.priceCents, type: item.metadata?.type || 'product' })),
+    });
+
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -533,10 +590,63 @@ const createStripeCheckoutSession = async (request, env) => {
     });
     const data = await stripeResponse.json().catch(() => ({}));
     if (!stripeResponse.ok) return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.' }, { status: 502 });
+    await saveOrder(env, {
+      id: orderId,
+      status: 'checkout_redirected',
+      paymentStatus: 'pending',
+      createdAt,
+      stripeSessionId: data.id || '',
+      stripeCheckoutUrl: data.url || '',
+      source: 'stripe_checkout',
+      currency: 'eur',
+      subtotalCents: subtotal,
+      shippingCents: shipping,
+      totalCents: subtotal + shipping,
+      lineItems: stripeLineItems.map((item) => ({ sku: item.sku, name: item.name, quantity: item.quantity, unitAmountCents: item.priceCents, type: item.metadata?.type || 'product' })),
+    });
     return checkoutJson(request, { url: data.url });
   } catch (error) {
     return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.' }, { status: 502 });
   }
+};
+
+
+
+const handleStripeWebhook = async (request, env) => {
+  if (request.method !== 'POST') return json({ error: 'Method not allowed.' }, { status: 405, headers: { Allow: 'POST' } });
+  if (!env.STRIPE_WEBHOOK_SECRET) return json({ error: 'Stripe webhook is not configured.' }, { status: 500 });
+  const signature = request.headers.get('Stripe-Signature') || '';
+  const payload = await request.text();
+  const verified = await verifyStripeSignature(payload, signature, env.STRIPE_WEBHOOK_SECRET);
+  if (!verified) return json({ error: 'Invalid Stripe webhook signature.' }, { status: 400 });
+
+  const event = JSON.parse(payload);
+  if (event.type !== 'checkout.session.completed' && event.type !== 'checkout.session.async_payment_succeeded') {
+    return json({ received: true, ignored: event.type });
+  }
+
+  const session = event.data?.object || {};
+  const orderId = session.metadata?.order_id || session.client_reference_id;
+  if (!orderId) return json({ error: 'Missing order id.' }, { status: 400 });
+
+  const previousOrder = (await readOrder(env, orderId)) || { id: orderId, createdAt: new Date().toISOString(), lineItems: [] };
+  await saveOrder(env, {
+    ...previousOrder,
+    status: 'paid',
+    paymentStatus: session.payment_status || 'paid',
+    stripeSessionId: session.id || previousOrder.stripeSessionId || '',
+    customerEmail: session.customer_details?.email || session.customer_email || previousOrder.customerEmail || '',
+    customerName: session.customer_details?.name || previousOrder.customerName || '',
+    customerPhone: session.customer_details?.phone || previousOrder.customerPhone || '',
+    customerAddress: session.customer_details?.address || previousOrder.customerAddress || null,
+    shippingDetails: session.shipping_details || previousOrder.shippingDetails || null,
+    totalCents: session.amount_total ?? previousOrder.totalCents,
+    currency: session.currency || previousOrder.currency || 'eur',
+    paidAt: new Date().toISOString(),
+    stripeEventId: event.id || '',
+  });
+
+  return json({ received: true, orderId });
 };
 
 const requireAccess = (request) => {
@@ -561,8 +671,16 @@ export default {
       return createStripeCheckoutSession(request, env);
     }
 
+    if (url.pathname === '/api/stripe-webhook') {
+      return handleStripeWebhook(request, env);
+    }
+
     if (url.pathname.startsWith('/api/admin/') && !requireAccess(request)) {
       return json({ error: 'Admin access required. Protect this route with Cloudflare Access OTP.' }, { status: 401 });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/admin/orders') {
+      return json({ orders: await listOrders(env) });
     }
 
     if (request.method === 'POST' && url.pathname === '/api/admin/products') {

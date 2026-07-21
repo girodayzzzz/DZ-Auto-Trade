@@ -414,9 +414,10 @@ const renderCart = () => {
             <strong data-cart-total>0,00 €</strong>
           </div>
           <p class="cart-note" data-cart-shipping-note>Brezplačna poštnina nad 60 €.</p>
+          <label class="cart-terms"><input type="checkbox" data-cart-terms /> Potrjujem, da sem seznanjen/a s <a href="splosni-pogoji.html">splošnimi pogoji</a>, <a href="dostava-placila.html">dostavo in plačili</a> ter <a href="vracila-reklamacije.html">vračili/reklamacijami</a>.</label>
           <button class="shop-btn" type="button" data-cart-checkout>Varno plačilo prek Stripe</button>
           <a class="btn-secondary" href="kontakt.html" data-cart-inquiry>Pošlji povpraševanje</a>
-          <p class="cart-note" data-checkout-status>Če Stripe ni konfiguriran, lahko košarico pošljete kot povpraševanje.</p>
+          <p class="cart-note" data-checkout-status>Plačilo poteka prek Stripe Checkout. Naročilo se po uspešnem plačilu samodejno zabeleži za obdelavo.</p>
           <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
         </div>
       </aside>`
@@ -676,7 +677,7 @@ const renderProductDetail = () => {
       </div>
       <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
       <div class="product-actions product-detail-actions">${cartButton || `<button class="shop-btn" type="button" disabled>Trenutno ni za košarico</button>`}${checkoutButton}</div>
-      <p class="form-note" data-checkout-status>Online nakup je omogočen prek košarice in varnega Stripe Checkout plačila.</p>
+      <p class="form-note" data-checkout-status>Online nakup je omogočen prek košarice in varnega Stripe Checkout plačila. Pred zaključkom plačila potrdite splošne pogoje, dostavo in vračila.</p>
     </article>
   </div>`;
 };
@@ -778,6 +779,12 @@ document.addEventListener('click', async (event) => {
 
     if (!summary.lines.length) {
       window.dzCheckout?.setStatus('Košarica je prazna. Najprej dodajte izdelek.', 'error', cartCheckoutButton);
+      return;
+    }
+
+    const termsAccepted = document.querySelector('[data-cart-terms]')?.checked;
+    if (!termsAccepted) {
+      window.dzCheckout?.setStatus('Pred plačilom potrdite splošne pogoje, dostavo in vračila.', 'error', cartCheckoutButton);
       return;
     }
 
