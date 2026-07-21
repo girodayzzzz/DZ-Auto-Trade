@@ -1,0 +1,11 @@
+name = "dz-auto-trade-products"
+main = "cloudflare-worker.js"
+compatibility_date = "2026-07-21"
+compatibility_flags = ["nodejs_compat"]
+
+# API routes for the static DZ Auto Trade site. The Pages project serves the
+# website; this Worker serves only backend endpoints under /api/*.
+routes = [
+  { pattern = "dzautotrade.si/api/*", zone_name = "dzautotrade.si" },
+  { pattern = "www.dzautotrade.si/api/*", zone_name = "dzautotrade.si" }
+]

@@ -16,6 +16,8 @@ const categoryStat = document.querySelector('[data-stat-categories]');
 const featuredStat = document.querySelector('[data-stat-featured]');
 const imageInput = document.querySelector('[data-image-input]');
 const imagePreview = document.querySelector('[data-image-preview]');
+const orderList = document.querySelector('[data-admin-order-list]');
+const refreshOrdersButton = document.querySelector('[data-refresh-orders]');
 
 const defaultCategories = [
   { id: 'avto-deli', label: 'Avto deli', description: 'Filtri, zavore, brisalci in potrošni deli' },
@@ -25,6 +27,7 @@ const defaultCategories = [
 let categories = [...defaultCategories];
 let products = [];
 let searchTerm = '';
+let orders = [];
 
 const setStatus = (message, type = 'info') => {
   if (!statusBox) return;
@@ -39,6 +42,8 @@ const slugify = (value = '') =>
   String(value).toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const categoryLabel = (id) => categories.find((category) => category.id === id)?.label || id || 'Kategorija';
+const formatCurrency = (cents = 0, currency = 'EUR') => new Intl.NumberFormat('sl-SI', { style: 'currency', currency: String(currency || 'EUR').toUpperCase() }).format(Number(cents || 0) / 100);
+const formatDate = (value = '') => value ? new Intl.DateTimeFormat('sl-SI', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—';
 
 
 const renderImagePreview = (value = '') => {
@@ -234,6 +239,29 @@ const deleteCategory = async (id) => {
   setStatus('Kategorija je izbrisana.', 'success');
 };
 
+
+const renderOrders = () => {
+  if (!orderList) return;
+  orderList.innerHTML = orders.length ? orders.map((order) => {
+    const lines = Array.isArray(order.lineItems) ? order.lineItems.filter((line) => line.type !== 'shipping') : [];
+    const items = lines.map((line) => `${escapeHtml(line.quantity || 1)}× ${escapeHtml(line.name || line.sku || 'Postavka')}`).join('<br />') || 'Ni postavk';
+    const statusLabel = order.status === 'paid' ? 'Plačano' : 'V postopku';
+    return `<article class="admin-order-item"><div><strong>${escapeHtml(order.id || 'Naročilo')}</strong><span>${statusLabel} • ${formatCurrency(order.totalCents, order.currency)} • ${formatDate(order.paidAt || order.createdAt)}</span><span>${escapeHtml(order.customerName || '')}${order.customerEmail ? ` • ${escapeHtml(order.customerEmail)}` : ''}${order.customerPhone ? ` • ${escapeHtml(order.customerPhone)}` : ''}</span><p>${items}</p></div></article>`;
+  }).join('') : '<p class="form-note">Ni shranjenih naročil. Ko kupec začne Stripe Checkout, bo tukaj nastal zapis.</p>';
+};
+
+const loadOrders = async () => {
+  if (!orderList) return;
+  try {
+    orderList.innerHTML = '<p class="form-note">Nalaganje naročil...</p>';
+    const data = await apiRequest('/api/admin/orders');
+    orders = Array.isArray(data.orders) ? data.orders : [];
+    renderOrders();
+  } catch (error) {
+    orderList.innerHTML = `<p class="form-note">${escapeHtml(error.message)} Za ogled naročil zaščitite /api/admin/* s Cloudflare Access.</p>`;
+  }
+};
+
 const renderCategories = () => {
   categoryList.innerHTML = categories.map((category) => `<article class="admin-category-item"><div><strong>${escapeHtml(category.label)}</strong><span>${escapeHtml(category.id)}${category.description ? ` • ${escapeHtml(category.description)}` : ''}</span></div><div class="admin-item-actions"><button class="btn-secondary" type="button" data-edit-category="${escapeHtml(category.id)}">Uredi</button><button class="btn-secondary danger-btn" type="button" data-delete-category="${escapeHtml(category.id)}">Izbriši</button></div></article>`).join('');
 };
@@ -299,4 +327,6 @@ imageInput?.addEventListener('paste', (event) => handleImagePaste(event));
 resetButton?.addEventListener('click', resetForm);
 resetCategoryButton?.addEventListener('click', resetCategoryForm);
 refreshButton?.addEventListener('click', () => loadProducts().catch((error) => setStatus(error.message, 'error')));
+refreshOrdersButton?.addEventListener('click', () => loadOrders());
 loadProducts().catch((error) => setStatus(error.message, 'error'));
+loadOrders();

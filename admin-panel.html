@@ -51,6 +51,7 @@
             <a href="#product-editor">Izdelek</a>
             <a href="#category-manager">Kategorije</a>
             <a href="#catalog-manager">Katalog</a>
+            <a href="#orders-manager">Naročila</a>
             <button class="btn-secondary" type="button" data-refresh-products>Osveži podatke</button>
           </aside>
 
@@ -178,6 +179,12 @@
             <input class="admin-search-input" type="search" placeholder="Išči po imenu, SKU ali kategoriji..." data-admin-search />
             <div class="admin-product-list" data-admin-product-list></div>
           </aside>
+
+          <section id="orders-manager" class="card admin-products-card glass-card admin-orders-card">
+            <div class="section-head split-head"><div><p class="eyebrow">Stripe naročila</p><h2>Plačana in začeta naročila</h2></div><button class="btn-secondary" type="button" data-refresh-orders>Osveži naročila</button></div>
+            <p class="form-note">Seznam se polni iz Cloudflare KV po začetku Stripe Checkouta in se po webhooku označi kot plačan.</p>
+            <div class="admin-order-list" data-admin-order-list><p class="form-note">Naročila še niso naložena.</p></div>
+          </section>
         </div>
       </section>
     </main>
