@@ -7252,18 +7252,17 @@ body.shop-page {
   }
 }
 
-/* Shop refinements: fixed top search/category bar and uniform full-frame product imagery. */
+/* Shop refinements: vertical search/category controls and uniform full-frame product imagery. */
 .shop-page .shop-catalog-section {
   padding-top: clamp(1rem, 2vw, 1.5rem);
 }
 
 .shop-page .catalog-tools-sticky {
-  position: sticky;
-  top: clamp(0.65rem, 1.5vw, 1rem);
-  z-index: 20;
+  position: static;
+  z-index: 1;
   display: grid;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
-  gap: 0.9rem;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
   align-items: stretch;
   padding: 0.85rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -7275,9 +7274,9 @@ body.shop-page {
 
 .shop-page .catalog-search-wrap {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(150px, 0.55fr) auto;
+  grid-template-columns: 1fr;
   gap: 0.7rem;
-  align-items: end;
+  align-items: stretch;
 }
 
 .shop-page .catalog-tools-sticky label {
@@ -7300,19 +7299,19 @@ body.shop-page {
 }
 
 .shop-page .catalog-filter-rail {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 0.55rem;
-  align-items: center;
+  align-items: stretch;
   min-width: 0;
-  overflow-x: auto;
+  overflow: visible;
   padding: 0.15rem 0.1rem 0.2rem;
-  scrollbar-width: thin;
 }
 
 .shop-page .catalog-filter-rail .filter-btn {
-  flex: 0 0 auto;
+  width: 100%;
   min-height: 3.55rem;
-  min-width: 9.2rem;
+  min-width: 0;
   padding: 0.7rem 0.9rem;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.72);
@@ -7340,20 +7339,10 @@ body.shop-page {
   filter: none;
 }
 
-@media (max-width: 980px) {
-  .shop-page .catalog-tools-sticky {
-    grid-template-columns: 1fr;
-    top: 0.5rem;
-  }
-}
-
 @media (max-width: 680px) {
-  .shop-page .catalog-search-wrap {
-    grid-template-columns: 1fr;
-  }
-
-  .shop-page .catalog-filter-rail .filter-btn {
-    min-width: 8.4rem;
+  .shop-page .catalog-tools-sticky {
+    padding: 0.7rem;
+    border-radius: 20px;
   }
 }
 
