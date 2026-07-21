@@ -559,13 +559,8 @@ const renderProductCard = (product) => `
       ${product.brand ? `<div class="product-meta"><span class="product-brand-pill">${escapeHtml(product.brand)}</span></div>` : ''}
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
       <p class="product-card-summary">${escapeHtml(product.description)}</p>
-      <div class="product-card-specs" aria-label="Podatki izdelka">
-        <span><small>Kategorija</small><strong>${escapeHtml(product.categoryLabel)}</strong></span>
-        <span><small>SKU</small><strong>${escapeHtml(product.sku)}</strong></span>
-      </div>
       <div class="product-card-footer">
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
-        <p class="product-shipping-note">${escapeHtml(product.delivery || product.availability || 'Dobava po potrditvi')}</p>
       </div>
       <div class="product-actions product-card-actions">
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
@@ -672,6 +667,10 @@ const renderProductDetail = () => {
       </div>
       <h1>${escapeHtml(product.name)}</h1>
       <p class="product-detail-lead">${escapeHtml(product.description)}</p>
+      <dl class="product-detail-meta" aria-label="Podatki izdelka">
+        <div><dt>Kategorija</dt><dd>${escapeHtml(product.categoryLabel)}</dd></div>
+        <div><dt>SKU</dt><dd>${escapeHtml(product.sku)}</dd></div>
+      </dl>
       <div class="product-buy-panel">
         <div>
           <small>Cena</small>
