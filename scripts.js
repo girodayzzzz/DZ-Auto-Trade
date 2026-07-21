@@ -104,6 +104,10 @@ if (window.location.hash) {
   activeFilter = window.location.hash.replace('#', '') || 'all';
 }
 
+if (productGrid && !filterList) {
+  activeFilter = 'all';
+}
+
 const escapeHtml = (value = '') =>
   String(value)
     .replaceAll('&', '&amp;')
