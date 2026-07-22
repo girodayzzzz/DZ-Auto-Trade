@@ -8638,6 +8638,9 @@ body.shop-page:has([data-product-grid]) .shop-grid {
   .main-nav.open,
   .site-header .main-nav.open {
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
   }
 
   .main-nav .nav-link,
@@ -8661,6 +8664,7 @@ body.shop-page:has([data-product-grid]) .shop-grid {
   .site-header .nav-dropdown.open .mega-menu {
     position: static;
     display: grid;
+    grid-template-columns: 1fr;
     width: 100%;
     min-width: 0;
     max-width: 100%;
