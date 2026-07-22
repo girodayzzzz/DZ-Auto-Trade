@@ -3,10 +3,20 @@ const nav = document.querySelector('.main-nav');
 const navLinks = document.querySelectorAll('.main-nav a.nav-link');
 const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 
+const setMobileMenuState = (isOpen) => {
+  if (!menuToggle || !nav) return;
+  nav.classList.toggle('open', isOpen);
+  menuToggle.classList.toggle('open', isOpen);
+  menuToggle.setAttribute('aria-expanded', String(isOpen));
+  menuToggle.setAttribute('aria-label', isOpen ? 'Zapri meni' : 'Odpri meni');
+  document.body.classList.toggle('menu-open', isOpen);
+
+  if (!isOpen) closeAllDropdowns();
+};
+
 if (menuToggle && nav) {
   menuToggle.addEventListener('click', () => {
-    const isOpen = nav.classList.toggle('open');
-    menuToggle.setAttribute('aria-expanded', String(isOpen));
+    setMobileMenuState(!nav.classList.contains('open'));
   });
 }
 
@@ -41,8 +51,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
   closeAllDropdowns();
   if (nav?.classList.contains('open')) {
-    nav.classList.remove('open');
-    menuToggle?.setAttribute('aria-expanded', 'false');
+    setMobileMenuState(false);
   }
 });
 
@@ -50,12 +59,16 @@ navLinks.forEach((link) => {
   link.addEventListener('click', () => {
     navLinks.forEach((l) => l.classList.remove('active'));
     link.classList.add('active');
-
-    if (nav?.classList.contains('open')) {
-      nav.classList.remove('open');
-      menuToggle?.setAttribute('aria-expanded', 'false');
-    }
+    setMobileMenuState(false);
   });
+});
+
+document.querySelectorAll('.mega-menu a').forEach((link) => {
+  link.addEventListener('click', () => setMobileMenuState(false));
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) setMobileMenuState(false);
 });
 
 const productGrid = document.querySelector('[data-product-grid]');
