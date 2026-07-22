@@ -7997,3 +7997,110 @@ svg {
     min-height: 170px;
   }
 }
+
+/* Final mobile navigation hardening: drawer menu and dropdowns stay usable on phones. */
+@media (max-width: 900px) {
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  .site-header {
+    isolation: isolate;
+  }
+
+  .nav-wrap {
+    display: grid;
+    grid-template-columns: auto 48px;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .site-header .brand {
+    max-width: min(72vw, 230px);
+  }
+
+  .site-header .brand-logo {
+    width: clamp(128px, 44vw, 178px);
+    height: 52px;
+  }
+
+  .menu-toggle {
+    display: inline-grid !important;
+    place-items: center;
+    justify-self: end;
+    position: relative;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .menu-toggle span {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .menu-toggle.open span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .menu-toggle.open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-toggle.open span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .site-header .main-nav {
+    position: fixed;
+    inset: 70px var(--safe-page-gutter) auto var(--safe-page-gutter);
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    max-height: calc(100dvh - 86px);
+    padding: 0.8rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 22px;
+  }
+
+  .site-header .main-nav.open {
+    display: flex !important;
+  }
+
+  .site-header .nav-dropdown {
+    width: 100%;
+  }
+
+  .site-header .nav-dropdown:not(.open) .mega-menu {
+    display: none !important;
+  }
+
+  .site-header .nav-dropdown.open .mega-menu {
+    position: static;
+    display: grid !important;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .site-header .mega-menu,
+  .site-header .mega-menu.service-menu {
+    min-width: 0;
+    grid-template-columns: 1fr !important;
+  }
+
+  .header-actions {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header .main-nav {
+    inset-inline: 0.5rem;
+  }
+
+  .site-header .brand {
+    max-width: calc(100vw - 5rem);
+  }
+}
