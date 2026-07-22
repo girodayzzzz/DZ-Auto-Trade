@@ -5,6 +5,7 @@ const setFormspreeStatus = (form, message, type = 'info') => {
   const status = form.querySelector('[data-formspree-status]');
   if (!status) return;
   status.textContent = message;
+  status.hidden = !message;
   status.dataset.type = type;
 };
 
@@ -18,13 +19,15 @@ const getFormspreeEndpoint = (form) => {
 formspreeForms.forEach((form) => {
   const endpoint = getFormspreeEndpoint(form);
   if (!endpoint) {
-    setFormspreeStatus(form, 'Formspree endpoint še ni nastavljen, zato se kot rezerva odpre email program.', 'warning');
+    const status = form.querySelector('[data-formspree-status]');
+    if (status) status.hidden = true;
     return;
   }
 
   form.action = endpoint;
   form.method = 'POST';
-  setFormspreeStatus(form, 'Obrazec je povezan s Formspree in bo poslan podpori DZ Auto Trade.', 'success');
+  const status = form.querySelector('[data-formspree-status]');
+  if (status) status.hidden = true;
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -35,7 +38,7 @@ formspreeForms.forEach((form) => {
     }
     const submitButton = form.querySelector('[type="submit"]');
     submitButton?.setAttribute('disabled', 'true');
-    setFormspreeStatus(form, 'Pošiljamo sporočilo prek Formspree...', 'info');
+    setFormspreeStatus(form, 'Pošiljamo sporočilo...', 'info');
 
     try {
       const response = await fetch(endpoint, {
@@ -44,7 +47,7 @@ formspreeForms.forEach((form) => {
         body: new FormData(form),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Formspree sporočila ni mogel poslati.');
+      if (!response.ok) throw new Error(data.error || 'Sporočila ni bilo mogoče poslati.');
       form.reset();
       setFormspreeStatus(form, 'Hvala! Sporočilo je poslano. Odgovorili bomo v najkrajšem možnem času.', 'success');
     } catch (error) {
