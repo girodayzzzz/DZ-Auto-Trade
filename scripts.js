@@ -924,16 +924,26 @@ loadProducts().then(() => {
 
 const vehicleFilters = document.querySelectorAll('[data-vehicle-filter]');
 const vehicleGrid = document.querySelector('[data-vehicle-grid]');
+const vehicleCount = document.querySelector('[data-vehicle-count]');
+const vehicleReset = document.querySelector('[data-vehicle-reset]');
 const renderVehicleFilters = () => {
   if (!vehicleGrid || !vehicleFilters.length) return;
   const values = Object.fromEntries([...vehicleFilters].map((filter) => [filter.dataset.vehicleFilter, filter.value]));
+  let visibleCount = 0;
   vehicleGrid.querySelectorAll('.vehicle-card').forEach((card) => {
     const fuelMatch = !values.fuel || values.fuel === 'all' || card.dataset.fuel === values.fuel;
     const transmissionMatch = !values.transmission || values.transmission === 'all' || card.dataset.transmission === values.transmission;
     const priceMatch = !values.price || values.price === 'all' || Number(card.dataset.price || 0) <= Number(values.price);
-    card.hidden = !(fuelMatch && transmissionMatch && priceMatch);
+    const isVisible = fuelMatch && transmissionMatch && priceMatch;
+    card.hidden = !isVisible;
+    if (isVisible) visibleCount += 1;
   });
+  if (vehicleCount) vehicleCount.textContent = visibleCount === 1 ? 'Prikazano je 1 vozilo.' : `Prikazanih je ${visibleCount} vozil.`;
 };
+vehicleReset?.addEventListener('click', () => {
+  vehicleFilters.forEach((filter) => { filter.value = 'all'; });
+  renderVehicleFilters();
+});
 vehicleFilters.forEach((filter) => filter.addEventListener('change', renderVehicleFilters));
 renderVehicleFilters();
 
