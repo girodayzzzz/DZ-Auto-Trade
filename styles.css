@@ -8924,3 +8924,45 @@ body.shop-page:has([data-product-grid]) .shop-grid {
     font-size: 16px;
   }
 }
+
+/* Professional service navigation and mobile shop visibility fixes */
+.mega-menu.service-menu {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.cleaning-service-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+@media (max-width: 760px) {
+  .shop-page .shop-catalog-section,
+  .shop-page .catalog-results-panel,
+  .shop-page .shop-grid,
+  .shop-page .shop-grid > *,
+  .shop-page [data-product-grid] > * {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  .shop-page .catalog-results-panel {
+    overflow: visible;
+  }
+
+  .shop-page .shop-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+
+  .shop-page .product-card-pro {
+    min-width: 0;
+  }
+
+  .shop-page .product-card-pro .product-body,
+  .shop-page .product-card-pro h3,
+  .shop-page .product-card-pro a,
+  .shop-page .product-card-pro strong {
+    overflow-wrap: anywhere;
+  }
+}
