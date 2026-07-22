@@ -3,4 +3,6 @@
 window.FORMSPREE_ENDPOINTS = {
   contact: 'https://formspree.io/f/xwvgbkwn',
   parts: 'https://formspree.io/f/xojglvjj',
+  'vehicle-sale': 'https://formspree.io/f/mgoglogj',
+  transport: 'https://formspree.io/f/xlgqwjro',
 };
