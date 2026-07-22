@@ -9150,3 +9150,41 @@ a[target="_blank"]::after {
     padding-block: 2.4rem;
   }
 }
+
+/* Safe polish: product-card media areas now use the full card width while keeping packshots visible. */
+.product-card-pro .product-image,
+.shop-page .product-card-pro .product-image {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: clamp(220px, 24vw, 280px);
+  padding: clamp(0.7rem, 1.8vw, 1rem);
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.product-card-pro .product-image img,
+.shop-page .product-card-pro .product-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 14px 18px rgba(15, 23, 42, 0.16));
+}
+
+.featured-product-image {
+  padding: 0.65rem;
+  background: #f8fafc;
+}
+
+.featured-product-image img {
+  object-fit: contain;
+  object-position: center;
+}
+
+[data-formspree-status]:empty {
+  display: none;
+}
