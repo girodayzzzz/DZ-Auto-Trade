@@ -8,7 +8,9 @@
     '/posredniska-prodaja.html', '/prevozi-transport.html', '/notranje-ciscenje.html', '/zunanje-ciscenje.html',
     '/globinsko-ciscenje.html', '/poliranje-zascita.html', '/vodic-za-nakup.html', '/dostava-placila.html',
     '/pogosta-vprasanja.html', '/o-nas.html', '/kontakt.html', '/splosni-pogoji.html', '/politika-zasebnosti.html',
-    '/politika-piskotkov.html', '/vracila-reklamacije.html'
+    '/politika-piskotkov.html', '/vracila-reklamacije.html', '/ciscenje-vozil.html', '/prodaja-avta.html',
+    '/avto-deli-povprasevanje.html', '/transport-povprasevanje.html', '/mesecno-ciscenje.html',
+    '/placilo-uspesno.html', '/placilo-preklicano.html'
   ]);
 
   const getPath = () => window.location.pathname.replace(/\/+/g, '/') || '/';

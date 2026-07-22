@@ -1005,3 +1005,53 @@ if (revealTargets.length) {
     revealTargets.forEach((target) => target.classList.add('is-visible'));
   }
 }
+
+// Cross-page UX hardening added after full-site audit.
+(() => {
+  const normalizePath = (href) => {
+    try {
+      const url = new URL(href, window.location.href);
+      if (url.origin !== window.location.origin) return '';
+      return url.pathname.replace(/\/index\.html$/, '/') || '/';
+    } catch (_) {
+      return '';
+    }
+  };
+
+  const currentPath = normalizePath(window.location.href);
+  document.querySelectorAll('.main-nav .nav-link[href], .main-nav .dropdown-toggle').forEach((item) => {
+    if (item.matches('a[href]') && normalizePath(item.getAttribute('href')) === currentPath) {
+      item.classList.add('active');
+      item.setAttribute('aria-current', 'page');
+    }
+  });
+
+  document.querySelectorAll('.nav-dropdown').forEach((dropdown, index) => {
+    const toggle = dropdown.querySelector('.dropdown-toggle');
+    const menu = dropdown.querySelector('.mega-menu');
+    if (!toggle || !menu) return;
+    const id = menu.id || `nav-menu-${index + 1}`;
+    menu.id = id;
+    toggle.setAttribute('aria-controls', id);
+    if ([...menu.querySelectorAll('a[href]')].some((link) => normalizePath(link.getAttribute('href')) === currentPath)) {
+      toggle.classList.add('active');
+      toggle.setAttribute('aria-current', 'page');
+    }
+  });
+
+  document.querySelectorAll('a[href^="http"]').forEach((link) => {
+    let url;
+    try { url = new URL(link.href); } catch (_) { return; }
+    if (url.origin === window.location.origin) return;
+    link.target = link.target || '_blank';
+    const rel = new Set((link.rel || '').split(/\s+/).filter(Boolean));
+    rel.add('noopener');
+    rel.add('noreferrer');
+    link.rel = [...rel].join(' ');
+  });
+
+  document.querySelectorAll('img:not([loading])').forEach((image, index) => {
+    if (index > 1) image.loading = 'lazy';
+    image.decoding = image.decoding || 'async';
+  });
+})();
