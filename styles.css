@@ -9188,3 +9188,34 @@ a[target="_blank"]::after {
 [data-formspree-status]:empty {
   display: none;
 }
+
+/* Homepage readability polish: keep cards on dark surfaces instead of bright white islands. */
+body.home-page .advice-copy,
+body.home-page .advice-steps article,
+body.home-page .featured-product-card {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(229, 9, 20, 0.16), transparent 16rem),
+    linear-gradient(145deg, rgba(17, 24, 39, 0.96), rgba(8, 13, 22, 0.92));
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.28);
+}
+
+body.home-page .advice-copy p,
+body.home-page .advice-steps article p,
+body.home-page .featured-product-content p {
+  color: var(--muted);
+}
+
+body.home-page .advice-copy h2,
+body.home-page .advice-steps article h3,
+body.home-page .featured-product-content h3,
+body.home-page .featured-product-footer strong {
+  color: #ffffff;
+}
+
+body.home-page .featured-product-image {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.82), rgba(226, 232, 240, 0.5) 38%, rgba(15, 23, 42, 0.28) 64%),
+    var(--product-bg, linear-gradient(135deg, #1f3b68, #0f172a));
+}
