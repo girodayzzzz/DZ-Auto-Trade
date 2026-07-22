@@ -8966,3 +8966,187 @@ body.shop-page:has([data-product-grid]) .shop-grid {
     overflow-wrap: anywhere;
   }
 }
+
+/* UX audit refinements: safe responsive layout, accessible controls and consistent cards. */
+:root {
+  --focus-ring: #facc15;
+  --tap-size: 46px;
+}
+
+body {
+  overflow-wrap: break-word;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: rgba(229, 9, 20, 0.18);
+}
+
+a[target="_blank"]::after {
+  content: " ↗";
+  font-size: 0.85em;
+}
+
+.nav-link.active,
+.dropdown-toggle.active {
+  color: var(--text);
+  background: #eef2f7;
+  box-shadow: inset 0 0 0 1px rgba(229, 9, 20, 0.14);
+}
+
+@media (max-width: 900px) {
+  .nav-link.active,
+  .dropdown-toggle.active {
+    color: #ffffff;
+    background: rgba(229, 9, 20, 0.22);
+    box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.32);
+  }
+}
+
+.btn-primary,
+.btn-secondary,
+.shop-btn,
+.cta-btn,
+.header-link,
+.filter-btn,
+.cart-toggle,
+.cart-close,
+.product-card-actions a,
+.product-card-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-size);
+  line-height: 1.2;
+}
+
+.card,
+.home-intro-card,
+.product-card,
+.product-card-pro,
+.vehicle-card,
+.contact-form,
+.checkout-card,
+.legal-card {
+  overflow-wrap: anywhere;
+}
+
+.product-image img,
+.product-detail-image img,
+.vehicle-card img,
+.showcase-product img,
+.home-page .featured-row img {
+  width: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.site-footer {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.site-footer p,
+.site-footer li,
+.site-footer span {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.site-footer a:focus-visible,
+.site-footer button:focus-visible {
+  outline-color: var(--focus-ring);
+}
+
+[data-formspree-status] {
+  min-height: 1.4rem;
+}
+
+@media (min-width: 1400px) {
+  :root {
+    --max-width: 1180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: min(100% - 0.875rem, var(--max-width));
+  }
+
+  .hero,
+  .page-hero,
+  .services-hero {
+    padding-block: 2rem 1.6rem;
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 10vw, 2.35rem);
+    line-height: 1.12;
+  }
+
+  h2 {
+    font-size: clamp(1.35rem, 7vw, 1.85rem);
+  }
+
+  .hero-actions,
+  .shop-hero-actions,
+  .product-actions,
+  .product-card-actions,
+  .hero-proof-list,
+  .hero-stats {
+    gap: 0.6rem;
+  }
+
+  .hero-proof-list span,
+  .hero-stats span,
+  .product-card-specs span,
+  .product-card-footer,
+  .shop-trust-grid > div {
+    width: 100%;
+  }
+
+  .showcase-product,
+  .showcase-topline {
+    grid-template-columns: 1fr;
+    display: grid;
+    text-align: left;
+  }
+
+  .showcase-topline img {
+    max-width: 180px;
+  }
+
+  .showcase-product img {
+    max-height: 190px;
+  }
+
+  .mega-menu.service-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-toggle {
+    right: 0.5rem;
+    bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-logo {
+    width: 112px;
+    height: 46px;
+  }
+
+  .menu-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .nav-wrap {
+    gap: 0.45rem;
+  }
+
+  .section {
+    padding-block: 2.4rem;
+  }
+}
