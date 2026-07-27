@@ -307,7 +307,13 @@ const productMatchesPrice = (product, range) => {
   return true;
 };
 
-const createProductUrl = (product) => `product.html?sku=${encodeURIComponent(product.sku)}`;
+const productSlug = (product = {}) => String(product.name || product.sku || 'izdelek')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '');
+const createProductUrl = (product) => `izdelek-${productSlug(product)}.html`;
 
 const createInquiryUrl = (product) => {
   const params = new URLSearchParams({
@@ -604,7 +610,7 @@ const renderShopInsights = () => {
 
 const renderProductDetail = () => {
   if (!productDetail) return;
-  const sku = new URLSearchParams(window.location.search).get('sku');
+  const sku = productDetail.dataset.productSku || new URLSearchParams(window.location.search).get('sku');
   const product = currentProducts.find((item) => item.sku === sku);
   if (!product) {
     productDetail.innerHTML = '<div class="container empty-state"><h1>Izdelek ni najden</h1><p>Izdelek morda ni več v ponudbi ali pa povezava ni pravilna.</p><a class="btn-secondary" href="trgovina.html">Nazaj v trgovino</a></div>';
@@ -648,8 +654,22 @@ const renderProductDetail = () => {
       seller: { '@id': 'https://dzautotrade.si/#business' }
     }
   });
+  const breadcrumbSchema = document.createElement('script');
+  breadcrumbSchema.type = 'application/ld+json';
+  breadcrumbSchema.id = 'dz-breadcrumb-schema';
+  breadcrumbSchema.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Domov', item: 'https://dzautotrade.si/' },
+      { '@type': 'ListItem', position: 2, name: 'Trgovina', item: 'https://dzautotrade.si/trgovina.html' },
+      { '@type': 'ListItem', position: 3, name: product.name, item: productUrl }
+    ]
+  });
   document.getElementById('dz-product-schema')?.remove();
   document.head.appendChild(productSchema);
+  document.getElementById('dz-breadcrumb-schema')?.remove();
+  document.head.appendChild(breadcrumbSchema);
   trackEvent('product_view', { sku: product.sku, name: product.name, category: product.category });
   const checkoutButton = product.checkoutEnabled && !product.cartEnabled && isProductAvailable(product) && product.checkoutAmount >= 50
     ? `<button class="btn-primary" type="button" data-checkout data-sku="${escapeHtml(product.sku)}">Plačaj prek Stripe</button>`
