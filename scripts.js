@@ -851,12 +851,26 @@ clearFiltersButton?.addEventListener('click', () => {
 
 filterToggle?.addEventListener('click', () => {
   const open = !filterPanel?.classList.contains('is-open');
-  filterPanel?.classList.toggle('is-open', open);
-  filterToggle.setAttribute('aria-expanded', String(open));
+  setFilterPanelOpen(open);
 });
+const setFilterPanelOpen = (open) => {
+  filterPanel?.classList.toggle('is-open', open);
+  document.body.classList.toggle('filters-open', Boolean(open));
+  filterToggle?.setAttribute('aria-expanded', String(Boolean(open)));
+  if (open) document.querySelector('[data-filter-close]')?.focus();
+  else if (document.activeElement?.closest('[data-filter-panel]')) filterToggle?.focus();
+};
 document.querySelector('[data-filter-close]')?.addEventListener('click', () => {
-  filterPanel?.classList.remove('is-open');
-  filterToggle?.setAttribute('aria-expanded', 'false');
+  setFilterPanelOpen(false);
+});
+document.querySelector('[data-filter-backdrop]')?.addEventListener('click', () => {
+  setFilterPanelOpen(false);
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && filterPanel?.classList.contains('is-open')) setFilterPanelOpen(false);
+});
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900 && filterPanel?.classList.contains('is-open')) setFilterPanelOpen(false);
 });
 activeFilters?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-remove-filter]');
