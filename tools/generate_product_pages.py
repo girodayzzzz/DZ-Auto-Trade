@@ -28,6 +28,62 @@ def price_number(value: str) -> str:
     return match.group(0).replace(",", ".") if match else ""
 
 
+DESCRIPTION_HEADING = re.compile(
+    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba|Vsebina kompleta|Montaža sistema|Redčenje):\s*",
+    re.IGNORECASE,
+)
+
+
+def parse_description(value: str) -> tuple[str, list[tuple[str, str]]]:
+    text = value.replace("\r\n", "\n").replace("\r", "\n").strip()
+    matches = list(DESCRIPTION_HEADING.finditer(text))
+    intro = text[: matches[0].start() if matches else len(text)].strip()
+    sections = []
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        content = text[match.end():end].strip()
+        if content:
+            sections.append((match.group(1), content))
+    return intro, sections
+
+
+def description_lead(value: str) -> str:
+    text = re.sub(r"\s+", " ", value).strip()
+    sentences = re.findall(r"[^.!?]+[.!?]+|[^.!?]+$", text)
+    lead = " ".join(sentence.strip() for sentence in sentences[:2]).strip()
+    return f"{lead[:277].rstrip()}…" if len(lead) > 280 else lead
+
+
+def rich_text(value: str) -> str:
+    rendered = []
+    for block in re.split(r"\n\s*\n", value.strip()):
+        lines = [line.strip() for line in block.splitlines() if line.strip()]
+        if lines and all(re.match(r"^[-•]\s+", line) for line in lines):
+            items = "".join(f"<li>{html.escape(re.sub(r'^[-•]\\s+', '', line))}</li>" for line in lines)
+            rendered.append(f"<ul>{items}</ul>")
+        elif lines:
+            rendered.append(f"<p>{'<br />'.join(html.escape(line) for line in lines)}</p>")
+    return "".join(rendered)
+
+
+def description_markup(value: str) -> tuple[str, str]:
+    intro, sections = parse_description(value)
+    detail_sections = "".join(
+        f'<details{" open" if title.lower() == "prednosti" else ""}><summary>{html.escape(title)}</summary>'
+        f'<div class="product-description-content">{rich_text(content)}</div></details>'
+        for title, content in sections
+    )
+    markup = (
+        '<section class="product-description" aria-labelledby="product-description-title">'
+        '<header class="product-description-header"><p class="eyebrow">Podrobnosti</p>'
+        '<h2 id="product-description-title">Opis izdelka</h2></header>'
+        f'{f"<div class=\"product-description-overview\">{rich_text(intro)}</div>" if intro else ""}'
+        f'{f"<div class=\"product-description-sections\">{detail_sections}</div>" if detail_sections else ""}'
+        '</section>'
+    )
+    return description_lead(intro or value), markup
+
+
 def generate_page(template: str, product: dict) -> tuple[str, str]:
     filename = f"izdelek-{slug(product['name'])}.html"
     url = f"{SITE}/{filename}"
@@ -95,17 +151,18 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         f'<div><dt>Ustreza vozilom</dt><dd>{html.escape(product["compatibility"])}</dd></div>'
         if product.get("partNumber") and product.get("compatibility") else ""
     )
+    lead, full_description = description_markup(product["description"])
     content = (
         f'<section class="section product-detail-shell" data-product-detail data-product-sku="{html.escape(product["sku"], quote=True)}">'
         f'<div class="container product-detail-layout"><div class="product-detail-media">'
         f'<a class="product-breadcrumb" href="trgovina.html#{html.escape(product["category"])}">← Nazaj v {html.escape(product["categoryLabel"])}</a>'
         f'<div class="product-detail-image"><img src="{html.escape(product["image"], quote=True)}" alt="{html.escape(product.get("imageAlt") or product["name"], quote=True)}" /></div></div>'
         f'<article class="card product-detail-info"><div class="product-detail-kicker"><span class="badge">{html.escape(product["categoryLabel"])}</span></div>'
-        f'<h1>{html.escape(product["name"])}</h1><p class="product-detail-lead">{html.escape(product["description"])}</p>'
+        f'<h1>{html.escape(product["name"])}</h1><p class="product-detail-lead">{html.escape(lead)}</p>'
         f'<dl class="product-detail-meta"><div><dt>Kategorija</dt><dd>{html.escape(product["categoryLabel"])}</dd></div><div><dt>SKU</dt><dd>{html.escape(product["sku"])}</dd></div>'
         f'{part_number_meta}{compatibility_meta}</dl>'
         f'<div class="product-buy-panel"><div><small>Cena</small><strong>{html.escape(product["price"])}</strong></div></div>'
-        f'<p class="form-note">{html.escape(product["availability"])}</p></article></div></section>'
+        f'<p class="form-note">{html.escape(product["availability"])}</p>{full_description}</article></div></section>'
     )
     page = re.sub(r'<section class="section product-detail-shell" data-product-detail>.*?</section>', content, page, count=1, flags=re.S)
     page = re.sub(r"[ \t]+\n", "\n", page)

@@ -1,5 +1,23 @@
 # DZ Auto Trade shop improvement audit
 
+## Pregled ostalih strani — naslednji vizualni koraki (julij 2026)
+
+Po prenovi domače strani so najbolj smiselne naslednje izboljšave, razvrščene po vplivu:
+
+1. **Trgovina (`trgovina.html`)** — poenotiti višino kartic, prikazati samo kratek povzetek izdelka ter na mobilnih napravah filtre odpreti v jasnem stranskem predalu. Izpostavljeni izdelki naj uporabljajo enak drsni trak kot domača stran.
+2. **Strani izdelkov (`izdelek-*.html` in `product.html`)** — ločiti kratek prodajni opis od navodil in varnostnih opozoril. Dolga besedila sodijo v jasno naslovljene, zložljive vsebinske sklope; cena, zaloga, dostava in gumb za nakup pa morajo ostati vidni skupaj.
+3. **Storitve čiščenja** — dodati dosledne fotografije prej/potem, primerjalno tabelo paketov in enoten poziv za rezervacijo. Obiskovalec mora na vsaki podstrani takoj videti trajanje, okvirno ceno in kaj paket vključuje.
+4. **Avto tržnica** — karticam vozil dodati enotne ključne podatke (letnik, kilometri, gorivo, menjalnik in cena), stran posameznega vozila pa naj ima galerijo ter jasno povpraševanje.
+5. **Kontaktni in povpraševalni obrazci** — skrajšati prvi korak, jasno označiti obvezna polja ter po oddaji prikazati pričakovani odzivni čas. Podatke o vozilu oziroma VIN je smiselno razkriti samo pri povpraševanju za dele.
+6. **Informativne in pravne strani** — izboljšati berljivost z ožjšim stolpcem besedila, kazalom pri daljših dokumentih in doslednimi naslovi. V nogi naj ostanejo neposredne povezave do dostave, vračil, zasebnosti in splošnih pogojev.
+7. **Celotno spletno mesto** — poenotiti razmike, naslove, gumbe, stanja fokusa in mobilno navigacijo. Pred nadaljnjimi dekorativnimi spremembami je smiselno izvesti pregled kontrasta, tipkovnične navigacije, velikosti slik ter hitrosti nalaganja.
+
+### Predlagan vrstni red izvedbe
+
+- **Najprej:** trgovina in predloga izdelka, ker sta neposredno povezani z nakupom.
+- **Nato:** storitve, avto tržnica in obrazci, ker vodijo do povpraševanj.
+- **Na koncu:** informativne strani, mikroanimacije in dodatni dekorativni elementi.
+
 This audit reviews the current static website as a customer-facing ecommerce shop and prioritizes changes that would make it feel more complete, trustworthy, and conversion-ready.
 
 ## What already works well
