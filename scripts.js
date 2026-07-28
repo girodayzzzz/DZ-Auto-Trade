@@ -1111,7 +1111,7 @@ vehicleReset?.addEventListener('click', () => {
 vehicleFilters.forEach((filter) => filter.addEventListener('change', renderVehicleFilters));
 renderVehicleFilters();
 
-const interactiveCardSelector = '.card, .vehicle-card, .product-card, .home-intro-card, .service-category-card, .detailing-card';
+const interactiveCardSelector = '.card, .vehicle-card, .product-card, .service-category-card, .detailing-card';
 const ignoredCardTargets = 'a, button, input, select, textarea, label, summary, [role="button"]';
 
 const enhanceInteractiveCards = (root = document) => {
@@ -1143,7 +1143,7 @@ const enhanceInteractiveCards = (root = document) => {
 enhanceInteractiveCards();
 
 const revealTargets = document.querySelectorAll(
-  '.section, .hero, .page-hero, .shop-cart-intro, .shop-overview, .vehicle-strip, .card-grid > *, .shop-grid > *, .trust-grid > *, .home-intro-grid > *, .service-category-grid > *, .before-after-grid > *, .vehicle-grid > *, .shop-trust-grid > *, .shop-cart-intro-grid > *, .shop-insight-stats > *, .shop-category-shortcuts > *'
+  '.section, .hero, .page-hero, .shop-cart-intro, .shop-overview, .vehicle-strip, .card-grid > *, .shop-grid > *, .trust-grid > *, .service-category-grid > *, .before-after-grid > *, .vehicle-grid > *, .shop-trust-grid > *, .shop-cart-intro-grid > *, .shop-insight-stats > *, .shop-category-shortcuts > *'
 );
 
 if (revealTargets.length) {
