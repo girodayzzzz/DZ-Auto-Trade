@@ -1,6 +1,30 @@
 {
   "products": [
     {
+      "name": "AMC glava motorja VW, Škoda in Audi 1.6 TDI",
+      "category": "novi-avto-deli",
+      "categoryLabel": "Novi avto deli",
+      "description": "Nova glava motorja AMC za vozila z motorjem 1.6 TDI.",
+      "price": "1.503,99 €",
+      "badge": "Novo",
+      "sku": "DZ-ND01",
+      "partNumber": "908739",
+      "brand": "AMC",
+      "compatibility": "VW Golf VII 1.6 TDI, VW Golf VII Variant 1.6 TDI, VW Golf Sportsvan VII 1.6 TDI, Škoda Octavia III 1.6 TDI, Škoda Octavia III Combi 1.6 TDI, VW Touran 1.6 TDI, VW Passat B8 1.6 TDI, VW Passat B8 Variant 1.6 TDI, Audi A3 1.6 TDI, Audi A3 Sportback 1.6 TDI in VW Golf VI",
+      "orderNote": "Številka dela: 908739. Pred naročilom priporočamo preverjanje ustreznosti dela po VIN številki vozila.",
+      "checkoutAmount": 150399,
+      "searchTerms": "AMC 908739 glava motorja 1.6 TDI VW Golf VI VII Variant Sportsvan Touran Passat B8 Audi A3 Sportback Škoda Octavia III Combi",
+      "image": "images/products/908739_001.jpg",
+      "imageAlt": "Nova AMC glava motorja, številka dela 908739",
+      "theme": "linear-gradient(135deg, #334155, #0f172a)",
+      "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Strošek dostave potrdimo pred odpremo",
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true
+    },
+    {
       "name": "CarPro Iron.X 500ml",
       "category": "cistila",
       "categoryLabel": "Čistila",
