@@ -642,26 +642,50 @@ const renderShopInsights = () => {
 };
 
 const parseProductDescription = (description = '') => {
-  const blocks = String(description).split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
-  const sectionHeading = /^(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba):\s*/i;
-  const intro = [];
+  const cleanDescription = String(description).replace(/\r\n?/g, '\n').trim();
+  const sectionHeading = /(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba|Vsebina kompleta|Montaža sistema|Redčenje):\s*/gi;
   const sections = [];
+  const matches = [...cleanDescription.matchAll(sectionHeading)];
+  const introEnd = matches[0]?.index ?? cleanDescription.length;
+  const intro = cleanDescription.slice(0, introEnd).trim();
 
-  blocks.forEach((block) => {
-    const match = block.match(sectionHeading);
-    if (match) {
-      sections.push({ title: match[1], content: block.slice(match[0].length).trim() });
-    } else if (sections.length) {
-      sections[sections.length - 1].content += `\n\n${block}`;
-    } else {
-      intro.push(block);
-    }
+  matches.forEach((match, index) => {
+    const contentStart = match.index + match[0].length;
+    const contentEnd = matches[index + 1]?.index ?? cleanDescription.length;
+    const content = cleanDescription.slice(contentStart, contentEnd).trim();
+    if (content) sections.push({ title: match[1], content });
   });
 
-  return { intro: intro.join('\n\n'), sections };
+  return { intro, sections };
 };
 
-const renderDescriptionText = (text = '') => escapeHtml(text).replace(/\n/g, '<br />');
+const getProductLead = (text = '') => {
+  const cleanText = String(text).replace(/\s+/g, ' ').trim();
+  const sentences = cleanText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+  const lead = sentences.slice(0, 2).join(' ').trim();
+  return lead.length > 280 ? `${lead.slice(0, 277).trimEnd()}…` : lead;
+};
+
+const renderDescriptionText = (text = '') => String(text)
+  .split(/\n\s*\n/)
+  .map((block) => {
+    const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
+    if (lines.length && lines.every((line) => /^[-•]\s+/.test(line))) {
+      return `<ul>${lines.map((line) => `<li>${escapeHtml(line.replace(/^[-•]\s+/, ''))}</li>`).join('')}</ul>`;
+    }
+    return `<p>${lines.map(escapeHtml).join('<br />')}</p>`;
+  })
+  .join('');
+
+const renderProductDescription = ({ intro, sections }) => `
+  <section class="product-description" aria-labelledby="product-description-title">
+    <header class="product-description-header">
+      <p class="eyebrow">Podrobnosti</p>
+      <h2 id="product-description-title">Opis izdelka</h2>
+    </header>
+    ${intro ? `<div class="product-description-overview">${renderDescriptionText(intro)}</div>` : ''}
+    ${sections.length ? `<div class="product-description-sections">${sections.map((section) => `<details${/^Prednosti$/i.test(section.title) ? ' open' : ''}><summary>${escapeHtml(section.title)}</summary><div class="product-description-content">${renderDescriptionText(section.content)}</div></details>`).join('')}</div>` : ''}
+  </section>`;
 
 
 const renderProductDetail = () => {
@@ -735,9 +759,7 @@ const renderProductDetail = () => {
     ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>`
     : '';
   const productDescription = parseProductDescription(product.description);
-  const descriptionSections = productDescription.sections.length
-    ? `<div class="product-description-sections" aria-label="Dodatne informacije o izdelku">${productDescription.sections.map((section) => `<details><summary>${escapeHtml(section.title)}</summary><div>${renderDescriptionText(section.content)}</div></details>`).join('')}</div>`
-    : '';
+  const descriptionMarkup = renderProductDescription(productDescription);
   productDetail.innerHTML = `<div class="container product-detail-layout">
     <div class="product-detail-media">
       <a class="product-breadcrumb" href="trgovina.html#${escapeHtml(product.category)}">← Nazaj v ${escapeHtml(product.categoryLabel)}</a>
@@ -752,7 +774,7 @@ const renderProductDetail = () => {
         <span class="badge">${escapeHtml(product.categoryLabel)}</span>
       </div>
       <h1>${escapeHtml(product.name)}</h1>
-      <p class="product-detail-lead">${renderDescriptionText(productDescription.intro || product.description)}</p>
+      <p class="product-detail-lead">${escapeHtml(getProductLead(productDescription.intro || product.description))}</p>
       <dl class="product-detail-meta" aria-label="Podatki izdelka">
         <div><dt>Kategorija</dt><dd>${escapeHtml(product.categoryLabel)}</dd></div>
         <div><dt>SKU</dt><dd>${escapeHtml(product.sku)}</dd></div>
@@ -770,7 +792,7 @@ const renderProductDetail = () => {
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
       <div class="product-actions product-detail-actions">${cartButton || `<button class="shop-btn" type="button" disabled>Trenutno ni za košarico</button>`}${checkoutButton}</div>
       <p class="form-note product-checkout-status" data-checkout-status aria-live="polite"></p>
-      ${descriptionSections}
+      ${descriptionMarkup}
       <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
     </article>
   </div>`;
@@ -784,7 +806,7 @@ const renderFeaturedProductCard = (product) => `
     <div class="featured-product-content">
       <span>${escapeHtml(product.badge || product.categoryLabel)}</span>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
-      <p>${escapeHtml(product.description)}</p>
+      <p>${escapeHtml(getFeaturedSummary(product.description))}</p>
       <div class="featured-product-footer">
         <strong>${escapeHtml(product.price)}</strong>
         <button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj</button>
@@ -793,14 +815,43 @@ const renderFeaturedProductCard = (product) => `
   </article>
 `;
 
+const getFeaturedSummary = (description = '') => {
+  const cleanDescription = String(description).replace(/\s+/g, ' ').trim();
+  if (!cleanDescription) return 'Več informacij o izdelku najdete na strani izdelka.';
+  const firstSentence = cleanDescription.match(/^.*?[.!?](?:\s|$)/)?.[0] || cleanDescription;
+  return firstSentence.length > 135 ? `${firstSentence.slice(0, 132).trimEnd()}…` : firstSentence;
+};
+
 const renderFeaturedProducts = () => {
   if (!featuredGrids.length) return;
 
-  const featuredProducts = currentProducts.filter((product) => product.featured && isCheckoutReady(product)).slice(0, 8);
+  const purchasableProducts = currentProducts.filter(isCheckoutReady);
+  const featuredProducts = [
+    ...purchasableProducts.filter((product) => product.featured),
+    ...purchasableProducts.filter((product) => !product.featured),
+  ].slice(0, 10);
   featuredGrids.forEach((grid) => {
     grid.innerHTML = featuredProducts.length
       ? featuredProducts.map(renderFeaturedProductCard).join('')
       : '<div class="empty-state"><h3>Izpostavljeni izdelki bodo kmalu dodani.</h3><p>Medtem si oglejte celoten katalog.</p></div>';
+  });
+};
+
+const initializeFeaturedCarousels = () => {
+  featuredGrids.forEach((grid) => {
+    const section = grid.closest('.bestsellers-section');
+    const previousButton = section?.querySelector('[data-carousel-prev]');
+    const nextButton = section?.querySelector('[data-carousel-next]');
+    if (!previousButton || !nextButton) return;
+
+    const moveCarousel = (direction) => {
+      const card = grid.querySelector('.featured-product-card');
+      const gap = Number.parseFloat(getComputedStyle(grid).columnGap) || 16;
+      grid.scrollBy({ left: direction * ((card?.getBoundingClientRect().width || grid.clientWidth * 0.8) + gap), behavior: 'smooth' });
+    };
+
+    previousButton.addEventListener('click', () => moveCarousel(-1));
+    nextButton.addEventListener('click', () => moveCarousel(1));
   });
 };
 
@@ -1029,6 +1080,7 @@ loadProducts().then(() => {
   renderShopInsights();
   renderProducts();
   renderFeaturedProducts();
+  initializeFeaturedCarousels();
   renderProductDetail();
   renderCart();
   enhanceInteractiveCards();
