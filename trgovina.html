@@ -57,14 +57,7 @@
         <button class="menu-toggle" aria-label="Odpri meni" aria-expanded="false"><span></span><span></span><span></span></button>
         <nav class="main-nav" aria-label="Glavna navigacija">
           <a href="index.html" class="nav-link ">Domov</a>
-          <div class="nav-dropdown">
-            <button class="nav-link dropdown-toggle active" type="button" aria-expanded="false">Trgovina <span>▾</span></button>
-            <div class="mega-menu" aria-label="Kategorije trgovine">
-              <a href="trgovina.html#avto-deli"><strong>Avto deli</strong><span>Filtri, zavore, brisalci, žarnice</span></a>
-              <a href="trgovina.html#cistila"><strong>Čistila in nega</strong><span>Šamponi, voski, notranjost, platišča</span></a>
-              <a href="trgovina.html#orodja"><strong>Orodja</strong><span>Ključi, diagnostika, dvigalke</span></a>
-            </div>
-          </div>
+          <a href="trgovina.html" class="nav-link active">Trgovina</a>
           <a href="avto-trznica.html" class="nav-link ">Avto tržnica</a>
           <a href="o-nas.html" class="nav-link ">O nas</a>
           <div class="nav-dropdown"><button class="nav-link dropdown-toggle " type="button" aria-expanded="false">Storitve <span>▾</span></button><div class="mega-menu service-menu" aria-label="Storitve DZ Auto Trade"><a href="storitve.html"><strong>Vse storitve</strong><span>Pregled čiščenja, prodaje vozila in transporta</span></a><a href="ciscenje-vozil.html"><strong>Čiščenje vozil</strong><span>Vsi paketi nege in detailinga na enem mestu</span></a><a href="prodaja-avta.html"><strong>Prodaj vozilo</strong><span>Oddaja vozila ali posredniška prodaja</span></a><a href="prevozi-transport.html"><strong>Transport</strong><span>Prevoz vozil, delov, opreme in blaga</span></a></div></div>
@@ -76,7 +69,25 @@
       </div>
     </header>
     <main id="main-content">
-      <h1 class="sr-only">DZ Auto Trade trgovina z avto izdelki</h1>
+      <section class="shop-hero page-hero" aria-labelledby="shop-title">
+        <div class="container narrow">
+          <p class="eyebrow">DZ Auto Trade trgovina</p>
+          <h1 id="shop-title">Vse za vozilo, pregledno razporejeno.</h1>
+          <p class="hero-copy">Najprej izberite glavno kategorijo, nato pa ponudbo dodatno zožite z iskanjem in filtri.</p>
+          <div class="hero-actions"><a class="btn-primary" href="#shop-categories">Izberi kategorijo</a><a class="btn-secondary" href="#catalog">Poglej vse izdelke</a></div>
+        </div>
+      </section>
+      <section class="shop-overview" id="shop-categories" aria-labelledby="shop-categories-title">
+        <div class="container">
+          <div class="section-head"><p class="eyebrow">Kategorije</p><h2 id="shop-categories-title">Kaj iščete?</h2></div>
+          <div class="shop-category-shortcuts">
+            <a href="#novi-avto-deli" data-shop-shortcut="novi-avto-deli"><span>Novi avto deli</span><strong>Filtri, zavore, motorni deli in potrošni material</strong></a>
+            <a href="#rabljeni-avto-deli" data-shop-shortcut="rabljeni-avto-deli"><span>Rabljeni avto deli</span><strong>Preverjeni deli iz aktualne ponudbe</strong></a>
+            <a href="#cistila" data-shop-shortcut="cistila"><span>Čistila in nega</span><strong>Izdelki za notranjost, zunanjost in zaščito</strong></a>
+            <a href="#orodja" data-shop-shortcut="orodja"><span>Orodja in oprema</span><strong>Orodje ter oprema za domačo in profesionalno uporabo</strong></a>
+          </div>
+        </div>
+      </section>
       <section class="section shop-catalog-section" id="catalog">
         <div class="container catalog-results-panel">
           <div class="section-head split-head">
@@ -134,7 +145,7 @@
         <div>
           <h3>Trgovina</h3>
           <ul class="footer-links">
-            <li><a href="trgovina.html#avto-deli">Avto deli</a></li>
+            <li><a href="trgovina.html#novi-avto-deli">Avto deli</a></li>
             <li><a href="trgovina.html#cistila">Čistila in nega</a></li>
             <li><a href="trgovina.html#orodja">Orodja</a></li>
             <li><a href="avto-trznica.html">Avto tržnica</a></li>

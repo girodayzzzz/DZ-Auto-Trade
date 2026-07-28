@@ -2428,6 +2428,10 @@ body {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.shop-overview .shop-category-shortcuts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .shop-category-shortcuts a {
   display: flex;
   align-items: center;
