@@ -171,6 +171,12 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
 
 def main() -> None:
     products = json.loads((ROOT / "products.json").read_text(encoding="utf-8"))["products"]
+    # Keep the browser catalog in sync with the canonical JSON source. The shop
+    # reads products.js directly, while generated detail pages use the same data.
+    (ROOT / "products.js").write_text(
+        f"window.products = {json.dumps(products, ensure_ascii=False, indent=2)};\n",
+        encoding="utf-8",
+    )
     template = (ROOT / "product.html").read_text(encoding="utf-8")
     for old in ROOT.glob("izdelek-*.html"):
         old.unlink()
