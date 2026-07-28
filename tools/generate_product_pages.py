@@ -53,6 +53,8 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
     }
     if product.get("brand"):
         schema["brand"] = {"@type": "Brand", "name": product["brand"]}
+    if product.get("partNumber"):
+        schema["mpn"] = product["partNumber"]
     breadcrumb = {
         "@context": "https://schema.org", "@type": "BreadcrumbList",
         "itemListElement": [
@@ -85,6 +87,14 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         f'    <script type="application/ld+json" id="dz-breadcrumb-schema">{json.dumps(breadcrumb, ensure_ascii=False)}</script>\n'
     )
     page = page.replace('    <script src="seo.js"></script>', head_data + '    <script src="seo.js"></script>')
+    part_number_meta = (
+        f'<div><dt>Številka dela</dt><dd>{html.escape(product["partNumber"])}</dd></div>'
+        if product.get("partNumber") else ""
+    )
+    compatibility_meta = (
+        f'<div><dt>Ustreza vozilom</dt><dd>{html.escape(product["compatibility"])}</dd></div>'
+        if product.get("partNumber") and product.get("compatibility") else ""
+    )
     content = (
         f'<section class="section product-detail-shell" data-product-detail data-product-sku="{html.escape(product["sku"], quote=True)}">'
         f'<div class="container product-detail-layout"><div class="product-detail-media">'
@@ -92,7 +102,8 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         f'<div class="product-detail-image"><img src="{html.escape(product["image"], quote=True)}" alt="{html.escape(product.get("imageAlt") or product["name"], quote=True)}" /></div></div>'
         f'<article class="card product-detail-info"><div class="product-detail-kicker"><span class="badge">{html.escape(product["categoryLabel"])}</span></div>'
         f'<h1>{html.escape(product["name"])}</h1><p class="product-detail-lead">{html.escape(product["description"])}</p>'
-        f'<dl class="product-detail-meta"><div><dt>Kategorija</dt><dd>{html.escape(product["categoryLabel"])}</dd></div><div><dt>SKU</dt><dd>{html.escape(product["sku"])}</dd></div></dl>'
+        f'<dl class="product-detail-meta"><div><dt>Kategorija</dt><dd>{html.escape(product["categoryLabel"])}</dd></div><div><dt>SKU</dt><dd>{html.escape(product["sku"])}</dd></div>'
+        f'{part_number_meta}{compatibility_meta}</dl>'
         f'<div class="product-buy-panel"><div><small>Cena</small><strong>{html.escape(product["price"])}</strong></div></div>'
         f'<p class="form-note">{html.escape(product["availability"])}</p></article></div></section>'
     )

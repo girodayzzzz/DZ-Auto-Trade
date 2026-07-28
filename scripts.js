@@ -108,7 +108,8 @@ const bundledProductImagesBySku = new Map(
 );
 let currentProducts = bundledProducts;
 let currentCategories = [
-  { id: 'avto-deli', label: 'Avto deli' },
+  { id: 'novi-avto-deli', label: 'Novi avto deli' },
+  { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli' },
   { id: 'cistila', label: 'Čistila' },
   { id: 'orodja', label: 'Orodja' },
 ];
@@ -248,6 +249,7 @@ const normalizeProduct = (product) => ({
   price: product.price ?? 'Po povpraševanju',
   badge: product.badge ?? 'Novo',
   sku: product.sku ?? '',
+  partNumber: product.partNumber ?? '',
   availability: product.availability ?? 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
   delivery: product.delivery ?? 'Po potrditvi dobavitelja',
   brand: product.brand ?? '',
@@ -693,6 +695,7 @@ const renderProductDetail = () => {
     '@type': 'Product',
     name: product.name,
     sku: product.sku,
+    mpn: product.partNumber || undefined,
     category: product.categoryLabel,
     description: product.description,
     image: absoluteProductImage,
@@ -753,6 +756,8 @@ const renderProductDetail = () => {
       <dl class="product-detail-meta" aria-label="Podatki izdelka">
         <div><dt>Kategorija</dt><dd>${escapeHtml(product.categoryLabel)}</dd></div>
         <div><dt>SKU</dt><dd>${escapeHtml(product.sku)}</dd></div>
+        ${product.partNumber ? `<div><dt>Številka dela</dt><dd>${escapeHtml(product.partNumber)}</dd></div>` : ''}
+        ${product.compatibility ? `<div><dt>Ustreza vozilom</dt><dd>${escapeHtml(product.compatibility)}</dd></div>` : ''}
       </dl>
       <div class="product-buy-panel">
         <div>
