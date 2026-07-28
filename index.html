@@ -86,11 +86,6 @@
             <p class="eyebrow">Avto deli • detailing • vozila</p>
             <h1 id="hero-title">Pametnejša izbira za vaš avto — deli, detailing in pomoč brez ugibanja.</h1>
             <p class="hero-copy">Na enem mestu najdete avto dele, izdelke za nego, storitve čiščenja in izbrana vozila. Če niste prepričani, nam pošljite podatke vozila ali VIN — pomagamo preveriti pravo izbiro pred nakupom.</p>
-            <div class="hero-proof-list" aria-label="Ključne prednosti">
-              <span>✓ Slovenska podpora</span>
-              <span>✓ Preverjanje po vozilu/VIN</span>
-              <span>✓ Izdelki za nego in vzdrževanje</span>
-            </div>
             <div class="hero-actions"><a href="trgovina.html" class="btn-primary">Poglej trgovino</a><a href="vodic-za-nakup.html" class="btn-secondary">Kako izbrati pravi del</a><a href="kontakt.html" class="btn-secondary">Pošlji povpraševanje</a></div>
             <div class="hero-stats" aria-label="Prednosti DZ Auto Trade">
               <span><strong>4</strong> področja ponudbe</span>
@@ -145,9 +140,9 @@
       </section>
       <section class="shop-trust-strip compact-trust-strip" aria-label="Prednosti nakupa pri DZ Auto Trade">
         <div class="container shop-trust-grid">
-          <div><strong>VIN preverjanje</strong><span>Manj možnosti za napačen del.</span></div>
-          <div><strong>Dostava 1–3 dni</strong><span>Pri izdelkih na zalogi.</span></div>
-          <div><strong>Lokalna podpora</strong><span>Slovenska pomoč pred nakupom.</span></div>
+          <article><span class="trust-icon" aria-hidden="true">01</span><div><strong>Preverjanje po VIN</strong><span>Pred naročilom skupaj preverimo ustreznost dela za vaše vozilo.</span></div></article>
+          <article><span class="trust-icon" aria-hidden="true">02</span><div><strong>Hitra dostava</strong><span>Izdelke na zalogi praviloma odpremimo za dostavo v 1–3 dneh.</span></div></article>
+          <article><span class="trust-icon" aria-hidden="true">03</span><div><strong>Osebna pomoč</strong><span>Pred nakupom vam v slovenščini pomagamo do prave izbire.</span></div></article>
         </div>
       </section>
       <section class="section compact-home-section" aria-labelledby="home-categories-title">
@@ -199,8 +194,14 @@
       <section class="section bestsellers-section home-bestsellers-section compact-home-section">
         <div class="container bestsellers-panel">
           <div class="section-head split-head">
-            <div><p class="eyebrow">Izpostavljeno</p><h2>Priporočeni izdelki za hiter začetek nakupa.</h2></div>
-            <a href="trgovina.html" class="text-link">Vsi izdelki →</a>
+            <div><p class="eyebrow">Izbor trgovine</p><h2>Priporočeni izdelki za vaše vozilo.</h2><p>Kratek izbor priljubljenih izdelkov — podrsajte ali uporabite puščici.</p></div>
+            <div class="featured-heading-actions">
+              <div class="carousel-controls" aria-label="Premikanje po priporočenih izdelkih">
+                <button type="button" data-carousel-prev aria-label="Prejšnji izdelki">←</button>
+                <button type="button" data-carousel-next aria-label="Naslednji izdelki">→</button>
+              </div>
+              <a href="trgovina.html" class="text-link">Vsi izdelki →</a>
+            </div>
           </div>
           <div class="featured-row" data-featured-products aria-label="Izpostavljeni izdelki"></div>
         </div>
