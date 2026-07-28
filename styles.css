@@ -9601,3 +9601,171 @@ body.home-page .featured-product-image {
     border-radius: 0;
   }
 }
+
+/* 2026 storefront image and type scale
+   Keep commerce imagery visually full while every card retains the same footprint. */
+:root {
+  --type-body: clamp(1rem, 0.22vw + 0.95rem, 1.075rem);
+  --type-small: clamp(0.875rem, 0.12vw + 0.85rem, 0.94rem);
+  --type-h1: clamp(2.35rem, 5.2vw, 4.8rem);
+  --type-h2: clamp(1.75rem, 3.2vw, 3rem);
+  --type-h3: clamp(1.1rem, 1vw + 0.9rem, 1.4rem);
+  --store-image-ratio: 4 / 3;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  font-size: var(--type-body);
+  line-height: 1.7;
+}
+
+h1 {
+  font-size: var(--type-h1);
+  line-height: 1.06;
+}
+
+h2 {
+  font-size: var(--type-h2);
+  line-height: 1.12;
+}
+
+h3 {
+  font-size: var(--type-h3);
+  line-height: 1.25;
+}
+
+p,
+li,
+label,
+input,
+select,
+textarea,
+button {
+  font-size: inherit;
+}
+
+.nav-link,
+.dropdown-toggle,
+.header-link,
+.btn-primary,
+.btn-secondary,
+.shop-btn,
+.cta-btn {
+  font-size: clamp(0.94rem, 0.14vw + 0.91rem, 1rem);
+}
+
+.eyebrow,
+.form-note,
+.product-count,
+.product-card-specs small,
+.product-card-footer small,
+.product-shipping-note,
+.footer-bottom {
+  font-size: var(--type-small);
+}
+
+.hero-copy,
+.page-hero p:not(.eyebrow),
+.section-head p:not(.eyebrow),
+.card p,
+.card li,
+.legal-content p,
+.legal-content li,
+.contact-card p {
+  font-size: var(--type-body);
+  line-height: 1.75;
+}
+
+/* A fixed ratio prevents mixed source dimensions from changing card height. */
+.product-card-pro .product-image {
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: var(--store-image-ratio);
+  margin: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  background: #f3f5f8;
+}
+
+/* Cover removes empty image margins and lets the photo fill the complete frame. */
+.product-card-pro .product-image img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center;
+  filter: none;
+  transform: none;
+  transition: transform 0.35s ease;
+}
+
+.product-card-pro:hover .product-image img,
+.product-card-pro:focus-within .product-image img {
+  transform: scale(1.035);
+}
+
+.featured-product-image,
+.vehicle-image,
+.before-after-card .image-wrap,
+.showcase-product {
+  overflow: hidden;
+}
+
+.featured-product-image img,
+.vehicle-image img,
+.before-after-card .image-wrap img,
+.showcase-product > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.product-card-pro .product-body {
+  padding: clamp(1rem, 1.2vw, 1.25rem);
+}
+
+.product-card-pro h3 {
+  min-height: 2.5em;
+  margin-bottom: 0.85rem;
+  font-size: clamp(1.05rem, 0.35vw + 0.98rem, 1.18rem);
+}
+
+.product-card-footer .product-price {
+  font-size: clamp(1.2rem, 0.5vw + 1.08rem, 1.42rem);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --type-body: 1rem;
+    --type-small: 0.875rem;
+    --type-h1: clamp(2.15rem, 11vw, 3.15rem);
+    --type-h2: clamp(1.65rem, 8vw, 2.35rem);
+  }
+
+  body {
+    line-height: 1.65;
+  }
+
+  .product-card-pro .product-image {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card-pro .product-image img {
+    transition: none;
+  }
+
+  .product-card-pro:hover .product-image img,
+  .product-card-pro:focus-within .product-image img {
+    transform: none;
+  }
+}
