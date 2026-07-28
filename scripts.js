@@ -1104,10 +1104,28 @@ if (revealTargets.length) {
           revealObserver.unobserve(entry.target);
         });
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: 0.12 }
+      // A section can become much taller after products are rendered. Requiring
+      // 12% of such a section to be visible can therefore keep the whole shop
+      // transparent forever on desktop screens.
+      { rootMargin: '0px 0px -5% 0px', threshold: 0 }
     );
 
-    revealTargets.forEach((target) => revealObserver.observe(target));
+    revealTargets.forEach((target) => {
+      const bounds = target.getBoundingClientRect();
+      if (bounds.top < window.innerHeight && bounds.bottom > 0) {
+        target.classList.add('is-visible');
+      } else {
+        revealObserver.observe(target);
+      }
+    });
+
+    // Visibility is more important than a decorative animation. This fallback
+    // also covers browser extensions or older observer implementations that do
+    // not deliver an intersection callback reliably.
+    window.setTimeout(() => {
+      revealTargets.forEach((target) => target.classList.add('is-visible'));
+      revealObserver.disconnect();
+    }, 1500);
   } else {
     revealTargets.forEach((target) => target.classList.add('is-visible'));
   }
