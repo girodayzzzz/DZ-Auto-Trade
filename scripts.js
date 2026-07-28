@@ -883,6 +883,15 @@ const renderFilters = () => {
     .filter((category) => countByCategory[category.id])
     .map((category) => `<button class="filter-btn ${activeFilter === category.id ? 'active' : ''}" data-filter="${escapeHtml(category.id)}"><span>${escapeHtml(category.label)}</span><strong>${countByCategory[category.id] || 0}</strong></button>`)
     .join('')}`;
+  document.querySelectorAll('[data-shop-shortcut]').forEach((shortcut) => {
+    const count = countByCategory[shortcut.dataset.shopShortcut] || 0;
+    const countLabel = count === 1 ? '1 izdelek' : `${count} izdelkov`;
+    shortcut.classList.toggle('is-active', activeFilter === shortcut.dataset.shopShortcut);
+    shortcut.classList.toggle('is-empty', count === 0);
+    shortcut.toggleAttribute('aria-current', activeFilter === shortcut.dataset.shopShortcut);
+    const countElement = shortcut.querySelector('[data-category-count]');
+    if (countElement) countElement.textContent = count ? countLabel : 'Ponudba v pripravi';
+  });
   bindFilterButtons();
 };
 
@@ -1030,6 +1039,10 @@ document.addEventListener('click', async (event) => {
     history.replaceState(null, '', `#${activeFilter}`);
     renderFilters();
     renderProducts();
+    document.querySelector('#catalog')?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
   }
 });
 
