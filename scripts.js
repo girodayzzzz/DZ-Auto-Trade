@@ -79,9 +79,10 @@ const productCount = document.querySelector('[data-product-count]');
 const productSearch = document.querySelector('[data-product-search]');
 const productSort = document.querySelector('[data-product-sort]');
 const productDetail = document.querySelector('[data-product-detail]');
-const brandFilter = document.querySelector('[data-brand-filter]');
-const availabilityFilter = document.querySelector('[data-availability-filter]');
-const priceFilter = document.querySelector('[data-price-filter]');
+const facetFilters = document.querySelector('[data-facet-filters]');
+const filterPanel = document.querySelector('[data-filter-panel]');
+const filterToggle = document.querySelector('[data-filter-toggle]');
+const filterTotal = document.querySelector('[data-filter-total]');
 const clearFiltersButton = document.querySelector('[data-clear-filters]');
 const activeFilters = document.querySelector('[data-active-filters]');
 const catalogSummary = document.querySelector('[data-catalog-summary]');
@@ -113,6 +114,18 @@ let currentCategories = [
 ];
 let activeFilter = 'all';
 
+const selectedFacets = { brand: new Set(), purpose: new Set(), surface: new Set(), volume: new Set(), feature: new Set(), price: new Set() };
+const facetDefinitions = [
+  { key: 'brand', label: 'Blagovna znamka' },
+  { key: 'purpose', label: 'Namen uporabe' },
+  { key: 'surface', label: 'Površina' },
+  { key: 'price', label: 'Cena' },
+  { key: 'volume', label: 'Količina' },
+  { key: 'feature', label: 'Lastnosti' },
+];
+const priceLabels = { '0-10': 'Do 10 €', '10-20': '10–20 €', '20-50': '20–50 €', '50-100': '50–100 €', '100+': 'Nad 100 €' };
+const volumeLabels = { '0-500': 'Do 500 ml', '501-1000': '501 ml–1 L', '1001-4999': 'Več kot 1 L', '5000+': '5 L in več', 'other': 'Ni tekočina' };
+
 if (window.location.hash) {
   activeFilter = window.location.hash.replace('#', '') || 'all';
 }
@@ -132,6 +145,29 @@ const escapeHtml = (value = '') =>
 const parsePrice = (price) => Number(price?.replace(/[^0-9,]/g, '').replace(',', '.') ?? 0);
 const priceToCents = (price) => Math.round(parsePrice(price) * 100);
 const uniqueSorted = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'sl'));
+const slugifyFacet = (value = '') => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const getProductVolume = (product = {}) => {
+  const match = `${product.name || ''} ${product.description || ''}`.match(/\b(\d+(?:[.,]\d+)?)\s*(ml|l)\b/i);
+  if (!match) return null;
+  const amount = Number(match[1].replace(',', '.'));
+  return match[2].toLowerCase() === 'l' ? amount * 1000 : amount;
+};
+const getVolumeRange = (volume) => volume == null ? 'other' : volume <= 500 ? '0-500' : volume <= 1000 ? '501-1000' : volume < 5000 ? '1001-4999' : '5000+';
+const getPriceRange = (product) => {
+  const price = parsePrice(product.price);
+  return price < 10 ? '0-10' : price < 20 ? '10-20' : price < 50 ? '20-50' : price < 100 ? '50-100' : '100+';
+};
+const getProductSurfaces = (product = {}) => {
+  const text = `${product.compatibility || ''} ${product.searchTerms || ''}`.toLowerCase();
+  const rules = [['Steklo', /stekl|okn/], ['Platišča', /platišč|zavorni prah/], ['Lak', /lak|barvan/], ['Plastika', /plastik/], ['Kovina', /kovin/], ['Motorni prostor', /motorni prostor|motorj/], ['Notranjost', /notranj|pohištv/], ['Delavnica', /delavnic|garaž|orodj/]];
+  const matches = rules.filter(([, pattern]) => pattern.test(text)).map(([label]) => label);
+  return matches.length ? matches : ['Univerzalno'];
+};
+const getProductFeatures = (product = {}) => {
+  const text = `${product.name || ''} ${product.description || ''} ${product.searchTerms || ''}`.toLowerCase();
+  const rules = [['pH-nevtralno', /ph[ -]?nevtral/], ['Koncentrat', /koncentrat|koncentrirano|redčit/], ['Hidrofobni učinek', /hidrofob/], ['Keramična zaščita', /keramič/], ['Profesionalna uporaba', /profesional/]];
+  return rules.filter(([, pattern]) => pattern.test(text)).map(([label]) => label);
+};
 const formatCurrency = (cents = 0) =>
   new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100);
 
@@ -228,6 +264,11 @@ const normalizeProduct = (product) => ({
   image: resolveProductImage(product),
   imageAlt: product.imageAlt ?? '',
   theme: product.theme ?? 'linear-gradient(135deg, #1d4ed8, #0f172a)',
+  purpose: product.purpose ?? product.badge ?? 'Drugo',
+  surfaces: product.surfaces ?? getProductSurfaces(product),
+  features: product.features ?? getProductFeatures(product),
+  volumeRange: product.volumeRange ?? getVolumeRange(getProductVolume(product)),
+  priceRange: product.priceRange ?? getPriceRange(product),
 });
 
 const deriveCategoriesFromProducts = (products = []) => {
@@ -283,28 +324,24 @@ const loadProducts = async () => {
 
 const getCategoryLabel = (id) => currentCategories.find((category) => category.id === id)?.label || id;
 
-const renderSelectOptions = (select, values, allLabel) => {
-  if (!select) return;
-  const selected = select.value || 'all';
-  select.innerHTML = `<option value="all">${escapeHtml(allLabel)}</option>${values
-    .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
-    .join('')}`;
-  select.value = [...values, 'all'].includes(selected) ? selected : 'all';
-};
-
+const getFacetValues = (product, key) => key === 'surface' ? product.surfaces : key === 'feature' ? product.features : [key === 'volume' ? product.volumeRange : key === 'price' ? product.priceRange : product[key]];
+const facetLabel = (key, value) => key === 'price' ? priceLabels[value] : key === 'volume' ? volumeLabels[value] : value;
+const productMatchesFacets = (product, ignoredKey = '') => facetDefinitions.every(({ key }) => {
+  if (key === ignoredKey || !selectedFacets[key].size) return true;
+  return getFacetValues(product, key).some((value) => selectedFacets[key].has(value));
+});
 const renderAdvancedFilters = () => {
-  renderSelectOptions(brandFilter, uniqueSorted(currentProducts.map((product) => product.brand)), 'Vse znamke');
-  renderSelectOptions(availabilityFilter, uniqueSorted(currentProducts.map((product) => product.availability)), 'Vsa stanja');
-};
-
-const productMatchesPrice = (product, range) => {
-  if (!range || range === 'all') return true;
-  const price = parsePrice(product.price);
-  if (range === '0-10') return price > 0 && price < 10;
-  if (range === '10-25') return price >= 10 && price < 25;
-  if (range === '25-50') return price >= 25 && price < 50;
-  if (range === '50+') return price >= 50;
-  return true;
+  if (!facetFilters) return;
+  facetFilters.innerHTML = facetDefinitions.map(({ key, label }, index) => {
+    const values = uniqueSorted(currentProducts.flatMap((product) => getFacetValues(product, key)));
+    const options = values.map((value) => {
+      const count = currentProducts.filter((product) => isCheckoutReady(product) && (activeFilter === 'all' || product.category === activeFilter) && productMatchesFacets(product, key) && getFacetValues(product, key).includes(value)).length;
+      const checked = selectedFacets[key].has(value);
+      const id = `facet-${key}-${slugifyFacet(value)}`;
+      return `<label class="facet-option${count ? '' : ' is-disabled'}" for="${id}"><input id="${id}" type="checkbox" value="${escapeHtml(value)}" data-facet="${key}"${checked ? ' checked' : ''}${count ? '' : ' disabled'} /><span>${escapeHtml(facetLabel(key, value))}</span><strong>${count}</strong></label>`;
+    }).join('');
+    return `<details class="facet-group"${index < 3 ? ' open' : ''}><summary>${escapeHtml(label)}<span>${selectedFacets[key].size || ''}</span></summary><div class="facet-options">${options}</div></details>`;
+  }).join('');
 };
 
 const productSlug = (product = {}) => String(product.name || product.sku || 'izdelek')
@@ -527,15 +564,10 @@ const productMatchesSearch = (product, query) => {
 const getVisibleProducts = () => {
   const query = productSearch?.value.trim() ?? '';
   const sort = productSort?.value ?? 'featured';
-  const selectedBrand = brandFilter?.value ?? 'all';
-  const selectedAvailability = availabilityFilter?.value ?? 'all';
-  const selectedPrice = priceFilter?.value ?? 'all';
   const filtered = currentProducts.filter((product) => {
     const purchasable = isCheckoutReady(product);
     const matchesCategory = activeFilter === 'all' || product.category === activeFilter;
-    const matchesBrand = selectedBrand === 'all' || product.brand === selectedBrand;
-    const matchesAvailability = selectedAvailability === 'all' || product.availability === selectedAvailability;
-    return purchasable && matchesCategory && matchesBrand && matchesAvailability && productMatchesPrice(product, selectedPrice) && productMatchesSearch(product, query);
+    return purchasable && matchesCategory && productMatchesFacets(product) && productMatchesSearch(product, query);
   });
 
   return filtered.sort((a, b) => {
@@ -550,17 +582,16 @@ const renderActiveFilters = (visibleCount) => {
   if (!activeFilters) return;
   const chips = [];
   const query = productSearch?.value.trim() ?? '';
-  if (activeFilter !== 'all') chips.push(`Kategorija: ${getCategoryLabel(activeFilter)}`);
-  if (brandFilter?.value && brandFilter.value !== 'all') chips.push(`Znamka: ${brandFilter.value}`);
-  if (availabilityFilter?.value && availabilityFilter.value !== 'all') chips.push(`Zaloga: ${availabilityFilter.value}`);
-  if (priceFilter?.value && priceFilter.value !== 'all') chips.push(`Cena: ${priceFilter.options[priceFilter.selectedIndex]?.textContent || priceFilter.value}`);
+  if (activeFilter !== 'all') chips.push({ label: `Kategorija: ${getCategoryLabel(activeFilter)}`, key: 'category', value: activeFilter });
+  facetDefinitions.forEach(({ key, label }) => selectedFacets[key].forEach((value) => chips.push({ label: `${label}: ${facetLabel(key, value)}`, key, value })));
   if (query) {
-    chips.push(`Iskanje: ${query}`);
+    chips.push({ label: `Iskanje: ${query}`, key: 'search', value: query });
     trackEvent('product_search', { query });
   }
 
   activeFilters.hidden = chips.length === 0;
-  activeFilters.innerHTML = chips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join('');
+  activeFilters.innerHTML = chips.map((chip) => typeof chip === 'string' ? `<span>${escapeHtml(chip)}</span>` : `<button type="button" data-remove-filter="${escapeHtml(chip.key)}" data-remove-value="${escapeHtml(chip.value)}">${escapeHtml(chip.label)} <b aria-hidden="true">×</b></button>`).join('');
+  if (filterTotal) filterTotal.textContent = String((activeFilter === 'all' ? 0 : 1) + facetDefinitions.reduce((total, { key }) => total + selectedFacets[key].size, 0));
 
   if (catalogSummary) {
     catalogSummary.textContent = chips.length
@@ -600,12 +631,35 @@ const renderProducts = () => {
   }
 
   renderActiveFilters(visibleProducts.length);
+  renderAdvancedFilters();
 };
 
 const renderShopInsights = () => {
   if (!shopInsights) return;
   shopInsights.innerHTML = '';
 };
+
+const parseProductDescription = (description = '') => {
+  const blocks = String(description).split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+  const sectionHeading = /^(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba):\s*/i;
+  const intro = [];
+  const sections = [];
+
+  blocks.forEach((block) => {
+    const match = block.match(sectionHeading);
+    if (match) {
+      sections.push({ title: match[1], content: block.slice(match[0].length).trim() });
+    } else if (sections.length) {
+      sections[sections.length - 1].content += `\n\n${block}`;
+    } else {
+      intro.push(block);
+    }
+  });
+
+  return { intro: intro.join('\n\n'), sections };
+};
+
+const renderDescriptionText = (text = '') => escapeHtml(text).replace(/\n/g, '<br />');
 
 
 const renderProductDetail = () => {
@@ -677,6 +731,10 @@ const renderProductDetail = () => {
   const cartButton = isCheckoutReady(product)
     ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>`
     : '';
+  const productDescription = parseProductDescription(product.description);
+  const descriptionSections = productDescription.sections.length
+    ? `<div class="product-description-sections" aria-label="Dodatne informacije o izdelku">${productDescription.sections.map((section) => `<details><summary>${escapeHtml(section.title)}</summary><div>${renderDescriptionText(section.content)}</div></details>`).join('')}</div>`
+    : '';
   productDetail.innerHTML = `<div class="container product-detail-layout">
     <div class="product-detail-media">
       <a class="product-breadcrumb" href="trgovina.html#${escapeHtml(product.category)}">← Nazaj v ${escapeHtml(product.categoryLabel)}</a>
@@ -685,19 +743,13 @@ const renderProductDetail = () => {
         ${productImageMarkup(product, false)}
       </div>
       ${product.images.length > 1 ? `<div class="product-image-gallery" aria-label="Dodatne slike izdelka">${product.images.map((image, index) => `<button class="product-image-thumb${index === 0 ? ' active' : ''}" type="button" data-product-gallery-image="${escapeHtml(image)}" aria-label="Prikaži sliko ${index + 1} za ${escapeHtml(product.name)}">${productImageMarkup(product, true, image)}</button>`).join('')}</div>` : ''}
-      <div class="product-detail-trust">
-        <span>✓ Dodaj v košarico</span>
-        <span>✓ Stripe Checkout</span>
-        <span>✓ Dostava se obračuna v košarici</span>
-      </div>
     </div>
     <article class="card product-detail-info">
       <div class="product-detail-kicker">
         <span class="badge">${escapeHtml(product.categoryLabel)}</span>
-        <span class="badge">Košarica</span>
       </div>
       <h1>${escapeHtml(product.name)}</h1>
-      <p class="product-detail-lead">${escapeHtml(product.description)}</p>
+      <p class="product-detail-lead">${renderDescriptionText(productDescription.intro || product.description)}</p>
       <dl class="product-detail-meta" aria-label="Podatki izdelka">
         <div><dt>Kategorija</dt><dd>${escapeHtml(product.categoryLabel)}</dd></div>
         <div><dt>SKU</dt><dd>${escapeHtml(product.sku)}</dd></div>
@@ -711,12 +763,10 @@ const renderProductDetail = () => {
 
       </div>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
-      <div class="product-detail-help product-info-grid">
-        <section><h2>Kako kupiti?</h2><ul><li>Kliknite »Dodaj v košarico«.</li><li>V košarici preverite količino in poštnino.</li><li>Nakup zaključite prek varnega Stripe Checkout plačila.</li></ul></section>
-      </div>
-      <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
       <div class="product-actions product-detail-actions">${cartButton || `<button class="shop-btn" type="button" disabled>Trenutno ni za košarico</button>`}${checkoutButton}</div>
-      <p class="form-note" data-checkout-status>Online nakup je omogočen prek košarice in varnega Stripe Checkout plačila. Pred zaključkom plačila potrdite splošne pogoje, dostavo in vračila.</p>
+      <p class="form-note product-checkout-status" data-checkout-status aria-live="polite"></p>
+      ${descriptionSections}
+      <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
     </article>
   </div>`;
 };
@@ -784,17 +834,40 @@ bindFilterButtons();
 
 productSearch?.addEventListener('input', renderProducts);
 productSort?.addEventListener('change', renderProducts);
-brandFilter?.addEventListener('change', renderProducts);
-availabilityFilter?.addEventListener('change', renderProducts);
-priceFilter?.addEventListener('change', renderProducts);
+facetFilters?.addEventListener('change', (event) => {
+  const input = event.target.closest('[data-facet]');
+  if (!input) return;
+  input.checked ? selectedFacets[input.dataset.facet].add(input.value) : selectedFacets[input.dataset.facet].delete(input.value);
+  renderProducts();
+});
 clearFiltersButton?.addEventListener('click', () => {
   activeFilter = 'all';
   if (productSearch) productSearch.value = '';
   if (productSort) productSort.value = 'featured';
-  if (brandFilter) brandFilter.value = 'all';
-  if (availabilityFilter) availabilityFilter.value = 'all';
-  if (priceFilter) priceFilter.value = 'all';
+  Object.values(selectedFacets).forEach((values) => values.clear());
   renderFilters();
+  renderProducts();
+});
+
+filterToggle?.addEventListener('click', () => {
+  const open = !filterPanel?.classList.contains('is-open');
+  filterPanel?.classList.toggle('is-open', open);
+  filterToggle.setAttribute('aria-expanded', String(open));
+});
+document.querySelector('[data-filter-close]')?.addEventListener('click', () => {
+  filterPanel?.classList.remove('is-open');
+  filterToggle?.setAttribute('aria-expanded', 'false');
+});
+activeFilters?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-remove-filter]');
+  if (!button) return;
+  if (button.dataset.removeFilter === 'search' && productSearch) productSearch.value = '';
+  else if (button.dataset.removeFilter === 'category') {
+    activeFilter = 'all';
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+    renderFilters();
+  }
+  else selectedFacets[button.dataset.removeFilter]?.delete(button.dataset.removeValue);
   renderProducts();
 });
 
