@@ -91,12 +91,21 @@
             <div class="catalog-search-wrap">
               <label for="product-search">Iskanje<input id="product-search" type="search" placeholder="Poišči izdelek ali znamko" data-product-search /></label>
               <label for="product-sort">Razvrsti<select id="product-sort" data-product-sort><option value="featured">Priporočeno</option><option value="price-asc">Cena: najprej nižja</option><option value="price-desc">Cena: najprej višja</option><option value="name">Ime izdelka</option></select></label>
-              <button class="btn-secondary" type="button" data-clear-filters>Počisti filtre</button>
+              <button class="btn-secondary catalog-mobile-filter-toggle" type="button" data-filter-toggle aria-expanded="false" aria-controls="catalog-filters">Filtri <span data-filter-total>0</span></button>
             </div>
             <div class="shop-category-shortcuts shop-category-filter-grid catalog-filter-rail" data-filter-list aria-label="Filtriranje po kategorijah izdelkov"></div>
           </div>
-          <div class="active-filters" data-active-filters hidden></div>
-          <div class="shop-grid" data-product-grid></div>
+          <div class="catalog-layout">
+            <aside class="catalog-filter-panel" id="catalog-filters" data-filter-panel aria-label="Podrobni filtri">
+              <div class="catalog-filter-heading"><div><p class="eyebrow">Zoži izbor</p><h3>Filtri</h3></div><button type="button" class="catalog-filter-close" data-filter-close aria-label="Zapri filtre">×</button></div>
+              <div class="catalog-filter-groups" data-facet-filters></div>
+              <button class="btn-secondary catalog-clear-filters" type="button" data-clear-filters>Počisti vse filtre</button>
+            </aside>
+            <div class="catalog-product-results">
+              <div class="active-filters" data-active-filters hidden></div>
+              <div class="shop-grid" data-product-grid></div>
+            </div>
+          </div>
         </div>
       </section>
       <section class="section bestsellers-section" aria-labelledby="shop-bestsellers-title">
