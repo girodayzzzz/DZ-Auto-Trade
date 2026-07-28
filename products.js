@@ -735,8 +735,7 @@ window.products = [
     "checkoutAmount": 25997,
     "featured": false,
     "searchTerms": "poka premium detailing trolley pro voziček detailer polirni stroji police čopiči mikro krpe",
-    "image": "assets/product-placeholder.svg",
-    "requestedImage": "images/products/poka-premium-detailing-trolley-pro.avif",
+    "image": "images/products/poka-premium-detailing-trolley-pro.avif",
     "imageAlt": "Poka Premium Detailing Trolley Pro voziček",
     "theme": "linear-gradient(135deg, #dc2626, #111827)"
   },
