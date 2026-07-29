@@ -42,17 +42,20 @@ Select at least these events:
 wrangler secret put STRIPE_WEBHOOK_SECRET
 ```
 
-The Cloudflare Git integration shown on the Worker **Build** settings is the
-single production deploy owner for this repository. GitHub Actions only runs
-the Worker integration test; it intentionally does not deploy a second copy of
-the same commit. This prevents two independent deployment systems from racing
-and making it unclear which Worker version is active.
+The GitHub Actions workflow tests and deploys this Worker after backend changes
+reach `main`. Configure repository secrets `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID`; the token must be allowed to edit Workers. Disable a
+second Cloudflare Git build for this same Worker so that two deploy systems do
+not race. The deploy uses `--keep-vars`, preserving Dashboard-managed secrets
+and KV bindings.
 
 Binding names are case-sensitive. The preferred names are `PRODUCTS_KV`,
 `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. To keep existing Dashboard
 configurations working, the Worker also recognizes `DZ_PRODUCTS_KV`,
 `DZ_AUTO_TRADE_PRODUCTS_KV`, or `KV` for the namespace, `STRIPE_API_KEY` for the
 Stripe API secret, and `STRIPE_ENDPOINT_SECRET` for the webhook signing secret.
+The common names `STRIPE_LIVE_SECRET_KEY`, `STRIPE_WEBHOOK_SIGNING_SECRET`, and
+`STRIPE_HOOK_SECRET` are accepted as well.
 You do not need to duplicate bindings: use one recognized name for each value.
 
 Use Stripe **test** keys first. Switch to live keys only after a successful test purchase and webhook confirmation.
@@ -94,14 +97,15 @@ Before attempting a payment, check the production readiness endpoint:
 curl -i https://dzautotrade.si/api/checkout-health
 ```
 
-It should return HTTP `200` with `"ready":true`. The response also contains
-`"checkoutReady"`: checkout can safely redirect to Stripe when this is `true`.
-HTTP `503` returns both the safe boolean `configuration` map and a `missing`
-list, without exposing any secret value. Stripe session creation requires
-`stripeSecretKey`; when KV is temporarily unavailable, the Worker falls back to
-its bundled trusted catalog instead of blocking payment. Configure `productsKv`
-and `stripeWebhookSecret` as well so pending and paid orders are recorded
-reliably in the admin panel.
+It should return HTTP `200` with `"ready":true` and `"checkoutReady":true`.
+Stripe session creation requires only `stripeSecretKey`; neither KV nor the
+webhook secret blocks the redirect. `missing` contains only checkout-blocking
+configuration, while `missingRecommended` lists optional operational bindings.
+`orderTrackingReady` confirms that both KV and the webhook secret are present.
+When KV is temporarily unavailable, the Worker falls back to its bundled
+trusted catalog instead of blocking payment. Configure `productsKv` and
+`stripeWebhookSecret` so pending and paid orders are recorded reliably in the
+admin panel. No response exposes a secret value.
 
 You can print only the diagnostic response (and not any secret values) with:
 

@@ -74,10 +74,13 @@ try {
     PRODUCTS_KV: kv,
     STRIPE_SECRET_KEY: 'sk_test_mock',
   });
-  assert.equal(healthResponse.status, 503, 'webhook readiness remains visible without blocking session creation');
+  assert.equal(healthResponse.status, 200, 'webhook configuration does not block session creation');
   const health = await healthResponse.json();
+  assert.equal(health.ready, true, 'a webhook is not required to create a Stripe Checkout Session');
   assert.equal(health.checkoutReady, true);
-  assert.deepEqual(health.missing, ['stripeWebhookSecret']);
+  assert.equal(health.orderTrackingReady, false);
+  assert.deepEqual(health.missing, []);
+  assert.deepEqual(health.missingRecommended, ['stripeWebhookSecret']);
 
   const legacyBindingHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
     KV: kv,
@@ -86,6 +89,14 @@ try {
   });
   assert.equal(legacyBindingHealthResponse.status, 200);
   assert.equal((await legacyBindingHealthResponse.json()).ready, true, 'recognized Dashboard binding aliases are checkout-ready');
+
+  const liveAliasHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
+    PRODUCTS_KV: kv,
+    STRIPE_LIVE_SECRET_KEY: 'sk_live_mock',
+    STRIPE_WEBHOOK_SIGNING_SECRET: 'whsec_mock',
+  });
+  assert.equal(liveAliasHealthResponse.status, 200);
+  assert.equal((await liveAliasHealthResponse.json()).ready, true, 'common live Dashboard binding names are recognized');
 
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
