@@ -14,6 +14,13 @@ routes = [
   { pattern = "www.dzautotrade.si/api/*", zone_name = "dzautotrade.si" }
 ]
 
+# Keep invocation logs available in Workers & Pages > dz-auto-trade-products >
+# Logs. Stripe response bodies and secret values are never logged by the Worker;
+# request IDs and safe error codes remain available for checkout diagnosis.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 # Runtime values are configured in the Cloudflare dashboard. Preserve the KV
 # binding as well when Wrangler uploads a new Worker version. `keep_vars` above
 # is the supported Wrangler setting that preserves variables and secrets.

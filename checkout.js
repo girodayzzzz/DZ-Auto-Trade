@@ -29,9 +29,14 @@ const createCheckoutSession = async (payload) => {
   }
 
   // A frequent Cloudflare setup has the secrets on Pages while /api/* points
-  // at a separate Worker without them. Retry through the Pages Function in
-  // that one configuration case; never retry validation or Stripe errors.
-  if (!result.response || (result.response.status === 503 && result.data.code === 'CHECKOUT_NOT_CONFIGURED')) {
+  // at a separate Worker without them. A missing Worker route is returned by
+  // static hosting as 404/405 (rather than a network error), so those responses
+  // must also use the Pages Function. Never retry ambiguous gateway or Stripe
+  // errors: doing so could create two Checkout Sessions for one click.
+  const shouldUsePagesFallback = !result.response
+    || [404, 405].includes(result.response.status)
+    || (result.response.status === 503 && result.data.code === 'CHECKOUT_NOT_CONFIGURED');
+  if (shouldUsePagesFallback) {
     try {
       const pagesResult = await requestCheckoutSession('/checkout-api', payload);
       if (pagesResult.response.ok && pagesResult.data.url) return pagesResult.data.url;
