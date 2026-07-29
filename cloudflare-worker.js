@@ -1430,6 +1430,20 @@ const saveOrder = async (env, order) => {
   await productsKv.put(`${ORDERS_PREFIX}${order.id}`, JSON.stringify({ ...order, updatedAt: savedAt }, null, 2));
 };
 
+// A missing or temporarily unavailable KV namespace must not prevent Stripe
+// from accepting a payment. The webhook can still be used for reconciliation,
+// while failures remain visible in Worker logs for follow-up.
+const saveOrderWithoutBlockingCheckout = async (env, order) => {
+  if (!runtimeBindings(env).productsKv) return false;
+  try {
+    await saveOrder(env, order);
+    return true;
+  } catch (error) {
+    console.error('Could not persist checkout order in KV.', { orderId: order.id, message: error?.message || String(error) });
+    return false;
+  }
+};
+
 const readOrder = async (env, id) => runtimeBindings(env).productsKv.get(`${ORDERS_PREFIX}${id}`, 'json');
 
 const listOrders = async (env, limit = 50) => {

@@ -1,4 +1,4 @@
-name: Deploy checkout Worker
+name: Test checkout Worker
 
 on:
   push:
@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-checkout-worker
+  group: test-checkout-worker
   cancel-in-progress: true
 
 jobs:
-  test-and-deploy:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,9 +25,3 @@ jobs:
           node-version: 22
       - name: Test checkout Worker
         run: node tests/checkout_worker.test.mjs
-      - name: Deploy checkout Worker
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --keep-vars

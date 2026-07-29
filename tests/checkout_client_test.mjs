@@ -26,3 +26,29 @@ assert.equal(url, 'https://checkout.stripe.com/c/pay/cs_pages');
 assert.deepEqual(calls, ['/api/checkout', '/checkout-api']);
 
 console.log('Checkout client Pages fallback test passed.');
+
+const transportCalls = [];
+context.fetch = async (endpoint) => {
+  transportCalls.push(endpoint);
+  if (endpoint === '/api/checkout') throw new TypeError('network error');
+  return Response.json({ url: 'https://checkout.stripe.com/c/pay/cs_transport_fallback' });
+};
+
+const transportFallbackUrl = await context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 });
+assert.equal(transportFallbackUrl, 'https://checkout.stripe.com/c/pay/cs_transport_fallback');
+assert.deepEqual(transportCalls, ['/api/checkout', '/checkout-api']);
+
+console.log('Checkout client transport fallback test passed.');
+
+context.fetch = async (endpoint) => {
+  if (endpoint === '/api/checkout') throw new TypeError('network error');
+  return Response.json({}, { status: 502 });
+};
+
+await assert.rejects(
+  context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 }),
+  /Stripe plačilo trenutno ni na voljo/,
+  'a failed Pages fallback must return a user-facing error instead of throwing on a null response',
+);
+
+console.log('Checkout client failed fallback test passed.');

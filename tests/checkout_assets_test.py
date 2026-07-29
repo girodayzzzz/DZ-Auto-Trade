@@ -1,8 +1,8 @@
 from pathlib import Path
 import re
 
-EXPECTED_CHECKOUT_VERSION = "2026-07-29-2"
-EXPECTED_SCRIPTS_VERSION = "2026-07-29-1"
+EXPECTED_CHECKOUT_VERSION = "2026-07-29-4"
+EXPECTED_SCRIPTS_VERSION = "2026-07-29-2"
 
 html_files = list(Path(__file__).resolve().parents[1].glob("*.html"))
 checkout_refs = []
