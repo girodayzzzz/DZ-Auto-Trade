@@ -14,7 +14,7 @@ const createCheckoutSession = async (payload) => {
     body: JSON.stringify(payload),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.url) throw new Error(data.error || 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje podpori.');
+  if (!response.ok || !data.url) throw new Error(data.error || 'Stripe plačilo trenutno ni na voljo. Poskusite znova.');
   return data.url;
 };
 
@@ -34,7 +34,7 @@ document.addEventListener('click', async (event) => {
     const url = await createCheckoutSession({ sku, quantity: 1 });
     window.location.href = url;
   } catch (error) {
-    setCheckoutStatus(`${error.message} Naročilo lahko pošljete kot povpraševanje.`, 'error', button);
+    setCheckoutStatus(error.message, 'error', button);
     button.disabled = false;
   }
 });
