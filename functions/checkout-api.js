@@ -1,9 +1,8 @@
 import worker from '../cloudflare-worker.js';
 
-// Cloudflare Pages fallback for installations where Stripe/KV bindings were
-// added to the Pages project instead of the separately routed Worker. The
-// browser only calls this endpoint when /api/checkout reports that its Worker
-// has no Stripe secret.
+// Cloudflare Pages route fallback. It deliberately reuses the existing Worker
+// implementation and rewrites only the pathname, so checkout validation and
+// Stripe Session creation never diverge between the two endpoints.
 export const onRequest = async ({ request, env }) => {
   const url = new URL(request.url);
   url.pathname = '/api/checkout';

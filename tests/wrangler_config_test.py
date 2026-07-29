@@ -44,6 +44,17 @@ def test_checkout_worker_is_deployed_after_main_changes() -> None:
     assert "CLOUDFLARE_ACCOUNT_ID" in workflow
     assert "command: deploy --keep-vars" in workflow
     assert "node tests/checkout_worker.test.mjs" in workflow
-    assert "https://dzautotrade.si/api/checkout-health" in workflow
-    assert "https://www.dzautotrade.si/api/checkout-health" in workflow
-    assert "if (!health.checkoutReady)" in workflow
+    assert "https://dzautotrade.si/api/checkout-health?verify=stripe" in workflow
+    assert "https://www.dzautotrade.si/api/checkout-health?verify=stripe" in workflow
+    assert "!health.checkoutReady || !health.stripeConnection?.ok" in workflow
+    assert "STRIPE_SECRET_KEY" not in workflow
+    assert "STRIPE_WEBHOOK_SECRET" not in workflow
+    assert "secrets: |" not in workflow
+
+
+def test_pages_checkout_fallback_reuses_existing_worker_route() -> None:
+    source = (ROOT / "functions/checkout-api.js").read_text(encoding="utf-8")
+
+    assert "import worker from '../cloudflare-worker.js'" in source
+    assert "url.pathname = '/api/checkout'" in source
+    assert "worker.fetch(new Request(url, request), env)" in source
