@@ -62,6 +62,21 @@ globalThis.fetch = async (url, init) => {
 };
 
 try {
+  const missingConfigurationResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'missing-config-test' },
+    body: JSON.stringify({ sku: 'KV-NEW', quantity: 1 }),
+  }), {});
+  assert.equal(missingConfigurationResponse.status, 503);
+  assert.deepEqual((await missingConfigurationResponse.json()).missing.sort(), ['productsKv', 'stripeSecretKey']);
+
+  const healthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
+    PRODUCTS_KV: kv,
+    STRIPE_SECRET_KEY: 'sk_test_mock',
+  });
+  assert.equal(healthResponse.status, 503, 'webhook readiness remains visible without blocking session creation');
+  assert.deepEqual((await healthResponse.json()).missing, ['stripeWebhookSecret']);
+
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'checkout-test' },

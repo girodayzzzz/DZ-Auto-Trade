@@ -81,7 +81,13 @@ Before attempting a payment, check the production readiness endpoint:
 curl -i https://dzautotrade.si/api/checkout-health
 ```
 
-It must return HTTP `200` with `"ready":true`. HTTP `503` identifies which Worker binding or secret is missing without exposing any secret value. If `productsKv`, `stripeSecretKey`, or `stripeWebhookSecret` is `false`, configure that item on the `dz-auto-trade-products` Worker and redeploy before accepting orders.
+It must return HTTP `200` with `"ready":true`. HTTP `503` returns both the safe boolean `configuration` map and a `missing` list, without exposing any secret value. If `productsKv`, `stripeSecretKey`, or `stripeWebhookSecret` is missing, configure that item on the `dz-auto-trade-products` Worker and redeploy before accepting orders. Session creation itself requires `productsKv` and `stripeSecretKey`; `stripeWebhookSecret` is additionally required to record successful payments reliably.
+
+You can print only the diagnostic response (and not any secret values) with:
+
+```bash
+curl -sS https://dzautotrade.si/api/checkout-health | python -m json.tool
+```
 
 1. Open the live site with the Worker deployed.
 2. Add one or more products to the cart.
