@@ -1321,13 +1321,11 @@ const SERVICE_CHECKOUT_PRODUCTS = [
   { sku: 'SERVICE-GLOBINSKO-CISCENJE', name: 'Globinsko čiščenje vozila', priceCents: 6000, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
 ];
 
-const isAvailableForCheckout = (product = {}) => /na zalogi|dobavljivo/i.test(String(product.availability || '')) && !/ni na zalogi|razprodano|sold out|out of stock|unavailable/i.test(String(product.availability || ''));
 const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
   const products = catalogProducts
-    // cartEnabled only controls whether the product is shown in the shopping
-    // cart UI. Products with direct Stripe buttons intentionally have it set
-    // to false, so checkout eligibility must use checkoutEnabled instead.
-    .filter((product) => product.checkoutEnabled && isAvailableForCheckout(product) && Number(product.checkoutAmount || 0) >= 50)
+    // Every product with a valid trusted price can be ordered. Stock wording
+    // is delivery information and stale KV flags must not block checkout.
+    .filter((product) => Number(product.checkoutAmount || 0) >= 50)
     .map((product) => ({
       sku: String(product.sku || '').trim().toUpperCase(),
       name: String(product.name || '').trim(),
@@ -1479,6 +1477,7 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
   const sku = String(product.sku || '').trim().toUpperCase();
   const image = String(product.image || '').trim();
   const imageOverride = productImageOverrides[sku];
+  const checkoutAmount = Math.max(0, Math.round(Number(product.checkoutAmount || 0)));
 
   return {
     name: String(product.name || '').trim(),
@@ -1497,11 +1496,9 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
     supplierPrice: String(product.supplierPrice || '').trim(),
     shippingNote: String(product.shippingNote || '').trim(),
     purchaseUrl: String(product.purchaseUrl || '').trim(),
-    checkoutEnabled: Boolean(product.checkoutEnabled),
-    checkoutAmount: Math.max(0, Math.round(Number(product.checkoutAmount || 0))),
-    cartEnabled:
-      product.cartEnabled ??
-      (Math.max(0, Math.round(Number(product.checkoutAmount || 0))) > 0 && isAvailableForCheckout(product)),
+    checkoutEnabled: checkoutAmount >= 50,
+    checkoutAmount,
+    cartEnabled: checkoutAmount >= 50,
     featured: Boolean(product.featured),
     searchTerms: String(product.searchTerms || '').trim(),
     image: imageOverride && (!image || image.startsWith('data:image/svg+xml')) ? imageOverride : image || createProductPlaceholder(product),
@@ -1652,7 +1649,7 @@ const createStripeCheckoutSession = async (request, env) => {
         message: data.error?.message || '',
       });
       return checkoutJson(request, {
-        error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.',
+        error: 'Stripe plačilo trenutno ni na voljo. Poskusite znova.',
         code: 'STRIPE_SESSION_FAILED',
       }, { status: 502 });
     }
@@ -1673,7 +1670,7 @@ const createStripeCheckoutSession = async (request, env) => {
     return checkoutJson(request, { url: data.url });
   } catch (error) {
     console.error('Unexpected Stripe checkout error.', error);
-    return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.', code: 'CHECKOUT_FAILED' }, { status: 502 });
+    return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Poskusite znova.', code: 'CHECKOUT_FAILED' }, { status: 502 });
   }
 };
 

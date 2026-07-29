@@ -91,7 +91,7 @@ It must return HTTP `200` with `"ready":true`. HTTP `503` identifies which Worke
 - Confirm `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` use live-mode Stripe values.
 - Confirm `PRODUCTS_KV` is bound in production and order records are visible in the admin panel.
 - Confirm legal pages, delivery rules, returns/complaints, and privacy/cookie wording are correct for the actual business process.
-- Make sure all direct-purchase products have a correct `checkoutAmount` in cents, `cartEnabled: true`, and `checkoutEnabled: true`.
+- Make sure every product has a correct `checkoutAmount` in cents. Products with an amount of at least 50 cents are automatically enabled for the cart and Stripe Checkout; availability text does not disable ordering.
 - When a product price changes in `products.js`, update the server-side checkout catalog source in `cloudflare-worker.js` at the same time and redeploy the Worker.
 
 ## Notes

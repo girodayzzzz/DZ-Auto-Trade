@@ -92,9 +92,9 @@ const ANALYTICS_STORAGE_KEY = 'dzAutoTradeEvents';
 const FREE_SHIPPING_THRESHOLD_CENTS = 6000;
 const STANDARD_SHIPPING_CENTS = 590;
 const MAX_CART_QUANTITY = 10;
-const VALID_AVAILABILITY_RE = /(na zalogi|dobavljivo)/i;
-const isProductAvailable = (product = {}) => VALID_AVAILABILITY_RE.test(String(product.availability || '')) && !/(ni na zalogi|razprodano|sold out|out of stock|unavailable)/i.test(String(product.availability || ''));
-const isCheckoutReady = (product = {}) => Boolean(product.checkoutEnabled) && Boolean(product.cartEnabled) && isProductAvailable(product) && Number(product.checkoutAmount || 0) >= 50;
+// Every priced shop product can be ordered. Availability remains useful
+// delivery information, but must never remove an item from checkout.
+const isCheckoutReady = (product = {}) => Number(product.checkoutAmount || 0) >= 50;
 const PRODUCT_PLACEHOLDER_IMAGE = 'assets/product-placeholder.svg';
 const LOCAL_IMAGE_PATH_PATTERN = /^(?:\.{1,2}\/|\/|images\/|assets\/)/i;
 const bundledProducts = Array.isArray(window.products) ? window.products : [];
@@ -257,9 +257,9 @@ const normalizeProduct = (product) => ({
   orderNote: product.orderNote ?? '',
   regularPrice: product.regularPrice ?? '',
   shippingNote: product.shippingNote ?? '',
-  checkoutEnabled: Boolean(product.checkoutEnabled) && isProductAvailable(product) && Number(product.checkoutAmount || 0) >= 50,
+  checkoutEnabled: Number(product.checkoutAmount || 0) >= 50,
   checkoutAmount: Number(product.checkoutAmount || 0),
-  cartEnabled: Boolean(product.cartEnabled) && Boolean(product.checkoutEnabled) && isProductAvailable(product) && Number(product.checkoutAmount || 0) >= 50,
+  cartEnabled: Number(product.checkoutAmount || 0) >= 50,
   featured: Boolean(product.featured),
   searchTerms: product.searchTerms ?? '',
   images: resolveProductImages(product),
@@ -436,17 +436,6 @@ const createCartCheckoutPayload = (summary) => ({
   })),
 });
 
-const createCartInquiryUrl = () => {
-  const { lines, totalCents } = getCartSummary();
-  const itemList = lines.map((item) => `${item.quantity}x ${item.name} (${item.sku})`).join(', ');
-  return `kontakt.html?${new URLSearchParams({
-    izdelek: lines.length ? `Košarica: ${itemList}` : 'Košarica',
-    kategorija: 'Splošno vprašanje',
-    sku: lines.map((item) => item.sku).join(', '),
-    skupaj: formatCurrency(totalCents),
-  }).toString()}`;
-};
-
 const renderCart = () => {
   let cartPanel = document.querySelector('[data-cart-panel]');
   if (!cartPanel) {
@@ -478,7 +467,6 @@ const renderCart = () => {
           <p class="cart-note" data-cart-shipping-note>Brezplačna poštnina nad 60 €.</p>
           <label class="cart-terms"><input type="checkbox" data-cart-terms /> Potrjujem, da sem seznanjen/a s <a href="splosni-pogoji.html">splošnimi pogoji</a>, <a href="dostava-placila.html">dostavo in plačili</a> ter <a href="vracila-reklamacije.html">vračili/reklamacijami</a>.</label>
           <button class="shop-btn" type="button" data-cart-checkout>Varno plačilo prek Stripe</button>
-          <a class="btn-secondary" href="kontakt.html" data-cart-inquiry>Pošlji povpraševanje</a>
           <p class="cart-note" data-checkout-status>Plačilo poteka prek Stripe Checkout. Naročilo se po uspešnem plačilu samodejno zabeleži za obdelavo.</p>
           <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
         </div>
@@ -491,7 +479,6 @@ const renderCart = () => {
   const cartCount = cartPanel.querySelector('[data-cart-count]');
   const cartItems = cartPanel.querySelector('[data-cart-items]');
   const cartSubtotal = cartPanel.querySelector('[data-cart-subtotal]');
-  const inquiryLink = cartPanel.querySelector('[data-cart-inquiry]');
   const cartShipping = cartPanel.querySelector('[data-cart-shipping]');
   const cartTotal = cartPanel.querySelector('[data-cart-total]');
   const shippingNote = cartPanel.querySelector('[data-cart-shipping-note]');
@@ -501,7 +488,6 @@ const renderCart = () => {
   if (cartShipping) cartShipping.textContent = shippingCents ? formatCurrency(shippingCents) : 'Brezplačno';
   if (cartTotal) cartTotal.textContent = formatCurrency(totalCents);
   if (shippingNote) shippingNote.textContent = subtotalCents === 0 ? 'Brezplačna poštnina nad 60 €.' : freeShippingRemainingCents > 0 ? `Do brezplačne poštnine manjka še ${formatCurrency(freeShippingRemainingCents)}.` : 'Dosegli ste brezplačno poštnino.';
-  if (inquiryLink) inquiryLink.href = createCartInquiryUrl();
   if (cartItems) {
     cartItems.innerHTML = lines.length
       ? lines
@@ -519,7 +505,7 @@ const renderCart = () => {
             </article>`
           )
           .join('')
-      : '<div class="empty-state cart-empty"><h3>Košarica je prazna</h3><p>Dodajte izdelek iz trgovine in ga nato pošljite kot povpraševanje.</p></div>';
+      : '<div class="empty-state cart-empty"><h3>Košarica je prazna</h3><p>Dodajte izdelek iz trgovine in nadaljujte na varno plačilo.</p></div>';
   }
 };
 
@@ -752,7 +738,7 @@ const renderProductDetail = () => {
   document.getElementById('dz-breadcrumb-schema')?.remove();
   document.head.appendChild(breadcrumbSchema);
   trackEvent('product_view', { sku: product.sku, name: product.name, category: product.category });
-  const checkoutButton = product.checkoutEnabled && !product.cartEnabled && isProductAvailable(product) && product.checkoutAmount >= 50
+  const checkoutButton = !product.cartEnabled && isCheckoutReady(product)
     ? `<button class="btn-primary" type="button" data-checkout data-sku="${escapeHtml(product.sku)}">Plačaj prek Stripe</button>`
     : '';
   const cartButton = isCheckoutReady(product)
@@ -1003,7 +989,7 @@ document.addEventListener('click', async (event) => {
     }
 
     if (!window.dzCheckout?.createSession) {
-      window.location.href = createCartInquiryUrl();
+      window.dzCheckout?.setStatus('Plačilni sistem se ni naložil. Osvežite stran in poskusite znova.', 'error', cartCheckoutButton);
       return;
     }
 
@@ -1013,7 +999,7 @@ document.addEventListener('click', async (event) => {
       const url = await window.dzCheckout.createSession(createCartCheckoutPayload(summary));
       window.location.href = url;
     } catch (error) {
-      window.dzCheckout.setStatus(`${error.message} Košarico lahko pošljete kot povpraševanje.`, 'error', cartCheckoutButton);
+      window.dzCheckout.setStatus(error.message, 'error', cartCheckoutButton);
       cartCheckoutButton.disabled = false;
     }
   }
