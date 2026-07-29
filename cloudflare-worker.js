@@ -1324,7 +1324,10 @@ const SERVICE_CHECKOUT_PRODUCTS = [
 const isAvailableForCheckout = (product = {}) => /na zalogi|dobavljivo/i.test(String(product.availability || '')) && !/ni na zalogi|razprodano|sold out|out of stock|unavailable/i.test(String(product.availability || ''));
 const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
   const products = catalogProducts
-    .filter((product) => product.checkoutEnabled && product.cartEnabled && isAvailableForCheckout(product) && Number(product.checkoutAmount || 0) >= 50)
+    // cartEnabled only controls whether the product is shown in the shopping
+    // cart UI. Products with direct Stripe buttons intentionally have it set
+    // to false, so checkout eligibility must use checkoutEnabled instead.
+    .filter((product) => product.checkoutEnabled && isAvailableForCheckout(product) && Number(product.checkoutAmount || 0) >= 50)
     .map((product) => ({
       sku: String(product.sku || '').trim().toUpperCase(),
       name: String(product.name || '').trim(),
