@@ -42,6 +42,13 @@ Select at least these events:
 wrangler secret put STRIPE_WEBHOOK_SECRET
 ```
 
+Binding names are case-sensitive. The preferred names are `PRODUCTS_KV`,
+`STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. To keep existing Dashboard
+configurations working, the Worker also recognizes `DZ_PRODUCTS_KV`,
+`DZ_AUTO_TRADE_PRODUCTS_KV`, or `KV` for the namespace, `STRIPE_API_KEY` for the
+Stripe API secret, and `STRIPE_ENDPOINT_SECRET` for the webhook signing secret.
+You do not need to duplicate bindings: use one recognized name for each value.
+
 Use Stripe **test** keys first. Switch to live keys only after a successful test purchase and webhook confirmation.
 
 The namespace ID and secret values differ between Cloudflare environments, so

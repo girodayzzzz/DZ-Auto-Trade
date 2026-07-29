@@ -1363,11 +1363,24 @@ const checkoutCorsHeaders = (request) => {
 };
 const checkoutJson = (request, data, init = {}) => Response.json(data, { ...init, headers: { ...checkoutCorsHeaders(request), ...(init.headers || {}) } });
 
-const checkoutConfiguration = (env) => ({
-  stripeSecretKey: Boolean(env.STRIPE_SECRET_KEY),
-  stripeWebhookSecret: Boolean(env.STRIPE_WEBHOOK_SECRET),
-  productsKv: Boolean(env.PRODUCTS_KV),
+// Keep the documented names canonical, but also accept the names used by older
+// Dashboard setups. Cloudflare asks for a variable name when a KV namespace or
+// secret is attached; the resource can therefore be present while checkout
+// still sees `undefined` when that name differs from the one in the source.
+const runtimeBindings = (env = {}) => ({
+  productsKv: env.PRODUCTS_KV || env.DZ_PRODUCTS_KV || env.DZ_AUTO_TRADE_PRODUCTS_KV || env.KV,
+  stripeSecretKey: String(env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY || '').trim(),
+  stripeWebhookSecret: String(env.STRIPE_WEBHOOK_SECRET || env.STRIPE_ENDPOINT_SECRET || '').trim(),
 });
+
+const checkoutConfiguration = (env) => {
+  const bindings = runtimeBindings(env);
+  return {
+    stripeSecretKey: Boolean(bindings.stripeSecretKey),
+    stripeWebhookSecret: Boolean(bindings.stripeWebhookSecret),
+    productsKv: Boolean(bindings.productsKv),
+  };
+};
 
 const getCheckoutReadiness = (env) => {
   const configuration = checkoutConfiguration(env);
@@ -1408,16 +1421,18 @@ const verifyStripeSignature = async (payload, signatureHeader, secret) => {
 const createOrderId = () => `dz-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 
 const saveOrder = async (env, order) => {
-  if (!env.PRODUCTS_KV) throw new Error('PRODUCTS_KV binding is required for orders.');
+  const { productsKv } = runtimeBindings(env);
+  if (!productsKv) throw new Error('PRODUCTS_KV binding is required for orders.');
   const savedAt = new Date().toISOString();
-  await env.PRODUCTS_KV.put(`${ORDERS_PREFIX}${order.id}`, JSON.stringify({ ...order, updatedAt: savedAt }, null, 2));
+  await productsKv.put(`${ORDERS_PREFIX}${order.id}`, JSON.stringify({ ...order, updatedAt: savedAt }, null, 2));
 };
 
-const readOrder = async (env, id) => env.PRODUCTS_KV.get(`${ORDERS_PREFIX}${id}`, 'json');
+const readOrder = async (env, id) => runtimeBindings(env).productsKv.get(`${ORDERS_PREFIX}${id}`, 'json');
 
 const listOrders = async (env, limit = 50) => {
-  const list = await env.PRODUCTS_KV.list({ prefix: ORDERS_PREFIX, limit });
-  const orders = await Promise.all(list.keys.map((key) => env.PRODUCTS_KV.get(key.name, 'json')));
+  const { productsKv } = runtimeBindings(env);
+  const list = await productsKv.list({ prefix: ORDERS_PREFIX, limit });
+  const orders = await Promise.all(list.keys.map((key) => productsKv.get(key.name, 'json')));
   return orders.filter(Boolean).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
 };
 
@@ -1515,18 +1530,18 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
 };
 
 const readCategories = async (env) => {
-  const savedCategories = await env.PRODUCTS_KV.get(CATEGORIES_KEY, 'json');
+  const savedCategories = await runtimeBindings(env).productsKv.get(CATEGORIES_KEY, 'json');
   if (Array.isArray(savedCategories) && savedCategories.length) return savedCategories.map(normalizeCategory).filter((category) => category.id && category.label);
   return DEFAULT_CATEGORIES;
 };
 
 const writeCategories = async (env, categories) => {
-  await env.PRODUCTS_KV.put(CATEGORIES_KEY, JSON.stringify(categories.map(normalizeCategory), null, 2));
+  await runtimeBindings(env).productsKv.put(CATEGORIES_KEY, JSON.stringify(categories.map(normalizeCategory), null, 2));
 };
 
 const readProducts = async (env) => {
   const categories = await readCategories(env);
-  const savedProducts = await env.PRODUCTS_KV.get(PRODUCTS_KEY, 'json');
+  const savedProducts = await runtimeBindings(env).productsKv.get(PRODUCTS_KEY, 'json');
   if (Array.isArray(savedProducts)) {
     const bundledProductsBySku = new Map(
       DEFAULT_PRODUCTS.products.map((product) => [String(product.sku || '').trim().toUpperCase(), product])
@@ -1545,7 +1560,7 @@ const readProducts = async (env) => {
 
 const writeProducts = async (env, products) => {
   const categories = await readCategories(env);
-  await env.PRODUCTS_KV.put(PRODUCTS_KEY, JSON.stringify(products.map((product) => normalizeProduct(product, categories)), null, 2));
+  await runtimeBindings(env).productsKv.put(PRODUCTS_KEY, JSON.stringify(products.map((product) => normalizeProduct(product, categories)), null, 2));
 };
 
 
@@ -1581,6 +1596,7 @@ const createStripeCheckoutSession = async (request, env) => {
       missing: readiness.missing,
     }, { status: 503 });
   }
+  const { stripeSecretKey } = runtimeBindings(env);
 
   let lineItems;
   try {
@@ -1644,7 +1660,7 @@ const createStripeCheckoutSession = async (request, env) => {
 
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { Authorization: `Bearer ${stripeSecretKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params,
     });
     const data = await stripeResponse.json().catch(() => ({}));
@@ -1686,10 +1702,11 @@ const createStripeCheckoutSession = async (request, env) => {
 
 const handleStripeWebhook = async (request, env) => {
   if (request.method !== 'POST') return json({ error: 'Method not allowed.' }, { status: 405, headers: { Allow: 'POST' } });
-  if (!env.STRIPE_WEBHOOK_SECRET) return json({ error: 'Stripe webhook is not configured.' }, { status: 500 });
+  const { stripeWebhookSecret } = runtimeBindings(env);
+  if (!stripeWebhookSecret) return json({ error: 'Stripe webhook is not configured.' }, { status: 500 });
   const signature = request.headers.get('Stripe-Signature') || '';
   const payload = await request.text();
-  const verified = await verifyStripeSignature(payload, signature, env.STRIPE_WEBHOOK_SECRET);
+  const verified = await verifyStripeSignature(payload, signature, stripeWebhookSecret);
   if (!verified) return json({ error: 'Invalid Stripe webhook signature.' }, { status: 400 });
 
   const event = JSON.parse(payload);
