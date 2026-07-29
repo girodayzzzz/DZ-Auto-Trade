@@ -107,8 +107,8 @@ const normalizeProduct = (product) => {
     supplierPrice: product.supplierPrice?.trim() ?? '',
     shippingNote: product.shippingNote?.trim() ?? '',
     purchaseUrl: product.purchaseUrl?.trim() ?? '',
-    checkoutEnabled: Boolean(product.checkoutEnabled),
-    cartEnabled: Boolean(product.cartEnabled),
+    checkoutEnabled: Number(product.checkoutAmount || 0) >= 50,
+    cartEnabled: Number(product.checkoutAmount || 0) >= 50,
     checkoutAmount: Number(product.checkoutAmount || 0),
     featured: Boolean(product.featured),
     searchTerms: product.searchTerms?.trim() ?? '',
@@ -185,8 +185,6 @@ const fillForm = (product) => {
   form.elements.shippingNote.value = product.shippingNote;
   form.elements.purchaseUrl.value = product.purchaseUrl;
   form.elements.checkoutAmount.value = product.checkoutAmount || '';
-  form.elements.checkoutEnabled.checked = product.checkoutEnabled;
-  form.elements.cartEnabled.checked = product.cartEnabled;
   form.elements.searchTerms.value = product.searchTerms;
   form.elements.image.value = product.image;
   renderImagePreview(product.image);
@@ -281,8 +279,8 @@ form?.addEventListener('submit', async (event) => {
   const product = normalizeProduct({
     ...Object.fromEntries(formData.entries()),
     featured: formData.get('featured') === 'on',
-    checkoutEnabled: formData.get('checkoutEnabled') === 'on',
-    cartEnabled: formData.get('cartEnabled') === 'on',
+    checkoutEnabled: true,
+    cartEnabled: true,
   });
   if (!product.name || !product.sku) return setStatus('Naziv in SKU sta obvezna.', 'error');
   try {

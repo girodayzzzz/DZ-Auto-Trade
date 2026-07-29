@@ -44,11 +44,20 @@ wrangler secret put STRIPE_WEBHOOK_SECRET
 
 Use Stripe **test** keys first. Switch to live keys only after a successful test purchase and webhook confirmation.
 
-The namespace ID differs between Cloudflare environments, so `PRODUCTS_KV` is
-managed in the dashboard rather than hard-coded in this public repository. The
-committed Wrangler upload metadata retains dashboard-managed KV bindings on
-every deployment. Do not remove `[unsafe.metadata].keep_bindings` from
-`wrangler.toml`, or a later deployment can remove `PRODUCTS_KV` again.
+The namespace ID and secret values differ between Cloudflare environments, so
+`PRODUCTS_KV`, variables, and secrets are managed in the dashboard rather than
+hard-coded in this public repository. The committed Wrangler upload metadata
+retains `kv_namespace`, `plain_text`, and `secret_text` bindings on every
+deployment. Do not remove `[unsafe.metadata].keep_bindings` from
+`wrangler.toml`, or a later deployment can remove runtime configuration again.
+The top-level `keep_vars = true` setting is also required: it tells Wrangler
+not to replace variables and secrets configured in the Dashboard during a
+deploy. Do not deploy with `--keep-vars=false` or override this setting in CI.
+
+If the Dashboard currently shows only **Configure API tokens and other runtime
+variables**, the values are not present on that Worker environment. A deploy
+cannot recover deleted secret values: bind `PRODUCTS_KV` again and recreate
+`STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` before testing checkout.
 
 
 ## Cloudflare Dashboard troubleshooting
@@ -91,7 +100,7 @@ It must return HTTP `200` with `"ready":true`. HTTP `503` identifies which Worke
 - Confirm `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` use live-mode Stripe values.
 - Confirm `PRODUCTS_KV` is bound in production and order records are visible in the admin panel.
 - Confirm legal pages, delivery rules, returns/complaints, and privacy/cookie wording are correct for the actual business process.
-- Make sure all direct-purchase products have a correct `checkoutAmount` in cents, `cartEnabled: true`, and `checkoutEnabled: true`.
+- Make sure every product has a correct `checkoutAmount` in cents. Products with an amount of at least 50 cents are automatically enabled for the cart and Stripe Checkout; availability text does not disable ordering.
 - When a product price changes in `products.js`, update the server-side checkout catalog source in `cloudflare-worker.js` at the same time and redeploy the Worker.
 
 ## Notes
