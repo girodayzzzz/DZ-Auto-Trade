@@ -68,14 +68,24 @@ try {
     body: JSON.stringify({ sku: 'KV-NEW', quantity: 1 }),
   }), {});
   assert.equal(missingConfigurationResponse.status, 503);
-  assert.deepEqual((await missingConfigurationResponse.json()).missing.sort(), ['productsKv', 'stripeSecretKey']);
+  assert.deepEqual((await missingConfigurationResponse.json()).missing, ['stripeSecretKey']);
 
   const healthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
     PRODUCTS_KV: kv,
     STRIPE_SECRET_KEY: 'sk_test_mock',
   });
   assert.equal(healthResponse.status, 503, 'webhook readiness remains visible without blocking session creation');
-  assert.deepEqual((await healthResponse.json()).missing, ['stripeWebhookSecret']);
+  const health = await healthResponse.json();
+  assert.equal(health.checkoutReady, true);
+  assert.deepEqual(health.missing, ['stripeWebhookSecret']);
+
+  const legacyBindingHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
+    KV: kv,
+    STRIPE_API_KEY: 'sk_test_mock',
+    STRIPE_ENDPOINT_SECRET: 'whsec_mock',
+  });
+  assert.equal(legacyBindingHealthResponse.status, 200);
+  assert.equal((await legacyBindingHealthResponse.json()).ready, true, 'recognized Dashboard binding aliases are checkout-ready');
 
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
@@ -83,9 +93,9 @@ try {
     body: JSON.stringify({ items: [{ sku: 'kv-new', quantity: 2 }, { sku: 'DZ-T07', quantity: 1 }, { sku: 'DIRECT-ONLY', quantity: 1 }, { sku: 'ALWAYS-ORDERABLE', quantity: 1 }] }),
   });
   const response = await worker.fetch(request, {
-    PRODUCTS_KV: kv,
-    STRIPE_SECRET_KEY: 'sk_test_mock',
-    STRIPE_WEBHOOK_SECRET: 'whsec_mock',
+    KV: kv,
+    STRIPE_API_KEY: 'sk_test_mock',
+    STRIPE_ENDPOINT_SECRET: 'whsec_mock',
   });
   const body = await response.json();
 
@@ -103,6 +113,18 @@ try {
   assert.match(stripeBody.get('line_items[3][price_data][product_data][name]'), /ALWAYS-ORDERABLE/);
   assert.equal(stripeBody.get('line_items[4][price_data][unit_amount]'), null, 'shipping is free above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
+
+  const unavailableKv = {
+    async get() { throw new Error('temporary KV outage'); },
+    async put() { throw new Error('temporary KV outage'); },
+  };
+  const kvOutageResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'kv-outage-test' },
+    body: JSON.stringify({ sku: 'DZ-N03', quantity: 1 }),
+  }), { PRODUCTS_KV: unavailableKv, STRIPE_SECRET_KEY: 'sk_test_mock' });
+  assert.equal(kvOutageResponse.status, 200, 'a temporary KV outage must not block Stripe checkout');
+  assert.equal((await kvOutageResponse.json()).url, 'https://checkout.stripe.com/c/pay/cs_test_123');
 } finally {
   globalThis.fetch = originalFetch;
 }
