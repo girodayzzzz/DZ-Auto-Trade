@@ -25,6 +25,16 @@ const currentProducts = [{
   availability: 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
   checkoutEnabled: true,
   checkoutAmount: 22526,
+}, {
+  // cartEnabled is a UI preference, not a checkout availability flag. The
+  // product page renders a direct Stripe button for this combination.
+  name: 'Direct checkout product',
+  category: 'cistila',
+  sku: 'DIRECT-ONLY',
+  availability: 'Na zalogi',
+  checkoutEnabled: true,
+  cartEnabled: false,
+  checkoutAmount: 2500,
 }];
 const kv = {
   async get(key, type) {
@@ -46,7 +56,7 @@ try {
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'checkout-test' },
-    body: JSON.stringify({ items: [{ sku: 'kv-new', quantity: 2 }, { sku: 'DZ-T07', quantity: 1 }] }),
+    body: JSON.stringify({ items: [{ sku: 'kv-new', quantity: 2 }, { sku: 'DZ-T07', quantity: 1 }, { sku: 'DIRECT-ONLY', quantity: 1 }] }),
   });
   const response = await worker.fetch(request, {
     PRODUCTS_KV: kv,
@@ -63,7 +73,9 @@ try {
   assert.equal(stripeBody.get('line_items[0][quantity]'), '2');
   assert.equal(stripeBody.get('line_items[1][price_data][unit_amount]'), '22526');
   assert.match(stripeBody.get('line_items[1][price_data][product_data][name]'), /DZ-T07/);
-  assert.equal(stripeBody.get('line_items[2][price_data][unit_amount]'), null, 'shipping is free above 60 €');
+  assert.equal(stripeBody.get('line_items[2][price_data][unit_amount]'), '2500');
+  assert.match(stripeBody.get('line_items[2][price_data][product_data][name]'), /DIRECT-ONLY/);
+  assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), null, 'shipping is free above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
 } finally {
   globalThis.fetch = originalFetch;
