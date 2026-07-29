@@ -895,6 +895,18 @@ const checkoutCorsHeaders = (request) => {
 };
 const checkoutJson = (request, data, init = {}) => Response.json(data, { ...init, headers: { ...checkoutCorsHeaders(request), ...(init.headers || {}) } });
 
+const checkoutConfiguration = (env) => ({
+  stripeSecretKey: Boolean(env.STRIPE_SECRET_KEY),
+  stripeWebhookSecret: Boolean(env.STRIPE_WEBHOOK_SECRET),
+  productsKv: Boolean(env.PRODUCTS_KV),
+});
+
+const getCheckoutReadiness = (env) => {
+  const configuration = checkoutConfiguration(env);
+  const missing = Object.entries(configuration).filter(([, configured]) => !configured).map(([name]) => name);
+  return { ready: missing.length === 0, configuration, missing };
+};
+
 const bytesToHex = (buffer) => [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 const timingSafeEqual = (a = '', b = '') => {
   if (a.length !== b.length) return false;
@@ -1074,7 +1086,14 @@ const createStripeCheckoutSession = async (request, env) => {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return checkoutJson(request, { error: 'Zahtevek mora biti v JSON obliki.' }, { status: 415 });
   if (isRateLimited(request)) return checkoutJson(request, { error: 'Preveč poskusov plačila. Poskusite znova čez nekaj minut.' }, { status: 429 });
-  if (!env.STRIPE_SECRET_KEY) return checkoutJson(request, { error: 'Stripe plačilo ni konfigurirano. Pišite na dzautotrade@gmail.com.' }, { status: 500 });
+  const readiness = getCheckoutReadiness(env);
+  if (!readiness.configuration.stripeSecretKey || !readiness.configuration.productsKv) {
+    console.error('Stripe checkout configuration is incomplete.', { missing: readiness.missing });
+    return checkoutJson(request, {
+      error: 'Stripe plačilo je začasno v vzdrževanju. Pišite na dzautotrade@gmail.com.',
+      code: 'CHECKOUT_NOT_CONFIGURED',
+    }, { status: 503 });
+  }
 
   let lineItems;
   try {
@@ -1134,7 +1153,19 @@ const createStripeCheckoutSession = async (request, env) => {
       body: params,
     });
     const data = await stripeResponse.json().catch(() => ({}));
-    if (!stripeResponse.ok) return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.' }, { status: 502 });
+    if (!stripeResponse.ok || !data.url) {
+      console.error('Stripe Checkout Session creation failed.', {
+        status: stripeResponse.status,
+        requestId: stripeResponse.headers.get('request-id') || '',
+        type: data.error?.type || '',
+        code: data.error?.code || '',
+        message: data.error?.message || '',
+      });
+      return checkoutJson(request, {
+        error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.',
+        code: 'STRIPE_SESSION_FAILED',
+      }, { status: 502 });
+    }
     await saveOrder(env, {
       id: orderId,
       status: 'checkout_redirected',
@@ -1151,7 +1182,8 @@ const createStripeCheckoutSession = async (request, env) => {
     });
     return checkoutJson(request, { url: data.url });
   } catch (error) {
-    return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.' }, { status: 502 });
+    console.error('Unexpected Stripe checkout error.', error);
+    return checkoutJson(request, { error: 'Stripe plačilo trenutno ni na voljo. Pošljite povpraševanje.', code: 'CHECKOUT_FAILED' }, { status: 502 });
   }
 };
 
@@ -1210,6 +1242,14 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/api/products') {
       return json({ products: await readProducts(env), categories: await readCategories(env) });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/checkout-health') {
+      const readiness = getCheckoutReadiness(env);
+      return checkoutJson(request, {
+        ready: readiness.ready,
+        configuration: readiness.configuration,
+      }, { status: readiness.ready ? 200 : 503 });
     }
 
     if (url.pathname === '/api/checkout') {

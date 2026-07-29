@@ -60,6 +60,14 @@ After the next successful deployment, the Worker dashboard should allow Variable
 
 ## Stripe test checklist
 
+Before attempting a payment, check the production readiness endpoint:
+
+```bash
+curl -i https://dzautotrade.si/api/checkout-health
+```
+
+It must return HTTP `200` with `"ready":true`. HTTP `503` identifies which Worker binding or secret is missing without exposing any secret value. If `productsKv`, `stripeSecretKey`, or `stripeWebhookSecret` is `false`, configure that item on the `dz-auto-trade-products` Worker and redeploy before accepting orders.
+
 1. Open the live site with the Worker deployed.
 2. Add one or more products to the cart.
 3. Tick the checkout legal confirmation checkbox.
