@@ -1375,6 +1375,13 @@ const getCheckoutReadiness = (env) => {
   return { ready: missing.length === 0, configuration, missing };
 };
 
+const CHECKOUT_REQUIRED_CONFIGURATION = new Set(['stripeSecretKey', 'productsKv']);
+const getCheckoutSessionReadiness = (env) => {
+  const readiness = getCheckoutReadiness(env);
+  const missing = readiness.missing.filter((name) => CHECKOUT_REQUIRED_CONFIGURATION.has(name));
+  return { ready: missing.length === 0, configuration: readiness.configuration, missing };
+};
+
 const bytesToHex = (buffer) => [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 const timingSafeEqual = (a = '', b = '') => {
   if (a.length !== b.length) return false;
@@ -1565,12 +1572,13 @@ const createStripeCheckoutSession = async (request, env) => {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return checkoutJson(request, { error: 'Zahtevek mora biti v JSON obliki.' }, { status: 415 });
   if (isRateLimited(request)) return checkoutJson(request, { error: 'Preveč poskusov plačila. Poskusite znova čez nekaj minut.' }, { status: 429 });
-  const readiness = getCheckoutReadiness(env);
-  if (!readiness.configuration.stripeSecretKey || !readiness.configuration.productsKv) {
+  const readiness = getCheckoutSessionReadiness(env);
+  if (!readiness.ready) {
     console.error('Stripe checkout configuration is incomplete.', { missing: readiness.missing });
     return checkoutJson(request, {
       error: 'Stripe plačilo je začasno v vzdrževanju. Pišite na dzautotrade@gmail.com.',
       code: 'CHECKOUT_NOT_CONFIGURED',
+      missing: readiness.missing,
     }, { status: 503 });
   }
 
@@ -1736,6 +1744,7 @@ export default {
       return checkoutJson(request, {
         ready: readiness.ready,
         configuration: readiness.configuration,
+        missing: readiness.missing,
       }, { status: readiness.ready ? 200 : 503 });
     }
 
