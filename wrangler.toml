@@ -3,16 +3,16 @@ main = "cloudflare-worker.js"
 compatibility_date = "2026-07-21"
 compatibility_flags = ["nodejs_compat"]
 
-# PRODUCTS_KV is configured in the Cloudflare dashboard because its namespace
-# ID is environment-specific. Keep that KV binding when Wrangler uploads a new
-# Worker version; without this upload metadata a deployment can silently remove
-# the dashboard-managed binding and disable checkout.
-[unsafe.metadata]
-keep_bindings = ["kv_namespace"]
-
 # API routes for the static DZ Auto Trade site. The Pages project serves the
 # website; this Worker serves only backend endpoints under /api/*.
 routes = [
   { pattern = "dzautotrade.si/api/*", zone_name = "dzautotrade.si" },
   { pattern = "www.dzautotrade.si/api/*", zone_name = "dzautotrade.si" }
 ]
+
+# Runtime values are configured in the Cloudflare dashboard. Preserve the KV,
+# ordinary variables, and secrets when Wrangler uploads a new Worker version.
+# This metadata must remain after top-level keys such as `routes`, because TOML
+# keys following this table belong to `unsafe.metadata`.
+[unsafe.metadata]
+keep_bindings = ["kv_namespace", "plain_text", "secret_text"]
