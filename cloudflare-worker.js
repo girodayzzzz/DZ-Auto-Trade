@@ -1369,8 +1369,8 @@ const checkoutJson = (request, data, init = {}) => Response.json(data, { ...init
 // still sees `undefined` when that name differs from the one in the source.
 const runtimeBindings = (env = {}) => ({
   productsKv: env.PRODUCTS_KV || env.DZ_PRODUCTS_KV || env.DZ_AUTO_TRADE_PRODUCTS_KV || env.KV,
-  stripeSecretKey: String(env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY || '').trim(),
-  stripeWebhookSecret: String(env.STRIPE_WEBHOOK_SECRET || env.STRIPE_ENDPOINT_SECRET || '').trim(),
+  stripeSecretKey: String(env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY || env.STRIPE_LIVE_SECRET_KEY || '').trim(),
+  stripeWebhookSecret: String(env.STRIPE_WEBHOOK_SECRET || env.STRIPE_ENDPOINT_SECRET || env.STRIPE_WEBHOOK_SIGNING_SECRET || env.STRIPE_HOOK_SECRET || '').trim(),
 });
 
 const checkoutConfiguration = (env) => {
@@ -1784,11 +1784,16 @@ export default {
       const readiness = getCheckoutReadiness(env);
       const sessionReadiness = getCheckoutSessionReadiness(env);
       return checkoutJson(request, {
-        ready: readiness.ready,
+        // `ready` describes the customer-facing checkout. A webhook is highly
+        // recommended for order reconciliation, but Stripe does not require it
+        // to create a Checkout Session and redirect the customer.
+        ready: sessionReadiness.ready,
         checkoutReady: sessionReadiness.ready,
+        orderTrackingReady: readiness.configuration.productsKv && readiness.configuration.stripeWebhookSecret,
         configuration: readiness.configuration,
-        missing: readiness.missing,
-      }, { status: readiness.ready ? 200 : 503 });
+        missing: sessionReadiness.missing,
+        missingRecommended: readiness.missing.filter((name) => !CHECKOUT_REQUIRED_CONFIGURATION.has(name)),
+      }, { status: sessionReadiness.ready ? 200 : 503 });
     }
 
     if (url.pathname === '/api/checkout') {
