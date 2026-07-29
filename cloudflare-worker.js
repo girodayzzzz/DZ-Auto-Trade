@@ -1498,7 +1498,7 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
     checkoutAmount: Math.max(0, Math.round(Number(product.checkoutAmount || 0))),
     cartEnabled:
       product.cartEnabled ??
-      (Math.max(0, Math.round(Number(product.checkoutAmount || 0))) > 0 && String(product.availability || '').toLowerCase().includes('na zalogi')),
+      (Math.max(0, Math.round(Number(product.checkoutAmount || 0))) > 0 && isAvailableForCheckout(product)),
     featured: Boolean(product.featured),
     searchTerms: String(product.searchTerms || '').trim(),
     image: imageOverride && (!image || image.startsWith('data:image/svg+xml')) ? imageOverride : image || createProductPlaceholder(product),
