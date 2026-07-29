@@ -1368,7 +1368,7 @@ const checkoutJson = (request, data, init = {}) => Response.json(data, { ...init
 // secret is attached; the resource can therefore be present while checkout
 // still sees `undefined` when that name differs from the one in the source.
 const runtimeBindings = (env = {}) => ({
-  productsKv: env.PRODUCTS_KV || env.DZ_PRODUCTS_KV || env.DZ_AUTO_TRADE_PRODUCTS_KV || env.KV,
+  productsKv: env.PRODUCTS || env.PRODUCTS_KV || env.DZ_PRODUCTS_KV || env.DZ_AUTO_TRADE_PRODUCTS_KV || env.KV,
   stripeSecretKey: String(env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY || env.STRIPE_LIVE_SECRET_KEY || '').trim(),
   stripeWebhookSecret: String(env.STRIPE_WEBHOOK_SECRET || env.STRIPE_ENDPOINT_SECRET || env.STRIPE_WEBHOOK_SIGNING_SECRET || env.STRIPE_HOOK_SECRET || '').trim(),
 });
@@ -1395,10 +1395,9 @@ const getCheckoutReadiness = (env) => {
   return { ready: missing.length === 0, configuration, missing };
 };
 
-// Stripe can create a payment session from the bundled, trusted catalog even
-// while KV is unavailable. Order persistence is important, but it must not
-// prevent a customer from reaching Stripe because of a transient KV problem.
-const CHECKOUT_REQUIRED_CONFIGURATION = new Set(['stripeSecretKey']);
+// PRODUCTS is the production Pages binding. Requiring it guarantees that the
+// price used for Checkout comes from the server-side catalog, never the cart.
+const CHECKOUT_REQUIRED_CONFIGURATION = new Set(['stripeSecretKey', 'productsKv']);
 const getCheckoutSessionReadiness = (env) => {
   const readiness = getCheckoutReadiness(env);
   const missing = readiness.missing.filter((name) => CHECKOUT_REQUIRED_CONFIGURATION.has(name));
@@ -1623,27 +1622,34 @@ const createStripeCheckoutSession = async (request, env) => {
   const { stripeSecretKey } = runtimeBindings(env);
 
   let lineItems;
+  let body;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch (error) {
+    return checkoutJson(request, { error: 'Zahtevek za plačilo ni veljaven JSON.' }, { status: 400 });
+  }
+
+  try {
     // The admin panel stores the current catalog in KV. Resolve checkout prices
     // from that server-side source instead of the embedded deployment snapshot,
     // otherwise newly added products and price changes cannot reach Stripe.
-    let savedProducts = [];
-    if (runtimeBindings(env).productsKv) {
-      try {
-        savedProducts = await readProducts(env);
-      } catch (error) {
-        console.error('Could not read checkout catalog from KV; using bundled catalog.', { message: error?.message || String(error) });
-      }
-    }
-    const productsBySku = new Map(
-      [...DEFAULT_PRODUCTS.products, ...savedProducts].map((product) => [String(product.sku || '').trim().toUpperCase(), product])
-    );
-    const checkoutCatalog = buildCheckoutCatalog([...productsBySku.values()]);
+    const savedProducts = await readProducts(env);
+    const checkoutCatalog = buildCheckoutCatalog(savedProducts);
     lineItems = parseCheckoutItems(body, checkoutCatalog);
   } catch (error) {
-    const safeMessage = error instanceof SyntaxError ? 'Zahtevek za plačilo ni veljaven JSON.' : error.message || 'Zahtevek za plačilo ni veljaven.';
-    return checkoutJson(request, { error: safeMessage }, { status: 400 });
+    const validationMessages = [
+      'Košarica nima veljavnih postavk za Stripe plačilo.',
+      'Izdelek ni več na voljo za spletno plačilo.',
+      'Količina izdelka ni veljavna.',
+    ];
+    if (validationMessages.includes(error?.message) || String(error?.message || '').startsWith('Največja dovoljena količina')) {
+      return checkoutJson(request, { error: error.message }, { status: 400 });
+    }
+    console.error('Could not load the trusted checkout catalog from PRODUCTS KV.', { message: error?.message || String(error) });
+    return checkoutJson(request, {
+      error: 'Kataloga izdelkov trenutno ni mogoče preveriti. Poskusite znova.',
+      code: 'PRODUCTS_UNAVAILABLE',
+    }, { status: 503 });
   }
 
   const orderId = createOrderId();

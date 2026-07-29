@@ -24,7 +24,7 @@ Use the existing **`dz-auto-trade-products`** Worker. Do not create or rename a 
 1. Confirm the Worker project uses `wrangler.toml` and deploys `cloudflare-worker.js` as the Worker entrypoint. If Cloudflare Dashboard says variables or triggers cannot be added because the Worker only has static assets, redeploy after adding this Wrangler configuration.
 2. Route the Worker so `/api/checkout`, `/api/stripe-webhook`, `/api/products`, and `/api/admin/*` are handled by the Worker on the production domain. The committed `wrangler.toml` routes `dzautotrade.si/api/*` and `www.dzautotrade.si/api/*` to the Worker.
 3. Add runtime secrets and KV bindings to the **Worker project** (`dz-auto-trade-products`), not only to the Pages project (`dz-auto-trade`). Pages variables are not visible to this Worker.
-4. Bind a Cloudflare KV namespace as `PRODUCTS_KV`; the same namespace stores catalog data and order records under the `orders:` prefix.
+4. Bind a Cloudflare KV namespace as `PRODUCTS`; the same namespace stores catalog data and order records under the `orders:` prefix.
 5. Add a Worker secret named `STRIPE_SECRET_KEY`:
 
 ```bash
@@ -65,9 +65,9 @@ overwrites `STRIPE_SECRET_KEY` or `STRIPE_WEBHOOK_SECRET`. Those encrypted
 secrets remain attached directly to the existing Worker, and `PRODUCTS_KV`
 remains its Dashboard-managed KV binding.
 
-Binding names are case-sensitive. The preferred names are `PRODUCTS_KV`,
+Binding names are case-sensitive. The preferred Pages binding name is `PRODUCTS`,
 `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. To keep existing Dashboard
-configurations working, the Worker also recognizes `DZ_PRODUCTS_KV`,
+configurations working, the Worker also recognizes `PRODUCTS_KV`, `DZ_PRODUCTS_KV`,
 `DZ_AUTO_TRADE_PRODUCTS_KV`, or `KV` for the namespace, `STRIPE_API_KEY` for the
 Stripe API secret, and `STRIPE_ENDPOINT_SECRET` for the webhook signing secret.
 The common names `STRIPE_LIVE_SECRET_KEY`, `STRIPE_WEBHOOK_SIGNING_SECRET`, and

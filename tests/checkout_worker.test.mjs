@@ -71,7 +71,7 @@ try {
     body: JSON.stringify({ sku: 'KV-NEW', quantity: 1 }),
   }), {});
   assert.equal(missingConfigurationResponse.status, 503);
-  assert.deepEqual((await missingConfigurationResponse.json()).missing, ['stripeSecretKey']);
+  assert.deepEqual((await missingConfigurationResponse.json()).missing, ['stripeSecretKey', 'productsKv']);
 
   const publishableKeyHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
     STRIPE_SECRET_KEY: 'pk_test_not_a_server_secret',
@@ -94,7 +94,7 @@ try {
   }
 
   const healthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
-    PRODUCTS_KV: kv,
+    PRODUCTS: kv,
     STRIPE_SECRET_KEY: 'sk_test_mock',
   });
   assert.equal(healthResponse.status, 200, 'webhook configuration does not block session creation');
@@ -125,7 +125,7 @@ try {
     );
     const failedVerificationResponse = await worker.fetch(
       new Request('https://dzautotrade.si/api/checkout-health?verify=stripe'),
-      { STRIPE_SECRET_KEY: 'rk_test_mock' },
+      { PRODUCTS: kv, STRIPE_SECRET_KEY: 'rk_test_mock' },
     );
     const failedVerification = await failedVerificationResponse.json();
     assert.equal(failedVerification.stripeConnection.ok, false);
@@ -194,8 +194,8 @@ try {
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'kv-outage-test' },
     body: JSON.stringify({ sku: 'DZ-N03', quantity: 1 }),
   }), { PRODUCTS_KV: unavailableKv, STRIPE_SECRET_KEY: 'sk_test_mock' });
-  assert.equal(kvOutageResponse.status, 200, 'a temporary KV outage must not block Stripe checkout');
-  assert.equal((await kvOutageResponse.json()).url, 'https://checkout.stripe.com/c/pay/cs_test_123');
+  assert.equal(kvOutageResponse.status, 503, 'checkout must fail closed when its trusted KV catalog is unavailable');
+  assert.equal((await kvOutageResponse.json()).code, 'PRODUCTS_UNAVAILABLE');
 } finally {
   globalThis.fetch = originalFetch;
 }

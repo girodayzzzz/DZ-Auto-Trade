@@ -13,23 +13,38 @@ const requestCheckoutSession = async (endpoint, payload) => {
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  const data = await response.json().catch(() => ({}));
+  const contentType = response.headers.get('content-type') || '';
+  const data = contentType.includes('application/json')
+    ? await response.json().catch(() => ({}))
+    : {};
+  if (!response.ok) {
+    // Keep the actionable status/code in developer tools without logging the
+    // cart, Stripe URL, request body, or any other customer data.
+    console.error('Stripe Checkout endpoint failed.', {
+      endpoint,
+      status: response.status,
+      code: typeof data.code === 'string' ? data.code : 'UNSTRUCTURED_RESPONSE',
+      error: typeof data.error === 'string' ? data.error : 'Strežnik ni vrnil JSON odgovora.',
+      requestId: typeof data.requestId === 'string' ? data.requestId : '',
+    });
+  }
   return { response, data };
 };
 
 const createCheckoutSession = async (payload) => {
   let result;
   try {
-    result = await requestCheckoutSession('/api/checkout', payload);
+    // The production bindings and secrets belong to the Pages project, so its
+    // Function is the canonical same-origin checkout endpoint.
+    result = await requestCheckoutSession('/checkout-api', payload);
   } catch (error) {
-    // A route or Worker deployment can be temporarily unavailable even while
-    // the Pages Function is healthy. Treat transport failures like a missing
-    // Worker configuration and try the independent Pages endpoint.
+    // The Pages Function can be temporarily unavailable even while the routed
+    // Worker is healthy. Treat transport failures like a missing route.
     result = { response: null, data: {}, transportError: error };
   }
 
-  // A frequent Cloudflare setup has the secrets on Pages while /api/* points
-  // at a separate Worker without them. A missing Worker route is returned by
+  // This production setup has the secrets on Pages while /api/* points at a
+  // separate Worker. A missing Pages Function is returned by
   // static hosting as 404/405 (rather than a network error), so those responses
   // must also use the Pages Function. Never retry ambiguous gateway or Stripe
   // errors: doing so could create two Checkout Sessions for one click.
@@ -37,21 +52,21 @@ const createCheckoutSession = async (payload) => {
     || [404, 405].includes(result.response.status)
     || (result.response.status === 503 && result.data.code === 'CHECKOUT_NOT_CONFIGURED');
   if (shouldUsePagesFallback) {
-    const workerResult = result;
+    const primaryResult = result;
     try {
-      const pagesResult = await requestCheckoutSession('/checkout-api', payload);
-      if (pagesResult.response.ok && pagesResult.data.url) return pagesResult.data.url;
+      const fallbackResult = await requestCheckoutSession('/api/checkout', payload);
+      if (fallbackResult.response.ok && fallbackResult.data.url) return fallbackResult.data.url;
       // A static host commonly returns an HTML 404 for the optional Pages
       // Function. In that case preserve the Worker's structured error: it
       // explains the actual missing binding instead of replacing it with a
       // generic fallback failure. A structured Pages error remains preferable
       // when the Worker route itself was missing or unreachable.
-      const pagesHasUsefulError = Boolean(pagesResult.data?.error);
-      const workerHasUsefulError = Boolean(workerResult.response && workerResult.data?.error);
-      result = pagesHasUsefulError || !workerHasUsefulError ? pagesResult : workerResult;
+      const fallbackHasUsefulError = Boolean(fallbackResult.data?.error);
+      const primaryHasUsefulError = Boolean(primaryResult.response && primaryResult.data?.error);
+      result = fallbackHasUsefulError || !primaryHasUsefulError ? fallbackResult : primaryResult;
     } catch (error) {
-      if (!workerResult.response) throw new Error('Plačilnega sistema ni mogoče doseči. Poskusite znova čez nekaj trenutkov.');
-      result = workerResult;
+      if (!primaryResult.response) throw new Error('Plačilnega sistema ni mogoče doseči. Poskusite znova čez nekaj trenutkov.');
+      result = primaryResult;
     }
   }
 
