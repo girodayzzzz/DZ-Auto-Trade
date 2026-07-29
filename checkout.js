@@ -37,14 +37,21 @@ const createCheckoutSession = async (payload) => {
     || [404, 405].includes(result.response.status)
     || (result.response.status === 503 && result.data.code === 'CHECKOUT_NOT_CONFIGURED');
   if (shouldUsePagesFallback) {
+    const workerResult = result;
     try {
       const pagesResult = await requestCheckoutSession('/checkout-api', payload);
       if (pagesResult.response.ok && pagesResult.data.url) return pagesResult.data.url;
-      // Always retain the fallback response. Keeping the original transport
-      // placeholder here could otherwise cause a null-response TypeError.
-      result = pagesResult;
+      // A static host commonly returns an HTML 404 for the optional Pages
+      // Function. In that case preserve the Worker's structured error: it
+      // explains the actual missing binding instead of replacing it with a
+      // generic fallback failure. A structured Pages error remains preferable
+      // when the Worker route itself was missing or unreachable.
+      const pagesHasUsefulError = Boolean(pagesResult.data?.error);
+      const workerHasUsefulError = Boolean(workerResult.response && workerResult.data?.error);
+      result = pagesHasUsefulError || !workerHasUsefulError ? pagesResult : workerResult;
     } catch (error) {
-      if (!result.response) throw new Error('Plačilnega sistema ni mogoče doseči. Poskusite znova čez nekaj trenutkov.');
+      if (!workerResult.response) throw new Error('Plačilnega sistema ni mogoče doseči. Poskusite znova čez nekaj trenutkov.');
+      result = workerResult;
     }
   }
 
