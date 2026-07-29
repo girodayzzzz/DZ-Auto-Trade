@@ -95,3 +95,21 @@ await assert.rejects(
 );
 
 console.log('Checkout client failed fallback test passed.');
+
+context.fetch = async (endpoint) => {
+  if (endpoint === '/api/checkout') {
+    return Response.json({
+      error: 'Stripe skrivni ključ manjka na produkcijskem Workerju.',
+      code: 'CHECKOUT_NOT_CONFIGURED',
+    }, { status: 503 });
+  }
+  return new Response('<h1>Not found</h1>', { status: 404, headers: { 'Content-Type': 'text/html' } });
+};
+
+await assert.rejects(
+  context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 }),
+  /Stripe skrivni ključ manjka na produkcijskem Workerju/,
+  'a missing Pages Function must not hide the actionable Worker error',
+);
+
+console.log('Checkout client actionable Worker error test passed.');
