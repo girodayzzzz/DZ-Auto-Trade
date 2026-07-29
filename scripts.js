@@ -465,8 +465,8 @@ const renderCart = () => {
             <strong data-cart-total>0,00 €</strong>
           </div>
           <p class="cart-note" data-cart-shipping-note>Brezplačna poštnina nad 60 €.</p>
-          <label class="cart-terms"><input type="checkbox" data-cart-terms /> Potrjujem, da sem seznanjen/a s <a href="splosni-pogoji.html">splošnimi pogoji</a>, <a href="dostava-placila.html">dostavo in plačili</a> ter <a href="vracila-reklamacije.html">vračili/reklamacijami</a>.</label>
-          <button class="shop-btn" type="button" data-cart-checkout>Nadaljuj na plačilo</button>
+          <p class="cart-terms">Z oddajo naročila se strinjate s <a href="splosni-pogoji.html">splošnimi pogoji</a>, <a href="dostava-placila.html">dostavo in plačili</a> ter <a href="vracila-reklamacije.html">vračili/reklamacijami</a>.</p>
+          <button class="shop-btn" type="button" data-cart-checkout>Plačaj varno s Stripe</button>
           <p class="cart-note" data-checkout-status>Plačilo poteka prek Stripe Checkout. Naročilo se po uspešnem plačilu samodejno zabeleži za obdelavo.</p>
           <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
         </div>
@@ -979,12 +979,6 @@ document.addEventListener('click', async (event) => {
 
     if (!summary.lines.length) {
       window.dzCheckout?.setStatus('Košarica je prazna. Najprej dodajte izdelek.', 'error', cartCheckoutButton);
-      return;
-    }
-
-    const termsAccepted = document.querySelector('[data-cart-terms]')?.checked;
-    if (!termsAccepted) {
-      window.dzCheckout?.setStatus('Pred plačilom potrdite splošne pogoje, dostavo in vračila.', 'error', cartCheckoutButton);
       return;
     }
 
