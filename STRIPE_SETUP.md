@@ -49,29 +49,6 @@ configurations working, the Worker also recognizes `DZ_PRODUCTS_KV`,
 Stripe API secret, and `STRIPE_ENDPOINT_SECRET` for the webhook signing secret.
 You do not need to duplicate bindings: use one recognized name for each value.
 
-The site also exposes a Pages Function at `/checkout-api`. If the routed
-`/api/checkout` Worker reports `CHECKOUT_NOT_CONFIGURED`, the browser retries
-that Pages endpoint once. This covers the common setup where Stripe/KV secrets
-were added to the Cloudflare Pages project rather than the separate Worker;
-validation and Stripe API failures are never retried.
-
-## Automatic Worker deployment
-
-Merging checkout changes into `main` now runs the `Deploy checkout Worker`
-GitHub Actions workflow. This is required because publishing the static website
-does **not** deploy `cloudflare-worker.js`. Add these two repository Actions
-secrets once:
-
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_API_TOKEN` — a Cloudflare token with Workers Scripts edit and
-  Workers Routes edit access for the `dzautotrade.si` zone.
-
-The workflow runs the Worker integration test and then executes
-`wrangler deploy --keep-vars`, so Dashboard-managed Stripe secrets and KV
-bindings survive the deployment. It can also be run manually from the Actions
-tab with **Run workflow**. After it succeeds, verify that the deployment shown
-for `dz-auto-trade-products` has the same commit as `main`.
-
 Use Stripe **test** keys first. Switch to live keys only after a successful test purchase and webhook confirmation.
 
 The namespace ID and secret values differ between Cloudflare environments, so
