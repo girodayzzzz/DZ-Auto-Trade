@@ -10134,3 +10134,142 @@ button {
     transform: none;
   }
 }
+
+/* Mobile navigation and storefront polish (July 2026).
+   Keep the primary mobile controls dark and branded, and use the limited
+   viewport width more efficiently without making very small cards unusable. */
+@media (max-width: 900px) {
+  .site-header .menu-toggle {
+    display: inline-grid;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    place-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    color: #ffffff;
+    background: linear-gradient(145deg, #202a3b, #0b101b);
+    box-shadow: 0 10px 26px rgba(2, 6, 23, 0.34);
+  }
+
+  .site-header .menu-toggle span {
+    width: 23px;
+    height: 2px;
+    margin: 3px 0;
+    border-radius: 99px;
+    background: currentColor;
+  }
+
+  .site-header .menu-toggle:hover,
+  .site-header .menu-toggle:focus-visible,
+  .site-header .menu-toggle.open {
+    border-color: rgba(255, 255, 255, 0.38);
+    background: linear-gradient(135deg, var(--primary), #8f070d);
+    box-shadow: 0 12px 30px rgba(229, 9, 20, 0.3);
+  }
+
+  .site-header .main-nav {
+    border-color: rgba(255, 255, 255, 0.16);
+    background:
+      radial-gradient(circle at 100% 0%, rgba(229, 9, 20, 0.18), transparent 15rem),
+      linear-gradient(160deg, rgba(17, 24, 39, 0.99), rgba(4, 7, 13, 0.99));
+    backdrop-filter: blur(18px);
+  }
+
+  .site-header .main-nav .nav-link {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid transparent;
+  }
+
+  .site-header .main-nav .nav-link:hover,
+  .site-header .main-nav .nav-link:focus-visible,
+  .site-header .main-nav .nav-link.active {
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
+
+@media (max-width: 680px) {
+  .shop-page .shop-grid,
+  body.shop-page:has([data-product-grid]) .shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem;
+  }
+
+  .shop-page .product-card-pro .product-image {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+  }
+
+  .shop-page .product-card-pro .product-image img {
+    padding: 0.35rem;
+    object-fit: contain;
+  }
+
+  .shop-page .product-card-pro .product-body {
+    padding: 0.75rem;
+  }
+
+  .shop-page .product-card-pro h3 {
+    min-height: 3.75em;
+    margin-bottom: 0.55rem;
+    font-size: clamp(0.86rem, 3.7vw, 1rem);
+    line-height: 1.25;
+  }
+
+  .shop-page .product-card-pro .product-card-footer {
+    margin-bottom: 0.65rem;
+  }
+
+  .shop-page .product-card-pro .product-card-footer small {
+    font-size: 0.72rem;
+  }
+
+  .shop-page .product-card-pro .product-price {
+    font-size: clamp(1rem, 4.4vw, 1.2rem);
+  }
+
+  .shop-page .product-card-pro .product-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .shop-page .product-card-pro .product-actions > * {
+    min-height: 42px;
+    padding: 0.55rem 0.35rem;
+    font-size: 0.78rem;
+    line-height: 1.15;
+  }
+}
+
+@media (max-width: 340px) {
+  .shop-page .shop-grid,
+  body.shop-page:has([data-product-grid]) .shop-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Full-bleed storefront photography.
+   Product sources are predominantly square, so a square, edge-to-edge frame
+   shows them larger without leaving an extra inset around the image. */
+.shop-page .shop-grid .product-card-pro .product-image {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  background: #ffffff;
+}
+
+.shop-page .shop-grid .product-card-pro .product-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  object-fit: cover;
+  object-position: center;
+}

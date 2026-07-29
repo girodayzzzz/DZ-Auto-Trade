@@ -36,6 +36,19 @@ for f in sorted(ROOT.glob('*.html')):
   required_tw={'twitter:card','twitter:title','twitter:description','twitter:image'}
   tw={a.get('name') for t,a in p.tags if t=='meta'}
   if f.name!='404.html' and required_tw-tw: err(f'{f.name}: missing Twitter {required_tw-tw}')
+  if f.name.startswith('izdelek-'):
+   props={a.get('property'):a.get('content','') for t,a in p.tags if t=='meta' and a.get('property')}
+   names={a.get('name'):a.get('content','') for t,a in p.tags if t=='meta' and a.get('name')}
+   required_product={'og:locale','og:image:secure_url','og:image:type','og:image:alt','product:price:amount','product:price:currency','product:availability'}
+   if required_product-props.keys(): err(f'{f.name}: missing product/social metadata {required_product-props.keys()}')
+   if names.get('twitter:card')!='summary_large_image': err(f'{f.name}: product preview must use summary_large_image')
+   if not names.get('twitter:image:alt'): err(f'{f.name}: missing twitter:image:alt')
+   if 'max-image-preview:large' not in ' '.join(robots): err(f'{f.name}: missing max-image-preview:large')
+   image=props.get('og:image','')
+   if image.startswith(SITE):
+    image_path=ROOT/urlsplit(image).path.lstrip('/')
+    if not image_path.exists(): err(f'{f.name}: missing OG image file {image}')
+    if not props.get('og:image:width') or not props.get('og:image:height'): err(f'{f.name}: local OG image is missing dimensions')
  for raw in p.json_scripts:
   try: json.loads(raw)
   except json.JSONDecodeError as e: err(f'{f.name}: invalid JSON-LD: {e}')
