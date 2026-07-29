@@ -87,6 +87,14 @@ try {
   assert.equal(legacyBindingHealthResponse.status, 200);
   assert.equal((await legacyBindingHealthResponse.json()).ready, true, 'recognized Dashboard binding aliases are checkout-ready');
 
+  const legacyBindingHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
+    KV: kv,
+    STRIPE_API_KEY: 'sk_test_mock',
+    STRIPE_ENDPOINT_SECRET: 'whsec_mock',
+  });
+  assert.equal(legacyBindingHealthResponse.status, 200);
+  assert.equal((await legacyBindingHealthResponse.json()).ready, true, 'recognized Dashboard binding aliases are checkout-ready');
+
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'checkout-test' },
