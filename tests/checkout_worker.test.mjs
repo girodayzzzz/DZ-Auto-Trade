@@ -16,6 +16,15 @@ const currentProducts = [{
   checkoutEnabled: true,
   cartEnabled: true,
   checkoutAmount: 1234,
+}, {
+  // Older KV records predate cartEnabled. "Dobavljivo" products must remain
+  // purchasable after the Worker normalizes those saved catalog records.
+  name: 'Legacy KV product',
+  category: 'orodja',
+  sku: 'DZ-T07',
+  availability: 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
+  checkoutEnabled: true,
+  checkoutAmount: 22526,
 }];
 const kv = {
   async get(key, type) {

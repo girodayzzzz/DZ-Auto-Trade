@@ -44,6 +44,12 @@ wrangler secret put STRIPE_WEBHOOK_SECRET
 
 Use Stripe **test** keys first. Switch to live keys only after a successful test purchase and webhook confirmation.
 
+The namespace ID differs between Cloudflare environments, so `PRODUCTS_KV` is
+managed in the dashboard rather than hard-coded in this public repository. The
+committed Wrangler upload metadata retains dashboard-managed KV bindings on
+every deployment. Do not remove `[unsafe.metadata].keep_bindings` from
+`wrangler.toml`, or a later deployment can remove `PRODUCTS_KV` again.
+
 
 ## Cloudflare Dashboard troubleshooting
 
