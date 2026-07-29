@@ -1388,7 +1388,10 @@ const getCheckoutReadiness = (env) => {
   return { ready: missing.length === 0, configuration, missing };
 };
 
-const CHECKOUT_REQUIRED_CONFIGURATION = new Set(['stripeSecretKey', 'productsKv']);
+// Stripe can create a payment session from the bundled, trusted catalog even
+// while KV is unavailable. Order persistence is important, but it must not
+// prevent a customer from reaching Stripe because of a transient KV problem.
+const CHECKOUT_REQUIRED_CONFIGURATION = new Set(['stripeSecretKey']);
 const getCheckoutSessionReadiness = (env) => {
   const readiness = getCheckoutReadiness(env);
   const missing = readiness.missing.filter((name) => CHECKOUT_REQUIRED_CONFIGURATION.has(name));
@@ -1604,7 +1607,14 @@ const createStripeCheckoutSession = async (request, env) => {
     // The admin panel stores the current catalog in KV. Resolve checkout prices
     // from that server-side source instead of the embedded deployment snapshot,
     // otherwise newly added products and price changes cannot reach Stripe.
-    const savedProducts = await readProducts(env);
+    let savedProducts = [];
+    if (runtimeBindings(env).productsKv) {
+      try {
+        savedProducts = await readProducts(env);
+      } catch (error) {
+        console.error('Could not read checkout catalog from KV; using bundled catalog.', { message: error?.message || String(error) });
+      }
+    }
     const productsBySku = new Map(
       [...DEFAULT_PRODUCTS.products, ...savedProducts].map((product) => [String(product.sku || '').trim().toUpperCase(), product])
     );
@@ -1645,7 +1655,7 @@ const createStripeCheckoutSession = async (request, env) => {
   ['SI', 'HR', 'AT', 'HU', 'IT'].forEach((country, index) => params.append(`shipping_address_collection[allowed_countries][${index}]`, country));
 
   try {
-    await saveOrder(env, {
+    await saveOrderWithoutBlockingCheckout(env, {
       id: orderId,
       status: 'checkout_created',
       paymentStatus: 'pending',
@@ -1677,7 +1687,7 @@ const createStripeCheckoutSession = async (request, env) => {
         code: 'STRIPE_SESSION_FAILED',
       }, { status: 502 });
     }
-    await saveOrder(env, {
+    await saveOrderWithoutBlockingCheckout(env, {
       id: orderId,
       status: 'checkout_redirected',
       paymentStatus: 'pending',
@@ -1758,8 +1768,10 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/api/checkout-health') {
       const readiness = getCheckoutReadiness(env);
+      const sessionReadiness = getCheckoutSessionReadiness(env);
       return checkoutJson(request, {
         ready: readiness.ready,
+        checkoutReady: sessionReadiness.ready,
         configuration: readiness.configuration,
         missing: readiness.missing,
       }, { status: readiness.ready ? 200 : 503 });

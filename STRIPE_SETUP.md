@@ -88,7 +88,14 @@ Before attempting a payment, check the production readiness endpoint:
 curl -i https://dzautotrade.si/api/checkout-health
 ```
 
-It must return HTTP `200` with `"ready":true`. HTTP `503` returns both the safe boolean `configuration` map and a `missing` list, without exposing any secret value. If `productsKv`, `stripeSecretKey`, or `stripeWebhookSecret` is missing, configure that item on the `dz-auto-trade-products` Worker and redeploy before accepting orders. Session creation itself requires `productsKv` and `stripeSecretKey`; `stripeWebhookSecret` is additionally required to record successful payments reliably.
+It should return HTTP `200` with `"ready":true`. The response also contains
+`"checkoutReady"`: checkout can safely redirect to Stripe when this is `true`.
+HTTP `503` returns both the safe boolean `configuration` map and a `missing`
+list, without exposing any secret value. Stripe session creation requires
+`stripeSecretKey`; when KV is temporarily unavailable, the Worker falls back to
+its bundled trusted catalog instead of blocking payment. Configure `productsKv`
+and `stripeWebhookSecret` as well so pending and paid orders are recorded
+reliably in the admin panel.
 
 You can print only the diagnostic response (and not any secret values) with:
 
