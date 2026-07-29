@@ -42,6 +42,12 @@ Select at least these events:
 wrangler secret put STRIPE_WEBHOOK_SECRET
 ```
 
+The Cloudflare Git integration shown on the Worker **Build** settings is the
+single production deploy owner for this repository. GitHub Actions only runs
+the Worker integration test; it intentionally does not deploy a second copy of
+the same commit. This prevents two independent deployment systems from racing
+and making it unclear which Worker version is active.
+
 Binding names are case-sensitive. The preferred names are `PRODUCTS_KV`,
 `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. To keep existing Dashboard
 configurations working, the Worker also recognizes `DZ_PRODUCTS_KV`,
@@ -106,7 +112,7 @@ curl -sS https://dzautotrade.si/api/checkout-health | python -m json.tool
 1. Open the live site with the Worker deployed.
 2. Add one or more products to the cart.
 3. Tick the checkout legal confirmation checkbox.
-4. Click **Varno plačilo prek Stripe**.
+4. Click **Nadaljuj na plačilo**.
 5. Confirm Stripe Checkout opens and each cart product appears as a separate line item.
 6. Confirm delivery/shipping appears when the cart total is below the free-shipping threshold.
 7. Pay in test mode with Stripe's test card `4242 4242 4242 4242` and any future expiry/CVC.

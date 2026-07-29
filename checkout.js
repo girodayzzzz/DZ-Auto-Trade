@@ -18,15 +18,29 @@ const requestCheckoutSession = async (endpoint, payload) => {
 };
 
 const createCheckoutSession = async (payload) => {
-  let result = await requestCheckoutSession('/api/checkout', payload);
+  let result;
+  try {
+    result = await requestCheckoutSession('/api/checkout', payload);
+  } catch (error) {
+    // A route or Worker deployment can be temporarily unavailable even while
+    // the Pages Function is healthy. Treat transport failures like a missing
+    // Worker configuration and try the independent Pages endpoint.
+    result = { response: null, data: {}, transportError: error };
+  }
 
   // A frequent Cloudflare setup has the secrets on Pages while /api/* points
   // at a separate Worker without them. Retry through the Pages Function in
   // that one configuration case; never retry validation or Stripe errors.
-  if (result.response.status === 503 && result.data.code === 'CHECKOUT_NOT_CONFIGURED') {
-    const pagesResult = await requestCheckoutSession('/checkout-api', payload);
-    if (pagesResult.response.ok && pagesResult.data.url) return pagesResult.data.url;
-    if (pagesResult.data?.error) result = pagesResult;
+  if (!result.response || (result.response.status === 503 && result.data.code === 'CHECKOUT_NOT_CONFIGURED')) {
+    try {
+      const pagesResult = await requestCheckoutSession('/checkout-api', payload);
+      if (pagesResult.response.ok && pagesResult.data.url) return pagesResult.data.url;
+      // Always retain the fallback response. Keeping the original transport
+      // placeholder here could otherwise cause a null-response TypeError.
+      result = pagesResult;
+    } catch (error) {
+      if (!result.response) throw new Error('Plačilnega sistema ni mogoče doseči. Poskusite znova čez nekaj trenutkov.');
+    }
   }
 
   const { response, data } = result;

@@ -466,7 +466,7 @@ const renderCart = () => {
           </div>
           <p class="cart-note" data-cart-shipping-note>Brezplačna poštnina nad 60 €.</p>
           <label class="cart-terms"><input type="checkbox" data-cart-terms /> Potrjujem, da sem seznanjen/a s <a href="splosni-pogoji.html">splošnimi pogoji</a>, <a href="dostava-placila.html">dostavo in plačili</a> ter <a href="vracila-reklamacije.html">vračili/reklamacijami</a>.</label>
-          <button class="shop-btn" type="button" data-cart-checkout>Varno plačilo prek Stripe</button>
+          <button class="shop-btn" type="button" data-cart-checkout>Nadaljuj na plačilo</button>
           <p class="cart-note" data-checkout-status>Plačilo poteka prek Stripe Checkout. Naročilo se po uspešnem plačilu samodejno zabeleži za obdelavo.</p>
           <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
         </div>
@@ -739,7 +739,7 @@ const renderProductDetail = () => {
   document.head.appendChild(breadcrumbSchema);
   trackEvent('product_view', { sku: product.sku, name: product.name, category: product.category });
   const checkoutButton = !product.cartEnabled && isCheckoutReady(product)
-    ? `<button class="btn-primary" type="button" data-checkout data-sku="${escapeHtml(product.sku)}">Plačaj prek Stripe</button>`
+    ? `<button class="btn-primary" type="button" data-checkout data-sku="${escapeHtml(product.sku)}">Nadaljuj na plačilo</button>`
     : '';
   const cartButton = isCheckoutReady(product)
     ? `<button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>`
