@@ -27,6 +27,19 @@ assert.deepEqual(calls, ['/api/checkout', '/checkout-api']);
 
 console.log('Checkout client Pages fallback test passed.');
 
+const missingRouteCalls = [];
+context.fetch = async (endpoint) => {
+  missingRouteCalls.push(endpoint);
+  if (endpoint === '/api/checkout') return new Response('<h1>Not found</h1>', { status: 404, headers: { 'Content-Type': 'text/html' } });
+  return Response.json({ url: 'https://checkout.stripe.com/c/pay/cs_missing_route_fallback' });
+};
+
+const missingRouteFallbackUrl = await context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 });
+assert.equal(missingRouteFallbackUrl, 'https://checkout.stripe.com/c/pay/cs_missing_route_fallback');
+assert.deepEqual(missingRouteCalls, ['/api/checkout', '/checkout-api']);
+
+console.log('Checkout client missing Worker route fallback test passed.');
+
 const transportCalls = [];
 context.fetch = async (endpoint) => {
   transportCalls.push(endpoint);

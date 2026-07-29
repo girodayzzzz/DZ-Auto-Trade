@@ -5,6 +5,10 @@ This repository is prepared for Stripe Checkout through the Cloudflare Worker en
 ## What is implemented
 
 - Product buttons and the cart call `/api/checkout` through `checkout.js`.
+- If the `/api/*` Worker route is missing (HTTP 404/405) or reports a missing
+  Stripe secret, the browser retries the independent Pages Function at
+  `/checkout-api`. Gateway and Stripe errors are deliberately not retried, so
+  one click cannot accidentally create two Stripe Checkout Sessions.
 - Cart checkout sends only trusted identifiers (`sku` and integer `quantity`). The Worker calculates product names, EUR unit prices, totals, and shipping from its server-side checkout catalog.
 - The Worker validates cart SKUs and prices against the server-side product catalog before creating the Stripe Session, so customers cannot change prices from the browser.
 - Before redirecting to Stripe, the Worker creates a pending order record in Cloudflare KV. After Stripe returns a Session, the order record is updated with the Stripe Session ID.
@@ -44,10 +48,16 @@ wrangler secret put STRIPE_WEBHOOK_SECRET
 
 The GitHub Actions workflow tests and deploys this Worker after backend changes
 reach `main`. Configure repository secrets `CLOUDFLARE_API_TOKEN` and
-`CLOUDFLARE_ACCOUNT_ID`; the token must be allowed to edit Workers. Disable a
+`CLOUDFLARE_ACCOUNT_ID`. The API token needs **Account / Workers Scripts / Edit**,
+**Zone / Workers Routes / Edit**, and **Zone / Zone / Read** for
+`dzautotrade.si`. A token that can upload the script but cannot edit routes can
+leave `/api/*` pointing at an older or missing Worker even though the deploy
+appears partly successful. Disable a
 second Cloudflare Git build for this same Worker so that two deploy systems do
 not race. The deploy uses `--keep-vars`, preserving Dashboard-managed secrets
-and KV bindings.
+and KV bindings. After every deploy CI now calls the health endpoint through
+both the apex and `www` routes and fails if either route cannot see a valid
+`STRIPE_SECRET_KEY`.
 
 Binding names are case-sensitive. The preferred names are `PRODUCTS_KV`,
 `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. To keep existing Dashboard
@@ -112,6 +122,20 @@ You can print only the diagnostic response (and not any secret values) with:
 ```bash
 curl -sS https://dzautotrade.si/api/checkout-health | python -m json.tool
 ```
+
+To verify that the encrypted key is not merely present but is actually accepted
+by Stripe, run the explicit connection diagnostic:
+
+```bash
+curl -sS 'https://dzautotrade.si/api/checkout-health?verify=stripe' | python -m json.tool
+```
+
+`stripeConnection.ok` must be `true` and its code must be
+`STRIPE_CONNECTED`. `STRIPE_AUTHENTICATION_FAILED` means that the saved value is
+not a valid secret key in the deployed production Worker (a publishable `pk_...`
+key cannot be used). A `403`/`STRIPE_CONNECTION_FAILED` response normally means
+that a restricted `rk_...` key does not have the required Checkout permission.
+The response exposes only the key mode and Stripe request ID, never the key.
 
 1. Open the live site with the Worker deployed.
 2. Add one or more products to the cart.
