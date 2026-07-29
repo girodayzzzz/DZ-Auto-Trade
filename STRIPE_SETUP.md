@@ -1,4 +1,4 @@
-# Stripe payments setup for DZ Auto Trade
+# Stripe payments on the existing DZ Auto Trade Worker
 
 This repository is prepared for Stripe Checkout through the Cloudflare Worker endpoint `POST /api/checkout` and a Stripe webhook endpoint `POST /api/stripe-webhook`.
 
@@ -18,6 +18,8 @@ This repository is prepared for Stripe Checkout through the Cloudflare Worker en
 - Successful payments redirect to `placilo-uspesno.html`; canceled payments redirect to `placilo-preklicano.html`.
 
 ## Required Cloudflare setup
+
+Use the existing **`dz-auto-trade-products`** Worker. Do not create or rename a Worker: `dz-auto-trade-products` is the production Worker and `cloudflare-worker.js` is its entrypoint.
 
 1. Confirm the Worker project uses `wrangler.toml` and deploys `cloudflare-worker.js` as the Worker entrypoint. If Cloudflare Dashboard says variables or triggers cannot be added because the Worker only has static assets, redeploy after adding this Wrangler configuration.
 2. Route the Worker so `/api/checkout`, `/api/stripe-webhook`, `/api/products`, and `/api/admin/*` are handled by the Worker on the production domain. The committed `wrangler.toml` routes `dzautotrade.si/api/*` and `www.dzautotrade.si/api/*` to the Worker.
@@ -55,9 +57,13 @@ leave `/api/*` pointing at an older or missing Worker even though the deploy
 appears partly successful. Disable a
 second Cloudflare Git build for this same Worker so that two deploy systems do
 not race. The deploy uses `--keep-vars`, preserving Dashboard-managed secrets
-and KV bindings. After every deploy CI now calls the health endpoint through
-both the apex and `www` routes and fails if either route cannot see a valid
-`STRIPE_SECRET_KEY`.
+and KV bindings. After every deploy CI calls `GET /api/checkout-health?verify=stripe` through
+both the apex and `www` routes and fails unless both `checkoutReady` and
+`stripeConnection.ok` are true. GitHub Actions passes only
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; it never reads, uploads, or
+overwrites `STRIPE_SECRET_KEY` or `STRIPE_WEBHOOK_SECRET`. Those encrypted
+secrets remain attached directly to the existing Worker, and `PRODUCTS_KV`
+remains its Dashboard-managed KV binding.
 
 Binding names are case-sensitive. The preferred names are `PRODUCTS_KV`,
 `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. To keep existing Dashboard
@@ -133,7 +139,7 @@ curl -sS 'https://dzautotrade.si/api/checkout-health?verify=stripe' | python -m 
 `stripeConnection.ok` must be `true` and its code must be
 `STRIPE_CONNECTED`. `STRIPE_AUTHENTICATION_FAILED` means that the saved value is
 not a valid secret key in the deployed production Worker (a publishable `pk_...`
-key cannot be used). A `403`/`STRIPE_CONNECTION_FAILED` response normally means
+key cannot be used). A `403`/`STRIPE_PERMISSION_FAILED` response means
 that a restricted `rk_...` key does not have the required Checkout permission.
 The response exposes only the key mode and Stripe request ID, never the key.
 

@@ -1798,8 +1798,11 @@ export default {
     if (request.method === 'GET' && url.pathname === '/api/checkout-health') {
       const readiness = getCheckoutReadiness(env);
       const sessionReadiness = getCheckoutSessionReadiness(env);
-      let stripeConnection = null;
-      if (url.searchParams.get('verify') === 'stripe' && sessionReadiness.ready) {
+      const verifyStripe = url.searchParams.get('verify') === 'stripe';
+      let stripeConnection = verifyStripe
+        ? { ok: false, status: 0, livemode: null, chargesEnabled: null, code: 'CHECKOUT_NOT_CONFIGURED', requestId: '' }
+        : null;
+      if (verifyStripe && sessionReadiness.ready) {
         const { stripeSecretKey } = runtimeBindings(env);
         try {
           const stripeResponse = await fetch('https://api.stripe.com/v1/account', {
@@ -1811,7 +1814,11 @@ export default {
             status: stripeResponse.status,
             livemode: stripeResponse.ok ? stripeKeyMode(stripeSecretKey) === 'live' : null,
             chargesEnabled: stripeResponse.ok ? Boolean(stripeData.charges_enabled) : null,
-            code: stripeResponse.ok ? 'STRIPE_CONNECTED' : stripeResponse.status === 401 ? 'STRIPE_AUTHENTICATION_FAILED' : 'STRIPE_CONNECTION_FAILED',
+            code: stripeResponse.ok
+              ? 'STRIPE_CONNECTED'
+              : stripeResponse.status === 401
+                ? 'STRIPE_AUTHENTICATION_FAILED'
+                : stripeResponse.status === 403 ? 'STRIPE_PERMISSION_FAILED' : 'STRIPE_CONNECTION_FAILED',
             requestId: stripeResponse.headers.get('request-id') || '',
           };
         } catch {
@@ -1825,6 +1832,7 @@ export default {
         ready: sessionReadiness.ready,
         checkoutReady: sessionReadiness.ready,
         orderTrackingReady: readiness.configuration.productsKv && readiness.configuration.stripeWebhookSecret,
+        stripeKeyMode: readiness.configuration.stripeKeyMode,
         configuration: readiness.configuration,
         missing: sessionReadiness.missing,
         missingRecommended: readiness.missing.filter((name) => !CHECKOUT_REQUIRED_CONFIGURATION.has(name)),

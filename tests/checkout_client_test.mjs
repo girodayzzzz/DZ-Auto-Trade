@@ -21,6 +21,36 @@ const context = {
 context.window.document = context.document;
 vm.runInNewContext(source, context);
 
+context.fetch = async (endpoint, init) => {
+  calls.push(endpoint);
+  assert.equal(init.method, 'POST');
+  assert.deepEqual(JSON.parse(init.body), { sku: 'DZ-N03', quantity: 1 });
+  return Response.json({ url: 'https://checkout.stripe.com/c/pay/cs_worker' });
+};
+const workerUrl = await context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 });
+assert.equal(workerUrl, 'https://checkout.stripe.com/c/pay/cs_worker');
+assert.deepEqual(calls, ['/api/checkout']);
+calls.length = 0;
+
+context.fetch = async (endpoint) => {
+  calls.push(endpoint);
+  return Response.json({ error: 'Stripe gateway failure', code: 'STRIPE_SESSION_FAILED' }, { status: 502 });
+};
+await assert.rejects(
+  context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 }),
+  /Stripe gateway failure/,
+);
+assert.deepEqual(calls, ['/api/checkout'], 'ambiguous Stripe failures must never create a second Session');
+calls.length = 0;
+
+context.fetch = async (endpoint) => {
+  calls.push(endpoint);
+  if (endpoint === '/api/checkout') {
+    return Response.json({ code: 'CHECKOUT_NOT_CONFIGURED', error: 'maintenance' }, { status: 503 });
+  }
+  return Response.json({ url: 'https://checkout.stripe.com/c/pay/cs_pages' });
+};
+
 const url = await context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 });
 assert.equal(url, 'https://checkout.stripe.com/c/pay/cs_pages');
 assert.deepEqual(calls, ['/api/checkout', '/checkout-api']);
