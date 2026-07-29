@@ -855,8 +855,8 @@ const SERVICE_CHECKOUT_PRODUCTS = [
 ];
 
 const isAvailableForCheckout = (product = {}) => /na zalogi|dobavljivo/i.test(String(product.availability || '')) && !/ni na zalogi|razprodano|sold out|out of stock|unavailable/i.test(String(product.availability || ''));
-const buildCheckoutCatalog = () => {
-  const products = DEFAULT_PRODUCTS.products
+const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
+  const products = catalogProducts
     .filter((product) => product.checkoutEnabled && product.cartEnabled && isAvailableForCheckout(product) && Number(product.checkoutAmount || 0) >= 50)
     .map((product) => ({
       sku: String(product.sku || '').trim().toUpperCase(),
@@ -1063,16 +1063,16 @@ const writeProducts = async (env, products) => {
 };
 
 
-const parseCheckoutItems = (body) => {
+const parseCheckoutItems = (body, catalog = CHECKOUT_CATALOG) => {
   const rawItems = Array.isArray(body?.items) ? body.items : body?.sku ? [{ sku: body.sku, quantity: body.quantity }] : [];
   if (!rawItems.length || rawItems.length > CHECKOUT_MAX_ITEMS) throw new Error('Košarica nima veljavnih postavk za Stripe plačilo.');
 
   return rawItems.map((item) => {
     const sku = String(item?.sku || '').trim().toUpperCase();
     const quantity = Number(item?.quantity);
-    if (!sku || !CHECKOUT_CATALOG.has(sku)) throw new Error('Izdelek ni več na voljo za spletno plačilo.');
+    if (!sku || !catalog.has(sku)) throw new Error('Izdelek ni več na voljo za spletno plačilo.');
     if (!Number.isInteger(quantity) || quantity < 1) throw new Error('Količina izdelka ni veljavna.');
-    const product = CHECKOUT_CATALOG.get(sku);
+    const product = catalog.get(sku);
     if (!product.active) throw new Error('Izdelek trenutno ni na voljo za spletno plačilo.');
     if (quantity > product.maxQuantity) throw new Error(`Največja dovoljena količina za ${product.name} je ${product.maxQuantity}.`);
     return { ...product, quantity };
@@ -1098,7 +1098,11 @@ const createStripeCheckoutSession = async (request, env) => {
   let lineItems;
   try {
     const body = await request.json();
-    lineItems = parseCheckoutItems(body);
+    // The admin panel stores the current catalog in KV. Resolve checkout prices
+    // from that server-side source instead of the embedded deployment snapshot,
+    // otherwise newly added products and price changes cannot reach Stripe.
+    const checkoutCatalog = buildCheckoutCatalog(await readProducts(env));
+    lineItems = parseCheckoutItems(body, checkoutCatalog);
   } catch (error) {
     const safeMessage = error instanceof SyntaxError ? 'Zahtevek za plačilo ni veljaven JSON.' : error.message || 'Zahtevek za plačilo ni veljaven.';
     return checkoutJson(request, { error: safeMessage }, { status: 400 });
