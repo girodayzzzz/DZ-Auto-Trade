@@ -32,3 +32,13 @@ def test_protected_worker_identity_and_secrets_stay_dashboard_managed() -> None:
         {"pattern": "dzautotrade.si/api/*", "zone_name": "dzautotrade.si"},
         {"pattern": "www.dzautotrade.si/api/*", "zone_name": "dzautotrade.si"},
     ]
+
+
+def test_checkout_worker_is_deployed_after_main_changes() -> None:
+    workflow = (ROOT / ".github/workflows/deploy-worker.yml").read_text(encoding="utf-8")
+
+    assert "cloudflare/wrangler-action@v3" in workflow
+    assert "CLOUDFLARE_API_TOKEN" in workflow
+    assert "CLOUDFLARE_ACCOUNT_ID" in workflow
+    assert "command: deploy --keep-vars" in workflow
+    assert "node tests/checkout_worker.test.mjs" in workflow
