@@ -28,6 +28,41 @@ def price_number(value: str) -> str:
     return match.group(0).replace(",", ".") if match else ""
 
 
+def shorten_meta(value: str, limit: int = 157) -> str:
+    """Shorten metadata at a word boundary instead of cutting a word in half."""
+    compact = re.sub(r"\s+", " ", value).strip()
+    if len(compact) <= limit:
+        return compact
+    shortened = compact[: limit - 1].rsplit(" ", 1)[0].rstrip(" ,.;:-")
+    return f"{shortened}…"
+
+
+def image_metadata(relative_path: str) -> tuple[str, int | None, int | None]:
+    """Return the MIME type and intrinsic dimensions for local social images."""
+    suffix = Path(relative_path).suffix.lower()
+    mime = {".avif": "image/avif", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(suffix, "image/jpeg")
+    path = ROOT / relative_path.lstrip("/")
+    data = path.read_bytes() if path.exists() else b""
+    if suffix == ".avif":
+        offset = data.find(b"ispe")
+        if offset >= 0 and len(data) >= offset + 16:
+            return mime, int.from_bytes(data[offset + 8:offset + 12], "big"), int.from_bytes(data[offset + 12:offset + 16], "big")
+    if suffix == ".png" and data.startswith(b"\x89PNG") and len(data) >= 24:
+        return mime, int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    if suffix in {".jpg", ".jpeg"}:
+        offset = 2
+        while offset + 9 < len(data):
+            if data[offset] != 0xFF:
+                offset += 1
+                continue
+            marker = data[offset + 1]
+            length = int.from_bytes(data[offset + 2:offset + 4], "big")
+            if marker in range(0xC0, 0xC4):
+                return mime, int.from_bytes(data[offset + 7:offset + 9], "big"), int.from_bytes(data[offset + 5:offset + 7], "big")
+            offset += max(length + 2, 2)
+    return mime, None, None
+
+
 DESCRIPTION_HEADING = re.compile(
     r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba|Vsebina kompleta|Montaža sistema|Redčenje):\s*",
     re.IGNORECASE,
@@ -88,9 +123,10 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
     filename = f"izdelek-{slug(product['name'])}.html"
     url = f"{SITE}/{filename}"
     image = absolute_image(product["image"])
+    image_type, image_width, image_height = image_metadata(product["image"])
+    image_alt = product.get("imageAlt") or product["name"]
     title = f"{product['name']} | DZ Auto Trade"
-    description = f"{product['name']}: {product['description']} Cena: {product['price']}. {product['availability']}."
-    description = description[:157].rstrip(" ,.;") + "."
+    description = shorten_meta(f"{product['name']}: {product['description']} Cena: {product['price']}. {product['availability']}.")
     schema = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -99,11 +135,13 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         "category": product["categoryLabel"],
         "description": product["description"],
         "image": image,
+        "inLanguage": "sl-SI",
         "url": url,
         "offers": {
             "@type": "Offer", "url": url, "priceCurrency": "EUR",
             "price": price_number(product["price"]),
             "availability": "https://schema.org/PreOrder",
+            "itemCondition": "https://schema.org/NewCondition",
             "seller": {"@id": f"{SITE}/#business"},
         },
     }
@@ -135,10 +173,21 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
     for pattern, replacement in replacements.items():
         page = re.sub(pattern, replacement, page, count=1, flags=re.S)
     head_data = (
+        f'    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />\n'
         f'    <meta property="og:site_name" content="DZ Auto Trade" />\n'
+        f'    <meta property="og:locale" content="sl_SI" />\n'
+        f'    <meta property="og:image:secure_url" content="{image}" />\n'
+        f'    <meta property="og:image:type" content="{image_type}" />\n'
+        f'{f"    <meta property=\"og:image:width\" content=\"{image_width}\" />\n" if image_width else ""}'
+        f'{f"    <meta property=\"og:image:height\" content=\"{image_height}\" />\n" if image_height else ""}'
+        f'    <meta property="og:image:alt" content="{html.escape(image_alt, quote=True)}" />\n'
+        f'    <meta property="product:price:amount" content="{price_number(product["price"])}" />\n'
+        f'    <meta property="product:price:currency" content="EUR" />\n'
+        f'    <meta property="product:availability" content="preorder" />\n'
         f'    <meta name="twitter:title" content="{html.escape(title, quote=True)}" />\n'
         f'    <meta name="twitter:description" content="{html.escape(description, quote=True)}" />\n'
         f'    <meta name="twitter:image" content="{image}" />\n'
+        f'    <meta name="twitter:image:alt" content="{html.escape(image_alt, quote=True)}" />\n'
         f'    <script type="application/ld+json" id="dz-product-schema">{json.dumps(schema, ensure_ascii=False)}</script>\n'
         f'    <script type="application/ld+json" id="dz-breadcrumb-schema">{json.dumps(breadcrumb, ensure_ascii=False)}</script>\n'
     )
@@ -156,7 +205,8 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         f'<section class="section product-detail-shell" data-product-detail data-product-sku="{html.escape(product["sku"], quote=True)}">'
         f'<div class="container product-detail-layout"><div class="product-detail-media">'
         f'<a class="product-breadcrumb" href="trgovina.html#{html.escape(product["category"])}">← Nazaj v {html.escape(product["categoryLabel"])}</a>'
-        f'<div class="product-detail-image"><img src="{html.escape(product["image"], quote=True)}" alt="{html.escape(product.get("imageAlt") or product["name"], quote=True)}" /></div></div>'
+        f'<div class="product-detail-image"><img src="{html.escape(product["image"], quote=True)}" alt="{html.escape(image_alt, quote=True)}"'
+        f'{f" width=\"{image_width}\" height=\"{image_height}\"" if image_width and image_height else ""} fetchpriority="high" /></div></div>'
         f'<article class="card product-detail-info"><div class="product-detail-kicker"><span class="badge">{html.escape(product["categoryLabel"])}</span></div>'
         f'<h1>{html.escape(product["name"])}</h1><p class="product-detail-lead">{html.escape(lead)}</p>'
         f'<dl class="product-detail-meta"><div><dt>Kategorija</dt><dd>{html.escape(product["categoryLabel"])}</dd></div><div><dt>SKU</dt><dd>{html.escape(product["sku"])}</dd></div>'
@@ -187,7 +237,7 @@ def main() -> None:
         filenames.append(filename)
     sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
     sitemap = re.sub(r"\n  <!-- generated-products -->.*?<!-- /generated-products -->", "", sitemap, flags=re.S)
-    entries = "\n".join(f"  <url><loc>{SITE}/{name}</loc></url>" for name in filenames)
+    entries = "\n".join(f"  <url><loc>{SITE}/{name}</loc><lastmod>2026-07-29</lastmod></url>" for name in filenames)
     sitemap = sitemap.replace("</urlset>", f"  <!-- generated-products -->\n{entries}\n  <!-- /generated-products -->\n</urlset>")
     (ROOT / "sitemap.xml").write_text(sitemap, encoding="utf-8")
     print(f"Generated {len(filenames)} product pages.")
