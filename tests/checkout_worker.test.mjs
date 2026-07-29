@@ -77,15 +77,23 @@ try {
   assert.equal(healthResponse.status, 503, 'webhook readiness remains visible without blocking session creation');
   assert.deepEqual((await healthResponse.json()).missing, ['stripeWebhookSecret']);
 
+  const legacyBindingHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
+    KV: kv,
+    STRIPE_API_KEY: 'sk_test_mock',
+    STRIPE_ENDPOINT_SECRET: 'whsec_mock',
+  });
+  assert.equal(legacyBindingHealthResponse.status, 200);
+  assert.equal((await legacyBindingHealthResponse.json()).ready, true, 'recognized Dashboard binding aliases are checkout-ready');
+
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'checkout-test' },
     body: JSON.stringify({ items: [{ sku: 'kv-new', quantity: 2 }, { sku: 'DZ-T07', quantity: 1 }, { sku: 'DIRECT-ONLY', quantity: 1 }, { sku: 'ALWAYS-ORDERABLE', quantity: 1 }] }),
   });
   const response = await worker.fetch(request, {
-    PRODUCTS_KV: kv,
-    STRIPE_SECRET_KEY: 'sk_test_mock',
-    STRIPE_WEBHOOK_SECRET: 'whsec_mock',
+    KV: kv,
+    STRIPE_API_KEY: 'sk_test_mock',
+    STRIPE_ENDPOINT_SECRET: 'whsec_mock',
   });
   const body = await response.json();
 
