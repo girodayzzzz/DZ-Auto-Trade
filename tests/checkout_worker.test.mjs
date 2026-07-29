@@ -17,14 +17,13 @@ const currentProducts = [{
   cartEnabled: true,
   checkoutAmount: 1234,
 }, {
-  // Older KV records predate cartEnabled. "Dobavljivo" products must remain
-  // purchasable after the Worker normalizes those saved catalog records.
+  // Older KV records can predate every checkout field. The Worker must merge
+  // them with the trusted bundled record instead of shadowing its checkout
+  // metadata with normalizeProduct defaults.
   name: 'Legacy KV product',
   category: 'orodja',
   sku: 'DZ-T07',
   availability: 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
-  checkoutEnabled: true,
-  checkoutAmount: 22526,
 }, {
   // cartEnabled is a UI preference, not a checkout availability flag. The
   // product page renders a direct Stripe button for this combination.
