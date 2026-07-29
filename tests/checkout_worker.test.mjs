@@ -58,6 +58,9 @@ const originalFetch = globalThis.fetch;
 let stripeRequest;
 globalThis.fetch = async (url, init) => {
   stripeRequest = { url, init };
+  if (url === 'https://api.stripe.com/v1/account') {
+    return Response.json({ id: 'acct_test', charges_enabled: true }, { headers: { 'request-id': 'req_health' } });
+  }
   return Response.json({ id: 'cs_test_123', url: 'https://checkout.stripe.com/c/pay/cs_test_123' });
 };
 
@@ -70,6 +73,13 @@ try {
   assert.equal(missingConfigurationResponse.status, 503);
   assert.deepEqual((await missingConfigurationResponse.json()).missing, ['stripeSecretKey']);
 
+  const publishableKeyHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
+    STRIPE_SECRET_KEY: 'pk_test_not_a_server_secret',
+  });
+  const publishableKeyHealth = await publishableKeyHealthResponse.json();
+  assert.equal(publishableKeyHealth.checkoutReady, false);
+  assert.equal(publishableKeyHealth.configuration.stripeKeyMode, 'unknown');
+
   const healthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
     PRODUCTS_KV: kv,
     STRIPE_SECRET_KEY: 'sk_test_mock',
@@ -81,6 +91,16 @@ try {
   assert.equal(health.orderTrackingReady, false);
   assert.deepEqual(health.missing, []);
   assert.deepEqual(health.missingRecommended, ['stripeWebhookSecret']);
+  assert.equal(health.configuration.stripeKeyMode, 'test');
+
+  const verifiedHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health?verify=stripe'), {
+    PRODUCTS_KV: kv,
+    STRIPE_SECRET_KEY: 'sk_test_mock',
+  });
+  const verifiedHealth = await verifiedHealthResponse.json();
+  assert.equal(verifiedHealth.stripeConnection.ok, true);
+  assert.equal(verifiedHealth.stripeConnection.code, 'STRIPE_CONNECTED');
+  assert.equal(verifiedHealth.stripeConnection.requestId, 'req_health');
 
   const legacyBindingHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
     KV: kv,

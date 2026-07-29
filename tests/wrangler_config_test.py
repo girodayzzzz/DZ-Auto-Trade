@@ -32,6 +32,8 @@ def test_protected_worker_identity_and_secrets_stay_dashboard_managed() -> None:
         {"pattern": "dzautotrade.si/api/*", "zone_name": "dzautotrade.si"},
         {"pattern": "www.dzautotrade.si/api/*", "zone_name": "dzautotrade.si"},
     ]
+    assert config.get("observability", {}).get("enabled") is True
+    assert config.get("observability", {}).get("head_sampling_rate") == 1
 
 
 def test_checkout_worker_is_deployed_after_main_changes() -> None:
@@ -42,3 +44,6 @@ def test_checkout_worker_is_deployed_after_main_changes() -> None:
     assert "CLOUDFLARE_ACCOUNT_ID" in workflow
     assert "command: deploy --keep-vars" in workflow
     assert "node tests/checkout_worker.test.mjs" in workflow
+    assert "https://dzautotrade.si/api/checkout-health?verify=stripe" in workflow
+    assert "https://www.dzautotrade.si/api/checkout-health?verify=stripe" in workflow
+    assert "!health.checkoutReady || !health.stripeConnection?.ok" in workflow

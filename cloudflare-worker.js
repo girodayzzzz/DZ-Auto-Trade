@@ -1373,10 +1373,17 @@ const runtimeBindings = (env = {}) => ({
   stripeWebhookSecret: String(env.STRIPE_WEBHOOK_SECRET || env.STRIPE_ENDPOINT_SECRET || env.STRIPE_WEBHOOK_SIGNING_SECRET || env.STRIPE_HOOK_SECRET || '').trim(),
 });
 
+const stripeKeyMode = (key = '') => key.startsWith('sk_live_') || key.startsWith('rk_live_')
+  ? 'live'
+  : key.startsWith('sk_test_') || key.startsWith('rk_test_') ? 'test' : 'unknown';
+
 const checkoutConfiguration = (env) => {
   const bindings = runtimeBindings(env);
   return {
-    stripeSecretKey: Boolean(bindings.stripeSecretKey),
+    // Stripe Checkout requires a secret sk_/rk_ key; a publishable pk_ key is
+    // commonly pasted here by mistake and must not be reported as ready.
+    stripeSecretKey: Boolean(bindings.stripeSecretKey) && stripeKeyMode(bindings.stripeSecretKey) !== 'unknown',
+    stripeKeyMode: stripeKeyMode(bindings.stripeSecretKey),
     stripeWebhookSecret: Boolean(bindings.stripeWebhookSecret),
     productsKv: Boolean(bindings.productsKv),
   };
@@ -1384,7 +1391,7 @@ const checkoutConfiguration = (env) => {
 
 const getCheckoutReadiness = (env) => {
   const configuration = checkoutConfiguration(env);
-  const missing = Object.entries(configuration).filter(([, configured]) => !configured).map(([name]) => name);
+  const missing = ['stripeSecretKey', 'stripeWebhookSecret', 'productsKv'].filter((name) => !configuration[name]);
   return { ready: missing.length === 0, configuration, missing };
 };
 
@@ -1696,9 +1703,17 @@ const createStripeCheckoutSession = async (request, env) => {
         code: data.error?.code || '',
         message: data.error?.message || '',
       });
+      const requestId = stripeResponse.headers.get('request-id') || '';
+      const authenticationFailed = stripeResponse.status === 401;
+      const permissionFailed = stripeResponse.status === 403;
       return checkoutJson(request, {
-        error: 'Stripe plačilo trenutno ni na voljo. Poskusite znova.',
-        code: 'STRIPE_SESSION_FAILED',
+        error: authenticationFailed
+          ? 'Stripe skrivni ključ ni veljaven za to okolje. Preverite STRIPE_SECRET_KEY v produkcijskem Workerju.'
+          : permissionFailed
+            ? 'Stripe ključ nima dovoljenja za ustvarjanje Checkout sej. Uporabite standardni skrivni ključ ali omogočite Checkout write dostop.'
+            : 'Stripe plačilo trenutno ni na voljo. Poskusite znova.',
+        code: authenticationFailed ? 'STRIPE_AUTHENTICATION_FAILED' : permissionFailed ? 'STRIPE_PERMISSION_FAILED' : 'STRIPE_SESSION_FAILED',
+        requestId,
       }, { status: 502 });
     }
     await saveOrderWithoutBlockingCheckout(env, {
@@ -1783,6 +1798,26 @@ export default {
     if (request.method === 'GET' && url.pathname === '/api/checkout-health') {
       const readiness = getCheckoutReadiness(env);
       const sessionReadiness = getCheckoutSessionReadiness(env);
+      let stripeConnection = null;
+      if (url.searchParams.get('verify') === 'stripe' && sessionReadiness.ready) {
+        const { stripeSecretKey } = runtimeBindings(env);
+        try {
+          const stripeResponse = await fetch('https://api.stripe.com/v1/account', {
+            headers: { Authorization: `Bearer ${stripeSecretKey}` },
+          });
+          const stripeData = await stripeResponse.json().catch(() => ({}));
+          stripeConnection = {
+            ok: stripeResponse.ok,
+            status: stripeResponse.status,
+            livemode: stripeResponse.ok ? stripeKeyMode(stripeSecretKey) === 'live' : null,
+            chargesEnabled: stripeResponse.ok ? Boolean(stripeData.charges_enabled) : null,
+            code: stripeResponse.ok ? 'STRIPE_CONNECTED' : stripeResponse.status === 401 ? 'STRIPE_AUTHENTICATION_FAILED' : 'STRIPE_CONNECTION_FAILED',
+            requestId: stripeResponse.headers.get('request-id') || '',
+          };
+        } catch {
+          stripeConnection = { ok: false, status: 0, livemode: null, chargesEnabled: null, code: 'STRIPE_UNREACHABLE', requestId: '' };
+        }
+      }
       return checkoutJson(request, {
         // `ready` describes the customer-facing checkout. A webhook is highly
         // recommended for order reconciliation, but Stripe does not require it
@@ -1793,6 +1828,7 @@ export default {
         configuration: readiness.configuration,
         missing: sessionReadiness.missing,
         missingRecommended: readiness.missing.filter((name) => !CHECKOUT_REQUIRED_CONFIGURATION.has(name)),
+        stripeConnection,
       }, { status: sessionReadiness.ready ? 200 : 503 });
     }
 

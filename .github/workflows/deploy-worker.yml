@@ -31,3 +31,19 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --keep-vars
+      - name: Verify production Worker routes and Stripe binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          for endpoint in \
+            "https://dzautotrade.si/api/checkout-health?verify=stripe" \
+            "https://www.dzautotrade.si/api/checkout-health?verify=stripe"; do
+            response="$(curl --fail --silent --show-error --retry 6 --retry-all-errors --retry-delay 5 "$endpoint")"
+            node -e '
+              const health = JSON.parse(process.argv[1]);
+              if (!health.checkoutReady || !health.stripeConnection?.ok) {
+                console.error("Checkout is not ready after deploy:", health);
+                process.exit(1);
+              }
+            ' "$response"
+          done
