@@ -1523,7 +1523,19 @@ const writeCategories = async (env, categories) => {
 const readProducts = async (env) => {
   const categories = await readCategories(env);
   const savedProducts = await env.PRODUCTS_KV.get(PRODUCTS_KEY, 'json');
-  if (Array.isArray(savedProducts)) return savedProducts.map((product) => normalizeProduct(product, categories));
+  if (Array.isArray(savedProducts)) {
+    const bundledProductsBySku = new Map(
+      DEFAULT_PRODUCTS.products.map((product) => [String(product.sku || '').trim().toUpperCase(), product])
+    );
+    return savedProducts.map((product) => {
+      const sku = String(product?.sku || '').trim().toUpperCase();
+      // Older KV catalog entries can contain only the editable display fields.
+      // Preserve checkout metadata from the bundled, server-trusted catalog
+      // when those fields are absent, while still honoring explicit admin
+      // values (including false and zero) saved in newer records.
+      return normalizeProduct({ ...(bundledProductsBySku.get(sku) || {}), ...product }, categories);
+    });
+  }
   return DEFAULT_PRODUCTS.products.map((product) => normalizeProduct(product, categories));
 };
 
