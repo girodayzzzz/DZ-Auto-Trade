@@ -50,6 +50,9 @@ hard-coded in this public repository. The committed Wrangler upload metadata
 retains `kv_namespace`, `plain_text`, and `secret_text` bindings on every
 deployment. Do not remove `[unsafe.metadata].keep_bindings` from
 `wrangler.toml`, or a later deployment can remove runtime configuration again.
+The top-level `keep_vars = true` setting is also required: it tells Wrangler
+not to replace variables and secrets configured in the Dashboard during a
+deploy. Do not deploy with `--keep-vars=false` or override this setting in CI.
 
 If the Dashboard currently shows only **Configure API tokens and other runtime
 variables**, the values are not present on that Worker environment. A deploy

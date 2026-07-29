@@ -2,6 +2,10 @@ name = "dz-auto-trade-products"
 main = "cloudflare-worker.js"
 compatibility_date = "2026-07-21"
 compatibility_flags = ["nodejs_compat"]
+# Never replace dashboard-managed variables or secrets during `wrangler deploy`.
+# Secret values cannot be committed to this repository, so losing them would
+# disable checkout until they are entered again in Cloudflare.
+keep_vars = true
 
 # API routes for the static DZ Auto Trade site. The Pages project serves the
 # website; this Worker serves only backend endpoints under /api/*.
@@ -10,8 +14,9 @@ routes = [
   { pattern = "www.dzautotrade.si/api/*", zone_name = "dzautotrade.si" }
 ]
 
-# Runtime values are configured in the Cloudflare dashboard. Preserve the KV,
-# ordinary variables, and secrets when Wrangler uploads a new Worker version.
+# Runtime values are configured in the Cloudflare dashboard. Preserve the KV
+# binding as well when Wrangler uploads a new Worker version. `keep_vars` above
+# is the supported Wrangler setting that preserves variables and secrets.
 # This metadata must remain after top-level keys such as `routes`, because TOML
 # keys following this table belong to `unsafe.metadata`.
 [unsafe.metadata]

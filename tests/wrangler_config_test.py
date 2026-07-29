@@ -10,6 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_dashboard_runtime_bindings_survive_deployments() -> None:
     config = tomllib.loads((ROOT / "wrangler.toml").read_text(encoding="utf-8"))
 
+    assert config.get("keep_vars") is True, (
+        "Wrangler deployments must preserve dashboard-managed variables and secrets"
+    )
     kept_bindings = config.get("unsafe", {}).get("metadata", {}).get("keep_bindings", [])
     assert {"kv_namespace", "plain_text", "secret_text"}.issubset(kept_bindings), (
         "Wrangler deployments must retain dashboard-managed KV, variables, and secrets"
