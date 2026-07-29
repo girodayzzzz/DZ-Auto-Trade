@@ -37,7 +37,7 @@ try {
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'checkout-test' },
-    body: JSON.stringify({ sku: 'kv-new', quantity: 2 }),
+    body: JSON.stringify({ items: [{ sku: 'kv-new', quantity: 2 }, { sku: 'DZ-T07', quantity: 1 }] }),
   });
   const response = await worker.fetch(request, {
     PRODUCTS_KV: kv,
@@ -52,7 +52,9 @@ try {
   const stripeBody = new URLSearchParams(stripeRequest.init.body);
   assert.equal(stripeBody.get('line_items[0][price_data][unit_amount]'), '1234');
   assert.equal(stripeBody.get('line_items[0][quantity]'), '2');
-  assert.equal(stripeBody.get('line_items[1][price_data][unit_amount]'), '590');
+  assert.equal(stripeBody.get('line_items[1][price_data][unit_amount]'), '22526');
+  assert.match(stripeBody.get('line_items[1][price_data][product_data][name]'), /DZ-T07/);
+  assert.equal(stripeBody.get('line_items[2][price_data][unit_amount]'), null, 'shipping is free above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
 } finally {
   globalThis.fetch = originalFetch;
