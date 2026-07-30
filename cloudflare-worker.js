@@ -1977,11 +1977,18 @@ const createStripeCheckoutSession = async (request, env) => {
   const params = new URLSearchParams();
   params.append('mode', 'payment');
   params.append('payment_method_types[0]', 'card');
+  // Catalog amounts are gross retail prices. Stripe Tax therefore calculates
+  // the customer's VAT from the address but extracts it from (rather than adds
+  // it on top of) the amount already shown in the shop.
+  params.append('automatic_tax[enabled]', 'true');
+  params.append('tax_id_collection[enabled]', 'true');
+  params.append('customer_creation', 'always');
   params.append('success_url', `${PRODUCTION_ORIGIN}/placilo-uspesno.html?session_id={CHECKOUT_SESSION_ID}`);
   params.append('cancel_url', `${PRODUCTION_ORIGIN}/placilo-preklicano.html`);
   stripeLineItems.forEach((item, index) => {
     params.append(`line_items[${index}][quantity]`, String(item.quantity));
     params.append(`line_items[${index}][price_data][currency]`, 'eur');
+    params.append(`line_items[${index}][price_data][tax_behavior]`, 'inclusive');
     params.append(`line_items[${index}][price_data][product_data][name]`, item.sku ? `${item.name} (${item.sku})` : item.name);
     const imageUrl = getStripeProductImageUrl(item.image);
     if (imageUrl) params.append(`line_items[${index}][price_data][product_data][images][0]`, imageUrl);
