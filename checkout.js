@@ -45,13 +45,13 @@ const createCheckoutSession = async (payload) => {
     throw new Error('Povezava s plačilnim sistemom trenutno ni dosegljiva. Poskusite znova čez nekaj trenutkov.');
   }
 
-  // This production setup has the secrets on Pages while /api/* points at a
-  // separate Worker. A missing Pages Function is returned by
-  // static hosting as 404/405 (rather than a network error), so those responses
-  // must also use the Pages Function. Never retry ambiguous gateway or Stripe
-  // errors: doing so could create two Checkout Sessions for one click.
-  const shouldUsePagesFallback = [404, 405].includes(result.response.status)
-    && !result.data?.code;
+  // A missing Pages Function is returned by static hosting as 404/405. Pages
+  // can also have no checkout bindings even though the routed Worker is fully
+  // configured. Both failures happen before Stripe is called, so it is safe to
+  // try the Worker with the same idempotency key. Never retry gateway or Stripe
+  // errors: those are ambiguous and could otherwise create a second Session.
+  const shouldUsePagesFallback = ([404, 405].includes(result.response.status) && !result.data?.code)
+    || (result.response.status === 503 && result.data?.code === 'CHECKOUT_NOT_CONFIGURED');
   if (shouldUsePagesFallback) {
     const primaryResult = result;
     try {

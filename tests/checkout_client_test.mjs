@@ -45,6 +45,20 @@ context.fetch = async (endpoint) => {
 assert.equal(await context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 }), 'https://checkout.stripe.com/c/pay/cs_worker');
 assert.deepEqual(calls.splice(0), ['/checkout-api', '/api/checkout']);
 
+context.fetch = async (endpoint) => {
+  calls.push(endpoint);
+  if (endpoint === '/checkout-api') {
+    return Response.json({
+      error: 'Plačilni sistem ni pravilno konfiguriran.',
+      code: 'CHECKOUT_NOT_CONFIGURED',
+      missing: ['PRODUCTS'],
+    }, { status: 503 });
+  }
+  return Response.json({ url: 'https://checkout.stripe.com/c/pay/cs_worker_configured' });
+};
+assert.equal(await context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 }), 'https://checkout.stripe.com/c/pay/cs_worker_configured');
+assert.deepEqual(calls.splice(0), ['/checkout-api', '/api/checkout'], 'an unconfigured Pages Function must use the configured Worker');
+
 context.fetch = async (endpoint) => { calls.push(endpoint); throw new TypeError('timeout'); };
 await assert.rejects(context.window.dzCheckout.createSession({ sku: 'DZ-N03', quantity: 1 }), /Povezava s plačilnim sistemom/);
 assert.deepEqual(calls, ['/checkout-api'], 'ambiguous timeout must not fall back');
