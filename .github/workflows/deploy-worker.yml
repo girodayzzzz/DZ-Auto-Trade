@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - cloudflare-worker.js
+      - products.json
+      - tools/sync_checkout_catalog.py
       - checkout.js
       - functions/checkout-api.js
       - tests/checkout_client_test.mjs
@@ -31,6 +33,7 @@ jobs:
           node-version: 22
       - name: Test checkout Worker
         run: |
+          python tools/sync_checkout_catalog.py
           node tests/checkout_client_test.mjs
           node tests/checkout_worker.test.mjs
           node tests/checkout_security.test.mjs
