@@ -9,6 +9,8 @@ on:
       - functions/checkout-api.js
       - tests/checkout_client_test.mjs
       - tests/checkout_worker.test.mjs
+      - tests/checkout_security.test.mjs
+      - STRIPE-CLOUDFLARE-SETUP.md
       - wrangler.toml
       - .github/workflows/deploy-worker.yml
   workflow_dispatch:
@@ -31,6 +33,7 @@ jobs:
         run: |
           node tests/checkout_client_test.mjs
           node tests/checkout_worker.test.mjs
+          node tests/checkout_security.test.mjs
       - name: Deploy checkout Worker
         uses: cloudflare/wrangler-action@v3
         with:

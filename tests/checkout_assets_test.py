@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 
-EXPECTED_CHECKOUT_VERSION = "2026-07-29-8"
+EXPECTED_CHECKOUT_VERSION = "2026-07-30-1"
 EXPECTED_SCRIPTS_VERSION = "2026-07-29-3"
 
 html_files = list(Path(__file__).resolve().parents[1].glob("*.html"))

@@ -32,15 +32,17 @@ const requestCheckoutSession = async (endpoint, payload) => {
 };
 
 const createCheckoutSession = async (payload) => {
+  const checkoutRequestId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const requestPayload = { ...payload, checkoutRequestId };
   let result;
   try {
     // The production bindings and secrets belong to the Pages project, so its
     // Function is the canonical same-origin checkout endpoint.
-    result = await requestCheckoutSession('/checkout-api', payload);
+    result = await requestCheckoutSession('/checkout-api', requestPayload);
   } catch (error) {
-    // The Pages Function can be temporarily unavailable even while the routed
-    // Worker is healthy. Treat transport failures like a missing route.
-    result = { response: null, data: {}, transportError: error };
+    // A transport failure is ambiguous: the Function may already have created
+    // a Session. Never submit the cart to a second endpoint in this case.
+    throw new Error('Povezava s plačilnim sistemom trenutno ni dosegljiva. Poskusite znova čez nekaj trenutkov.');
   }
 
   // This production setup has the secrets on Pages while /api/* points at a
@@ -48,13 +50,12 @@ const createCheckoutSession = async (payload) => {
   // static hosting as 404/405 (rather than a network error), so those responses
   // must also use the Pages Function. Never retry ambiguous gateway or Stripe
   // errors: doing so could create two Checkout Sessions for one click.
-  const shouldUsePagesFallback = !result.response
-    || [404, 405].includes(result.response.status)
-    || (result.response.status === 503 && result.data.code === 'CHECKOUT_NOT_CONFIGURED');
+  const shouldUsePagesFallback = [404, 405].includes(result.response.status)
+    && !result.data?.code;
   if (shouldUsePagesFallback) {
     const primaryResult = result;
     try {
-      const fallbackResult = await requestCheckoutSession('/api/checkout', payload);
+      const fallbackResult = await requestCheckoutSession('/api/checkout', requestPayload);
       if (fallbackResult.response.ok && fallbackResult.data.url) return fallbackResult.data.url;
       // A static host commonly returns an HTML 404 for the optional Pages
       // Function. In that case preserve the Worker's structured error: it
