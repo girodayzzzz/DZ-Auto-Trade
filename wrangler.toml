@@ -28,3 +28,7 @@ head_sampling_rate = 1
 # keys following this table belong to `unsafe.metadata`.
 [unsafe.metadata]
 keep_bindings = ["kv_namespace", "plain_text", "secret_text"]
+
+[[kv_namespaces]]
+binding = "PRODUCTS_KV"
+id = "f3b4234150054881b5d6eb22e9a73fed"
