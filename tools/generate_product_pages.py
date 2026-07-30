@@ -40,7 +40,7 @@ def shorten_meta(value: str, limit: int = 157) -> str:
 def image_metadata(relative_path: str) -> tuple[str, int | None, int | None]:
     """Return the MIME type and intrinsic dimensions for local social images."""
     suffix = Path(relative_path).suffix.lower()
-    mime = {".avif": "image/avif", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(suffix, "image/jpeg")
+    mime = {".avif": "image/avif", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".svg": "image/svg+xml"}.get(suffix, "image/jpeg")
     path = ROOT / relative_path.lstrip("/")
     data = path.read_bytes() if path.exists() else b""
     if suffix == ".avif":
@@ -49,6 +49,11 @@ def image_metadata(relative_path: str) -> tuple[str, int | None, int | None]:
             return mime, int.from_bytes(data[offset + 8:offset + 12], "big"), int.from_bytes(data[offset + 12:offset + 16], "big")
     if suffix == ".png" and data.startswith(b"\x89PNG") and len(data) >= 24:
         return mime, int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    if suffix == ".svg":
+        svg = data.decode("utf-8", errors="ignore")
+        view_box = re.search(r'viewBox=["\'](?:[-.\d]+\s+){2}([.\d]+)\s+([.\d]+)["\']', svg)
+        if view_box:
+            return mime, round(float(view_box.group(1))), round(float(view_box.group(2)))
     if suffix in {".jpg", ".jpeg"}:
         offset = 2
         while offset + 9 < len(data):
