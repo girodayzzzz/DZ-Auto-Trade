@@ -1,6 +1,7 @@
 const PRODUCTS_KEY = 'products';
 const CATEGORIES_KEY = 'categories';
 const ORDERS_PREFIX = 'orders:';
+const WEBHOOK_EVENTS_PREFIX = 'stripe-events:';
 const DEFAULT_PRODUCTS = {
   "products": [
     {
@@ -1331,7 +1332,7 @@ const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
       name: String(product.name || '').trim(),
       priceCents: Math.round(Number(product.checkoutAmount || 0)),
       currency: 'eur',
-      active: true,
+      active: product.checkoutEnabled !== false,
       maxQuantity: DEFAULT_MAX_QUANTITY,
       metadata: { type: 'product', category: String(product.category || ''), brand: String(product.brand || '') },
     }));
@@ -1401,7 +1402,8 @@ const CHECKOUT_REQUIRED_CONFIGURATION = new Set(['stripeSecretKey', 'productsKv'
 const getCheckoutSessionReadiness = (env) => {
   const readiness = getCheckoutReadiness(env);
   const missing = readiness.missing.filter((name) => CHECKOUT_REQUIRED_CONFIGURATION.has(name));
-  return { ready: missing.length === 0, configuration: readiness.configuration, missing };
+  const publicNames = { stripeSecretKey: 'STRIPE_SECRET_KEY', productsKv: 'PRODUCTS' };
+  return { ready: missing.length === 0, configuration: readiness.configuration, missing: missing.map((name) => publicNames[name]) };
 };
 
 const bytesToHex = (buffer) => [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -1421,6 +1423,7 @@ const verifyStripeSignature = async (payload, signatureHeader, secret) => {
   const timestamp = parts.t;
   const expected = parts.v1;
   if (!timestamp || !expected) return false;
+  if (!Number.isFinite(Number(timestamp)) || Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
   const signedPayload = `${timestamp}.${payload}`;
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const signature = bytesToHex(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedPayload)));
@@ -1541,9 +1544,9 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
     supplierPrice: String(product.supplierPrice || '').trim(),
     shippingNote: String(product.shippingNote || '').trim(),
     purchaseUrl: String(product.purchaseUrl || '').trim(),
-    checkoutEnabled: checkoutAmount >= 50,
+    checkoutEnabled: checkoutAmount >= 50 && product.checkoutEnabled !== false,
     checkoutAmount,
-    cartEnabled: checkoutAmount >= 50,
+    cartEnabled: checkoutAmount >= 50 && product.cartEnabled !== false,
     featured: Boolean(product.featured),
     searchTerms: String(product.searchTerms || '').trim(),
     image: imageOverride && (!image || image.startsWith('data:image/svg+xml')) ? imageOverride : image || createProductPlaceholder(product),
@@ -1593,11 +1596,11 @@ const parseCheckoutItems = (body, catalog = CHECKOUT_CATALOG) => {
 
   return rawItems.map((item) => {
     const sku = String(item?.sku || '').trim().toUpperCase();
-    const quantity = Number(item?.quantity);
-    if (!sku || !catalog.has(sku)) throw new Error('Izdelek ni več na voljo za spletno plačilo.');
+    const quantity = Number(item?.quantity ?? 1);
+    if (!sku || !catalog.has(sku)) throw Object.assign(new Error('Izdelek trenutno ni na voljo za spletno plačilo.'), { code: 'PRODUCT_NOT_AVAILABLE' });
     if (!Number.isInteger(quantity) || quantity < 1) throw new Error('Količina izdelka ni veljavna.');
     const product = catalog.get(sku);
-    if (!product.active) throw new Error('Izdelek trenutno ni na voljo za spletno plačilo.');
+    if (!product.active) throw Object.assign(new Error('Izdelek trenutno ni na voljo za spletno plačilo.'), { code: 'PRODUCT_NOT_AVAILABLE' });
     if (quantity > product.maxQuantity) throw new Error(`Največja dovoljena količina za ${product.name} je ${product.maxQuantity}.`);
     return { ...product, quantity };
   });
@@ -1606,7 +1609,7 @@ const parseCheckoutItems = (body, catalog = CHECKOUT_CATALOG) => {
 const createStripeCheckoutSession = async (request, env) => {
   if (request.method !== 'POST') return checkoutJson(request, { error: 'Method not allowed.' }, { status: 405, headers: { Allow: 'POST' } });
   const origin = request.headers.get('Origin') || '';
-  if (origin && !ALLOWED_CHECKOUT_ORIGINS.has(origin)) return checkoutJson(request, { error: 'Ta izvor ni dovoljen za plačilo.' }, { status: 403 });
+  if (origin && !ALLOWED_CHECKOUT_ORIGINS.has(origin)) return checkoutJson(request, { error: 'Ta izvor ni dovoljen za plačilo.', code: 'ORIGIN_NOT_ALLOWED' }, { status: 403 });
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return checkoutJson(request, { error: 'Zahtevek mora biti v JSON obliki.' }, { status: 415 });
   if (isRateLimited(request)) return checkoutJson(request, { error: 'Preveč poskusov plačila. Poskusite znova čez nekaj minut.' }, { status: 429 });
@@ -1614,7 +1617,7 @@ const createStripeCheckoutSession = async (request, env) => {
   if (!readiness.ready) {
     console.error('Stripe checkout configuration is incomplete.', { missing: readiness.missing });
     return checkoutJson(request, {
-      error: 'Stripe plačilo je začasno v vzdrževanju. Pišite na dzautotrade@gmail.com.',
+      error: 'Plačilni sistem ni pravilno konfiguriran.',
       code: 'CHECKOUT_NOT_CONFIGURED',
       missing: readiness.missing,
     }, { status: 503 });
@@ -1642,8 +1645,8 @@ const createStripeCheckoutSession = async (request, env) => {
       'Izdelek ni več na voljo za spletno plačilo.',
       'Količina izdelka ni veljavna.',
     ];
-    if (validationMessages.includes(error?.message) || String(error?.message || '').startsWith('Največja dovoljena količina')) {
-      return checkoutJson(request, { error: error.message }, { status: 400 });
+    if (error?.code === 'PRODUCT_NOT_AVAILABLE' || validationMessages.includes(error?.message) || error?.message === 'Izdelek trenutno ni na voljo za spletno plačilo.' || String(error?.message || '').startsWith('Največja dovoljena količina')) {
+      return checkoutJson(request, { error: error.message, code: error.code || (error.message === 'Količina izdelka ni veljavna.' ? 'INVALID_QUANTITY' : 'INVALID_CHECKOUT') }, { status: 400 });
     }
     console.error('Could not load the trusted checkout catalog from PRODUCTS KV.', { message: error?.message || String(error) });
     return checkoutJson(request, {
@@ -1695,9 +1698,11 @@ const createStripeCheckoutSession = async (request, env) => {
       lineItems: stripeLineItems.map((item) => ({ sku: item.sku, name: item.name, quantity: item.quantity, unitAmountCents: item.priceCents, type: item.metadata?.type || 'product' })),
     });
 
+    const checkoutRequestId = String(body.checkoutRequestId || '').trim();
+    const idempotencyKey = /^[a-zA-Z0-9-]{8,100}$/.test(checkoutRequestId) ? `dz-checkout-${checkoutRequestId}` : `dz-checkout-${orderId}`;
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${stripeSecretKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { Authorization: `Bearer ${stripeSecretKey}`, 'Content-Type': 'application/x-www-form-urlencoded', 'Idempotency-Key': idempotencyKey },
       body: params,
     });
     const data = await stripeResponse.json().catch(() => ({}));
@@ -1718,7 +1723,7 @@ const createStripeCheckoutSession = async (request, env) => {
           : permissionFailed
             ? 'Stripe ključ nima dovoljenja za ustvarjanje Checkout sej. Uporabite standardni skrivni ključ ali omogočite Checkout write dostop.'
             : 'Stripe plačilo trenutno ni na voljo. Poskusite znova.',
-        code: authenticationFailed ? 'STRIPE_AUTHENTICATION_FAILED' : permissionFailed ? 'STRIPE_PERMISSION_FAILED' : 'STRIPE_SESSION_FAILED',
+        code: authenticationFailed ? 'STRIPE_AUTHENTICATION_ERROR' : permissionFailed ? 'STRIPE_PERMISSION_ERROR' : 'STRIPE_CONNECTION_ERROR',
         requestId,
       }, { status: 502 });
     }
@@ -1749,13 +1754,20 @@ const handleStripeWebhook = async (request, env) => {
   if (request.method !== 'POST') return json({ error: 'Method not allowed.' }, { status: 405, headers: { Allow: 'POST' } });
   const { stripeWebhookSecret } = runtimeBindings(env);
   if (!stripeWebhookSecret) return json({ error: 'Stripe webhook is not configured.' }, { status: 500 });
+  if (!runtimeBindings(env).productsKv) return json({ error: 'Order storage is not configured.', code: 'CHECKOUT_NOT_CONFIGURED', missing: ['PRODUCTS'] }, { status: 503 });
   const signature = request.headers.get('Stripe-Signature') || '';
   const payload = await request.text();
   const verified = await verifyStripeSignature(payload, signature, stripeWebhookSecret);
   if (!verified) return json({ error: 'Invalid Stripe webhook signature.' }, { status: 400 });
 
-  const event = JSON.parse(payload);
-  if (event.type !== 'checkout.session.completed' && event.type !== 'checkout.session.async_payment_succeeded') {
+  let event;
+  try { event = JSON.parse(payload); } catch { return json({ error: 'Invalid webhook payload.' }, { status: 400 }); }
+  if (!event.id) return json({ error: 'Missing event id.' }, { status: 400 });
+  const { productsKv } = runtimeBindings(env);
+  const eventKey = `${WEBHOOK_EVENTS_PREFIX}${event.id}`;
+  if (await productsKv.get(eventKey)) return json({ received: true, duplicate: true });
+  const supportedEvents = new Set(['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed']);
+  if (!supportedEvents.has(event.type)) {
     return json({ received: true, ignored: event.type });
   }
 
@@ -1766,8 +1778,8 @@ const handleStripeWebhook = async (request, env) => {
   const previousOrder = (await readOrder(env, orderId)) || { id: orderId, createdAt: new Date().toISOString(), lineItems: [] };
   await saveOrder(env, {
     ...previousOrder,
-    status: 'paid',
-    paymentStatus: session.payment_status || 'paid',
+    status: event.type === 'checkout.session.async_payment_failed' ? 'payment_failed' : 'paid',
+    paymentStatus: event.type === 'checkout.session.async_payment_failed' ? 'failed' : (session.payment_status || 'paid'),
     stripeSessionId: session.id || previousOrder.stripeSessionId || '',
     customerEmail: session.customer_details?.email || session.customer_email || previousOrder.customerEmail || '',
     customerName: session.customer_details?.name || previousOrder.customerName || '',
@@ -1776,9 +1788,10 @@ const handleStripeWebhook = async (request, env) => {
     shippingDetails: session.shipping_details || previousOrder.shippingDetails || null,
     totalCents: session.amount_total ?? previousOrder.totalCents,
     currency: session.currency || previousOrder.currency || 'eur',
-    paidAt: new Date().toISOString(),
+    ...(event.type === 'checkout.session.async_payment_failed' ? { failedAt: new Date().toISOString() } : { paidAt: new Date().toISOString() }),
     stripeEventId: event.id || '',
   });
+  await productsKv.put(eventKey, JSON.stringify({ processedAt: new Date().toISOString(), orderId }), { expirationTtl: 90 * 24 * 60 * 60 });
 
   return json({ received: true, orderId });
 };
@@ -1805,6 +1818,10 @@ export default {
       const readiness = getCheckoutReadiness(env);
       const sessionReadiness = getCheckoutSessionReadiness(env);
       const verifyStripe = url.searchParams.get('verify') === 'stripe';
+      const healthOrigin = request.headers.get('Origin') || '';
+      if (verifyStripe && healthOrigin && !ALLOWED_CHECKOUT_ORIGINS.has(healthOrigin)) {
+        return checkoutJson(request, { ok: false, error: 'Ta izvor ni dovoljen.', code: 'ORIGIN_NOT_ALLOWED' }, { status: 403 });
+      }
       let stripeConnection = verifyStripe
         ? { ok: false, status: 0, livemode: null, chargesEnabled: null, code: 'CHECKOUT_NOT_CONFIGURED', requestId: '' }
         : null;
@@ -1823,25 +1840,27 @@ export default {
             code: stripeResponse.ok
               ? 'STRIPE_CONNECTED'
               : stripeResponse.status === 401
-                ? 'STRIPE_AUTHENTICATION_FAILED'
-                : stripeResponse.status === 403 ? 'STRIPE_PERMISSION_FAILED' : 'STRIPE_CONNECTION_FAILED',
+                ? 'STRIPE_AUTHENTICATION_ERROR'
+                : stripeResponse.status === 403 ? 'STRIPE_PERMISSION_ERROR' : 'STRIPE_CONNECTION_ERROR',
             requestId: stripeResponse.headers.get('request-id') || '',
           };
         } catch {
-          stripeConnection = { ok: false, status: 0, livemode: null, chargesEnabled: null, code: 'STRIPE_UNREACHABLE', requestId: '' };
+          stripeConnection = { ok: false, status: 0, livemode: null, chargesEnabled: null, code: 'STRIPE_CONNECTION_ERROR', requestId: '' };
         }
       }
       return checkoutJson(request, {
         // `ready` describes the customer-facing checkout. A webhook is highly
         // recommended for order reconciliation, but Stripe does not require it
         // to create a Checkout Session and redirect the customer.
+        ok: sessionReadiness.ready,
+        environment: 'production',
         ready: sessionReadiness.ready,
         checkoutReady: sessionReadiness.ready,
         orderTrackingReady: readiness.configuration.productsKv && readiness.configuration.stripeWebhookSecret,
         stripeKeyMode: readiness.configuration.stripeKeyMode,
         configuration: readiness.configuration,
         missing: sessionReadiness.missing,
-        missingRecommended: readiness.missing.filter((name) => !CHECKOUT_REQUIRED_CONFIGURATION.has(name)),
+        missingRecommended: readiness.configuration.stripeWebhookSecret ? [] : ['STRIPE_WEBHOOK_SECRET'],
         stripeConnection,
       }, { status: sessionReadiness.ready ? 200 : 503 });
     }

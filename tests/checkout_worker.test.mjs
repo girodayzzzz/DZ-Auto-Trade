@@ -71,7 +71,7 @@ try {
     body: JSON.stringify({ sku: 'KV-NEW', quantity: 1 }),
   }), {});
   assert.equal(missingConfigurationResponse.status, 503);
-  assert.deepEqual((await missingConfigurationResponse.json()).missing, ['stripeSecretKey', 'productsKv']);
+  assert.deepEqual((await missingConfigurationResponse.json()).missing, ['STRIPE_SECRET_KEY', 'PRODUCTS']);
 
   const publishableKeyHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health'), {
     STRIPE_SECRET_KEY: 'pk_test_not_a_server_secret',
@@ -103,7 +103,7 @@ try {
   assert.equal(health.checkoutReady, true);
   assert.equal(health.orderTrackingReady, false);
   assert.deepEqual(health.missing, []);
-  assert.deepEqual(health.missingRecommended, ['stripeWebhookSecret']);
+  assert.deepEqual(health.missingRecommended, ['STRIPE_WEBHOOK_SECRET']);
   assert.equal(health.configuration.stripeKeyMode, 'test');
 
   const verifiedHealthResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout-health?verify=stripe'), {
@@ -116,8 +116,8 @@ try {
   assert.equal(verifiedHealth.stripeConnection.requestId, 'req_health');
 
   for (const [status, expectedCode] of [
-    [401, 'STRIPE_AUTHENTICATION_FAILED'],
-    [403, 'STRIPE_PERMISSION_FAILED'],
+    [401, 'STRIPE_AUTHENTICATION_ERROR'],
+    [403, 'STRIPE_PERMISSION_ERROR'],
   ]) {
     globalThis.fetch = async () => Response.json(
       { error: { type: 'safe_test_error' } },
@@ -161,7 +161,7 @@ try {
   const request = new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'checkout-test' },
-    body: JSON.stringify({ items: [{ sku: 'kv-new', quantity: 2 }, { sku: 'DZ-T07', quantity: 1 }, { sku: 'DIRECT-ONLY', quantity: 1 }, { sku: 'ALWAYS-ORDERABLE', quantity: 1 }] }),
+    body: JSON.stringify({ items: [{ sku: 'kv-new', quantity: 2 }, { sku: 'DZ-T07', quantity: 1 }, { sku: 'DIRECT-ONLY', quantity: 1 }] }),
   });
   const response = await worker.fetch(request, {
     KV: kv,
@@ -180,9 +180,7 @@ try {
   assert.match(stripeBody.get('line_items[1][price_data][product_data][name]'), /DZ-T07/);
   assert.equal(stripeBody.get('line_items[2][price_data][unit_amount]'), '2500');
   assert.match(stripeBody.get('line_items[2][price_data][product_data][name]'), /DIRECT-ONLY/);
-  assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), '990');
-  assert.match(stripeBody.get('line_items[3][price_data][product_data][name]'), /ALWAYS-ORDERABLE/);
-  assert.equal(stripeBody.get('line_items[4][price_data][unit_amount]'), null, 'shipping is free above 60 €');
+  assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), null, 'shipping is free above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
 
   const unavailableKv = {
