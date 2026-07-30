@@ -137,11 +137,11 @@ if (productGrid && !filterList) {
 
 const escapeHtml = (value = '') =>
   String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 
 const parsePrice = (price) => Number(price?.replace(/[^0-9,]/g, '').replace(',', '.') ?? 0);
 const priceToCents = (price) => Math.round(parsePrice(price) * 100);
@@ -316,11 +316,33 @@ const validateProductsForDevelopment = (products = []) => {
 };
 
 const loadProducts = async () => {
-  // products.js is the single source of truth for the public shop catalog.
-  // Do not fetch /api/products here: a stale Worker/KV response can otherwise
-  // overwrite the bundled catalog after products.js has already loaded.
-  currentProducts = bundledProducts.map(normalizeProduct);
-  currentCategories = deriveCategoriesFromProducts(currentProducts);
+  // Keep products.js as an immediate, mobile-safe fallback, but prefer the
+  // current Products KV catalog exposed by the same-origin Worker route.
+  // Never replace a usable bundled catalog with an empty or malformed reply.
+  let products = bundledProducts;
+  let categories = [];
+  try {
+    const response = await fetch('/api/products', {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!Array.isArray(data.products) || data.products.length === 0) {
+      throw new Error('Worker je vrnil prazen ali neveljaven katalog.');
+    }
+    products = data.products;
+    categories = Array.isArray(data.categories) ? data.categories : [];
+  } catch (error) {
+    console.error('Kataloga izdelkov iz Products KV ni bilo mogoče naložiti; uporabljen bo lokalni katalog.', error);
+  }
+
+  currentProducts = products.map(normalizeProduct).filter((product) => product.sku && product.name);
+  if (!currentProducts.length && bundledProducts.length) {
+    console.error('Prejeti katalog nima veljavnih izdelkov; uporabljen bo lokalni katalog.');
+    currentProducts = bundledProducts.map(normalizeProduct);
+  }
+  currentCategories = categories.length ? categories : deriveCategoriesFromProducts(currentProducts);
   validateProductsForDevelopment(currentProducts);
 };
 
@@ -393,7 +415,13 @@ const readCart = () => {
 };
 
 const saveCart = (cart) => {
-  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    return true;
+  } catch (error) {
+    console.error('Košarice ni bilo mogoče shraniti.', error);
+    return false;
+  }
 };
 
 const getCartProduct = (sku) => currentProducts.find((product) => product.sku === sku);
@@ -991,7 +1019,7 @@ document.addEventListener('click', async (event) => {
     window.dzCheckout.setStatus('Pripravljamo Stripe Checkout za vašo košarico...', 'info', cartCheckoutButton);
     try {
       const url = await window.dzCheckout.createSession(createCartCheckoutPayload(summary));
-      window.location.href = url;
+      window.location.assign(url);
     } catch (error) {
       window.dzCheckout.setStatus(error.message, 'error', cartCheckoutButton);
       cartCheckoutButton.disabled = false;
@@ -1064,7 +1092,8 @@ if (selectedProductCard && productFromQuery) {
   selectedProductCard.textContent = `Izbran izdelek: ${productFromQuery}${skuFromQuery ? ` • ${skuFromQuery}` : ''}`;
 }
 
-loadProducts().then(() => {
+const initializeStore = async () => {
+  await loadProducts();
   if (activeFilter !== 'all' && !currentCategories.some((category) => category.id === activeFilter)) {
     activeFilter = 'all';
   }
@@ -1077,7 +1106,13 @@ loadProducts().then(() => {
   renderProductDetail();
   renderCart();
   enhanceInteractiveCards();
-});
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeStore, { once: true });
+} else {
+  initializeStore();
+}
 
 const vehicleFilters = document.querySelectorAll('[data-vehicle-filter]');
 const vehicleGrid = document.querySelector('[data-vehicle-grid]');

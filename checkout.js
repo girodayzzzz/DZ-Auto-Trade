@@ -73,6 +73,13 @@ const createCheckoutSession = async (payload) => {
 
   const { response, data } = result;
   if (!response.ok || !data.url) throw new Error(data.error || 'Stripe plačilo trenutno ni na voljo. Poskusite znova.');
+  try {
+    const checkoutUrl = new URL(data.url);
+    if (checkoutUrl.protocol !== 'https:' || checkoutUrl.hostname !== 'checkout.stripe.com') throw new Error();
+  } catch (error) {
+    console.error('Stripe Checkout endpoint je vrnil neveljaven URL.', { status: response.status });
+    throw new Error('Plačilni sistem je vrnil neveljavno povezavo. Poskusite znova.');
+  }
   return data.url;
 };
 
@@ -90,7 +97,7 @@ document.addEventListener('click', async (event) => {
   setCheckoutStatus('Pripravljamo varno Stripe Checkout plačilno stran...', 'info', button);
   try {
     const url = await createCheckoutSession({ sku, quantity: 1 });
-    window.location.href = url;
+    window.location.assign(url);
   } catch (error) {
     setCheckoutStatus(error.message, 'error', button);
     button.disabled = false;

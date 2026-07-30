@@ -1715,7 +1715,7 @@ const checkoutCorsHeaders = (request) => {
   return {
     'Access-Control-Allow-Origin': ALLOWED_CHECKOUT_ORIGINS.has(origin) ? origin : PRODUCTION_ORIGIN,
     'Vary': 'Origin',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Accept',
     'Cache-Control': 'no-store',
   };
@@ -2212,12 +2212,19 @@ const requireAccess = (request) => {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (request.method === 'OPTIONS' && url.pathname === '/api/checkout') return checkoutJson(request, { ok: true });
-    if (request.method === 'OPTIONS') return json({ ok: true });
+    if (request.method === 'OPTIONS') return checkoutJson(request, { ok: true });
 
 
     if (request.method === 'GET' && url.pathname === '/api/products') {
-      return json({ products: await readProducts(env), categories: await readCategories(env) });
+      try {
+        return checkoutJson(request, { products: await readProducts(env), categories: await readCategories(env) });
+      } catch (error) {
+        console.error('Products KV catalog request failed.', { message: error?.message || String(error) });
+        return checkoutJson(request, {
+          error: 'Kataloga izdelkov trenutno ni mogoče naložiti.',
+          code: 'PRODUCTS_UNAVAILABLE',
+        }, { status: 503 });
+      }
     }
 
     if (request.method === 'GET' && url.pathname === '/api/checkout-health') {

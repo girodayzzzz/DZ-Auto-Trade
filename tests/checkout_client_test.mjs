@@ -8,6 +8,7 @@ const context = {
   console,
   Math,
   Date,
+  URL,
   window: { location: { href: '' } },
   document: { addEventListener() {}, querySelector() { return null; } },
   fetch: null,

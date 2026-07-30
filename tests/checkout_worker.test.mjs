@@ -66,6 +66,23 @@ globalThis.fetch = async (url, init) => {
 };
 
 try {
+  for (const origin of ['https://dzautotrade.si', 'https://www.dzautotrade.si']) {
+    const preflightResponse = await worker.fetch(new Request('https://dzautotrade.si/api/products', {
+      method: 'OPTIONS',
+      headers: { Origin: origin, 'Access-Control-Request-Method': 'GET' },
+    }), { PRODUCTS_KV: kv });
+    assert.equal(preflightResponse.status, 200);
+    assert.equal(preflightResponse.headers.get('Access-Control-Allow-Origin'), origin);
+    assert.match(preflightResponse.headers.get('Access-Control-Allow-Methods'), /GET/);
+
+    const productsResponse = await worker.fetch(new Request('https://dzautotrade.si/api/products', {
+      headers: { Origin: origin },
+    }), { PRODUCTS_KV: kv });
+    assert.equal(productsResponse.status, 200);
+    assert.equal(productsResponse.headers.get('Access-Control-Allow-Origin'), origin);
+    assert.ok((await productsResponse.json()).products.length > 0);
+  }
+
   const missingConfigurationResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'missing-config-test' },
