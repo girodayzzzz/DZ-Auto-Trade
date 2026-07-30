@@ -69,7 +69,7 @@ def image_metadata(relative_path: str) -> tuple[str, int | None, int | None]:
 
 
 DESCRIPTION_HEADING = re.compile(
-    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba|Vsebina kompleta|Montaža sistema|Redčenje):\s*",
+    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnični podatki|Tehnične karakteristike|Lastnosti|Uporaba|Komplet vključuje|Vsebina kompleta|Montaža sistema|Redčenje):\s*",
     re.IGNORECASE,
 )
 
@@ -99,7 +99,7 @@ def rich_text(value: str) -> str:
     for block in re.split(r"\n\s*\n", value.strip()):
         lines = [line.strip() for line in block.splitlines() if line.strip()]
         if lines and all(re.match(r"^[-•]\s+", line) for line in lines):
-            items = "".join(f"<li>{html.escape(re.sub(r'^[-•]\\s+', '', line))}</li>" for line in lines)
+            items = "".join(f"<li>{html.escape(re.sub(r'^[-•]\s+', '', line))}</li>" for line in lines)
             rendered.append(f"<ul>{items}</ul>")
         elif lines:
             rendered.append(f"<p>{'<br />'.join(html.escape(line) for line in lines)}</p>")
