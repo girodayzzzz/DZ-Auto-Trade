@@ -208,6 +208,41 @@ try {
   assert.doesNotMatch(imageFallbackRequests[1].init.body, /product_data%5D%5Bimages%5D%5B0%5D/);
   assert.equal(imageFallbackRequests[1].init.headers['Idempotency-Key'], imageFallbackRequests[0].init.headers['Idempotency-Key']);
 
+  globalThis.fetch = async () => Response.json({
+    id: 'cs_bundled',
+    url: 'https://checkout.stripe.com/c/pay/cs_bundled',
+  });
+
+  const bundledProductResponse = await worker.fetch(
+    new Request('https://dzautotrade.si/api/checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://dzautotrade.si',
+        'CF-Connecting-IP': 'bundled-product-test',
+      },
+      body: JSON.stringify({
+        sku: 'DZ-N03',
+        quantity: 1,
+        checkoutRequestId: 'bundled-product-request',
+      }),
+    }),
+    {
+      PRODUCTS: kv,
+      STRIPE_SECRET_KEY: 'sk_test_mock',
+    },
+  );
+
+  assert.equal(
+    bundledProductResponse.status,
+    200,
+    'an older KV catalog must not hide products added by a deployment',
+  );
+  assert.equal(
+    (await bundledProductResponse.json()).url,
+    'https://checkout.stripe.com/c/pay/cs_bundled',
+  );
+
   const unavailableKv = {
     async get() { throw new Error('temporary KV outage'); },
     async put() { throw new Error('temporary KV outage'); },

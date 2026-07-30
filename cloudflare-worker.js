@@ -1590,7 +1590,7 @@ const readProducts = async (env) => {
     const bundledProductsBySku = new Map(
       DEFAULT_PRODUCTS.products.map((product) => [String(product.sku || '').trim().toUpperCase(), product])
     );
-    return savedProducts.map((product) => {
+    const normalizedSavedProducts = savedProducts.map((product) => {
       const sku = String(product?.sku || '').trim().toUpperCase();
       // Older KV catalog entries can contain only the editable display fields.
       // Preserve checkout metadata from the bundled, server-trusted catalog
@@ -1598,6 +1598,16 @@ const readProducts = async (env) => {
       // values (including false and zero) saved in newer records.
       return normalizeProduct({ ...(bundledProductsBySku.get(sku) || {}), ...product }, categories);
     });
+    const savedSkus = new Set(normalizedSavedProducts.map((product) => product.sku));
+
+    // A deployment can add products before the admin KV catalog is saved again.
+    // Keep those bundled products checkout-ready instead of letting an older KV
+    // array hide them and return PRODUCT_NOT_AVAILABLE to the customer.
+    const newBundledProducts = DEFAULT_PRODUCTS.products
+      .filter((product) => !savedSkus.has(String(product.sku || '').trim().toUpperCase()))
+      .map((product) => normalizeProduct(product, categories));
+
+    return [...normalizedSavedProducts, ...newBundledProducts];
   }
   return DEFAULT_PRODUCTS.products.map((product) => normalizeProduct(product, categories));
 };
