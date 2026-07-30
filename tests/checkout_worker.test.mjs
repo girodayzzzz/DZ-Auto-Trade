@@ -176,6 +176,10 @@ try {
   assert.equal(stripeRequest.url, 'https://api.stripe.com/v1/checkout/sessions');
   const stripeBody = new URLSearchParams(stripeRequest.init.body);
   assert.equal(stripeBody.get('line_items[0][price_data][unit_amount]'), '1234');
+  assert.equal(stripeBody.get('automatic_tax[enabled]'), 'true');
+  assert.equal(stripeBody.get('tax_id_collection[enabled]'), 'true');
+  assert.equal(stripeBody.get('customer_creation'), 'always');
+  assert.equal(stripeBody.get('line_items[0][price_data][tax_behavior]'), 'inclusive');
   assert.equal(stripeBody.get('line_items[0][quantity]'), '2');
   assert.equal(
     stripeBody.get('line_items[0][price_data][product_data][images][0]'),

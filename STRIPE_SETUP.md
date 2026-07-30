@@ -76,6 +76,30 @@ You do not need to duplicate bindings: use one recognized name for each value.
 
 Use Stripe **test** keys first. Switch to live keys only after a successful test purchase and webhook confirmation.
 
+## DDV, ki je že vključen v cene
+
+Checkout pošilja vse cene v Stripe kot **bruto cene** (`tax_behavior=inclusive`)
+in ima vključen Stripe Automatic Tax. DDV se zato na plačilni strani prikaže kot
+del že navedene cene in se kupcu ne prišteje še enkrat. Checkout kupcu omogoča
+tudi vnos ID za DDV.
+
+Pred uporabo v živo je treba nastavitev dokončati še v Stripe Dashboardu:
+
+1. V **Tax > Settings** vključite Stripe Tax.
+2. V **Tax > Registrations** dodajte veljavno slovensko registracijo za DDV in
+   po potrebi tudi registracije za druge države, v katerih morate obračunavati
+   davek.
+3. V **Product settings > Tax settings** izberite ustrezno privzeto davčno
+   kategorijo. Če prodajate izdelke z različnimi stopnjami DDV, jim v Stripe
+   določite ustrezne davčne kode; koda ne predvideva, da imajo vsi izdelki 22 %.
+4. S testnim naslovom preverite, da Stripe Checkout pod skupnim zneskom prikaže
+   vključeni DDV in da skupni znesek ostane enak ceni izdelka (plus morebitna
+   dostava).
+
+Če Stripe Tax ali davčna registracija v Dashboardu nista aktivna, sama nastavitev
+v kodi ne more izračunati oziroma prikazati DDV. Davčne nastavitve pred prodajo
+preverite z računovodjo, predvsem pri prodaji v druge države EU.
+
 The namespace ID and secret values differ between Cloudflare environments, so
 `PRODUCTS_KV`, variables, and secrets are managed in the dashboard rather than
 hard-coded in this public repository. The committed Wrangler upload metadata
