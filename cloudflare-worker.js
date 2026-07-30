@@ -1951,9 +1951,20 @@ const readProducts = async (env) => {
       const sku = String(product?.sku || '').trim().toUpperCase();
       // Older KV catalog entries can contain only the editable display fields.
       // Preserve checkout metadata from the bundled, server-trusted catalog
-      // when those fields are absent, while still honoring explicit admin
-      // values (including false and zero) saved in newer records.
-      return normalizeProduct({ ...(bundledProductsBySku.get(sku) || {}), ...product }, categories);
+      // when those fields are absent. Explicit KV values remain authoritative
+      // for fields that are not part of the storefront checkout opt-in below.
+      const bundledProduct = bundledProductsBySku.get(sku);
+      const mergedProduct = { ...(bundledProduct || {}), ...product };
+      // The deployed catalog is the trusted checkout source for storefront
+      // products. Old KV rows can retain checkoutEnabled:false from before a
+      // product received a checkout price, even while the current storefront
+      // renders its payment button. Do not let that stale flag shadow the
+      // bundled, versioned opt-in. KV-only products still honor an explicit
+      // false value, so administrators can disable those products normally.
+      if (bundledProduct?.checkoutEnabled === true && Number(bundledProduct.checkoutAmount || 0) >= 50) {
+        mergedProduct.checkoutEnabled = true;
+      }
+      return normalizeProduct(mergedProduct, categories);
     });
     const savedSkus = new Set(normalizedSavedProducts.map((product) => product.sku));
 
