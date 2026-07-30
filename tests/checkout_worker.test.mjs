@@ -25,6 +25,7 @@ const currentProducts = [{
   category: 'orodja',
   sku: 'DZ-T07',
   availability: 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
+  checkoutEnabled: false,
 }, {
   // cartEnabled is a UI preference, not a checkout availability flag. The
   // product page renders a direct Stripe button for this combination.
