@@ -25,7 +25,10 @@ def test_protected_worker_identity_and_secrets_stay_dashboard_managed() -> None:
     assert config.get("name") == "dz-auto-trade-products"
     assert config.get("main") == "cloudflare-worker.js"
     assert "vars" not in config, "Worker variables and secrets must remain dashboard-managed"
-    assert "kv_namespaces" not in config, "PRODUCTS_KV must remain dashboard-managed"
+    assert config.get("kv_namespaces") == [{
+        "binding": "PRODUCTS_KV",
+        "id": "f3b4234150054881b5d6eb22e9a73fed",
+    }], "Worker deployments must preserve the production checkout KV binding"
 
     routes = config.get("routes", [])
     assert routes == [

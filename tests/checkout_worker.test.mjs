@@ -16,6 +16,7 @@ const currentProducts = [{
   checkoutEnabled: true,
   cartEnabled: true,
   checkoutAmount: 1234,
+  image: 'images/products/kv-test-product.avif',
 }, {
   // Older KV records can predate every checkout field. The Worker must merge
   // them with the trusted bundled record instead of shadowing its checkout
@@ -176,6 +177,10 @@ try {
   const stripeBody = new URLSearchParams(stripeRequest.init.body);
   assert.equal(stripeBody.get('line_items[0][price_data][unit_amount]'), '1234');
   assert.equal(stripeBody.get('line_items[0][quantity]'), '2');
+  assert.equal(
+    stripeBody.get('line_items[0][price_data][product_data][images][0]'),
+    'https://dzautotrade.si/images/products/kv-test-product.avif',
+  );
   assert.equal(stripeBody.get('line_items[1][price_data][unit_amount]'), '22526');
   assert.match(stripeBody.get('line_items[1][price_data][product_data][name]'), /DZ-T07/);
   assert.equal(stripeBody.get('line_items[2][price_data][unit_amount]'), '2500');

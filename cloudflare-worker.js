@@ -1334,6 +1334,7 @@ const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
       currency: 'eur',
       active: product.checkoutEnabled !== false,
       maxQuantity: DEFAULT_MAX_QUANTITY,
+      image: String(product.image || '').trim(),
       metadata: { type: 'product', category: String(product.category || ''), brand: String(product.brand || '') },
     }));
   return new Map([...products, ...SERVICE_CHECKOUT_PRODUCTS].map((item) => [item.sku, item]));
@@ -1431,6 +1432,17 @@ const verifyStripeSignature = async (payload, signatureHeader, secret) => {
 };
 
 const createOrderId = () => `dz-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+
+const getStripeProductImageUrl = (image = '') => {
+  const value = String(image).trim();
+  if (!value || value.startsWith('data:')) return '';
+  try {
+    const url = new URL(value, `${PRODUCTION_ORIGIN}/`);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch {
+    return '';
+  }
+};
 
 const saveOrder = async (env, order) => {
   const { productsKv } = runtimeBindings(env);
@@ -1671,6 +1683,10 @@ const createStripeCheckoutSession = async (request, env) => {
     params.append(`line_items[${index}][quantity]`, String(item.quantity));
     params.append(`line_items[${index}][price_data][currency]`, 'eur');
     params.append(`line_items[${index}][price_data][product_data][name]`, item.sku ? `${item.name} (${item.sku})` : item.name);
+    const imageUrl = getStripeProductImageUrl(item.image);
+    if (imageUrl) {
+      params.append(`line_items[${index}][price_data][product_data][images][0]`, imageUrl);
+    }
     params.append(`line_items[${index}][price_data][unit_amount]`, String(item.priceCents));
     Object.entries(item.metadata || {}).forEach(([key, value]) => params.append(`line_items[${index}][price_data][product_data][metadata][${key}]`, String(value).slice(0, 120)));
     if (item.sku) params.append(`line_items[${index}][price_data][product_data][metadata][sku]`, item.sku);
