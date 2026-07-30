@@ -1444,6 +1444,12 @@ const getStripeProductImageUrl = (image = '') => {
   }
 };
 
+const removeStripeProductImages = (params) => {
+  for (const key of [...params.keys()]) {
+    if (/^line_items\[\d+\]\[price_data\]\[product_data\]\[images\]/.test(key)) params.delete(key);
+  }
+};
+
 const saveOrder = async (env, order) => {
   const { productsKv } = runtimeBindings(env);
   if (!productsKv) throw new Error('PRODUCTS_KV binding is required for orders.');
@@ -1684,9 +1690,7 @@ const createStripeCheckoutSession = async (request, env) => {
     params.append(`line_items[${index}][price_data][currency]`, 'eur');
     params.append(`line_items[${index}][price_data][product_data][name]`, item.sku ? `${item.name} (${item.sku})` : item.name);
     const imageUrl = getStripeProductImageUrl(item.image);
-    if (imageUrl) {
-      params.append(`line_items[${index}][price_data][product_data][images][0]`, imageUrl);
-    }
+    if (imageUrl) params.append(`line_items[${index}][price_data][product_data][images][0]`, imageUrl);
     params.append(`line_items[${index}][price_data][unit_amount]`, String(item.priceCents));
     Object.entries(item.metadata || {}).forEach(([key, value]) => params.append(`line_items[${index}][price_data][product_data][metadata][${key}]`, String(value).slice(0, 120)));
     if (item.sku) params.append(`line_items[${index}][price_data][product_data][metadata][sku]`, item.sku);
@@ -1716,12 +1720,24 @@ const createStripeCheckoutSession = async (request, env) => {
 
     const checkoutRequestId = String(body.checkoutRequestId || '').trim();
     const idempotencyKey = /^[a-zA-Z0-9-]{8,100}$/.test(checkoutRequestId) ? `dz-checkout-${checkoutRequestId}` : `dz-checkout-${orderId}`;
-    const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    const stripeRequest = () => fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${stripeSecretKey}`, 'Content-Type': 'application/x-www-form-urlencoded', 'Idempotency-Key': idempotencyKey },
       body: params,
     });
-    const data = await stripeResponse.json().catch(() => ({}));
+    let stripeResponse = await stripeRequest();
+    let data = await stripeResponse.json().catch(() => ({}));
+    const imageWasRejected = stripeResponse.status === 400
+      && /(?:^|\[)images(?:\]|$)/i.test(String(data.error?.param || ''));
+    if (imageWasRejected) {
+      // Stripe can reject an otherwise valid Checkout Session when it cannot
+      // process a catalog image. Validation failures do not create a Session,
+      // so retry the same idempotent request once without images rather than
+      // blocking payment for a cosmetic field.
+      removeStripeProductImages(params);
+      stripeResponse = await stripeRequest();
+      data = await stripeResponse.json().catch(() => ({}));
+    }
     if (!stripeResponse.ok || !data.url) {
       console.error('Stripe Checkout Session creation failed.', {
         status: stripeResponse.status,

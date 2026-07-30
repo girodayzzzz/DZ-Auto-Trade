@@ -188,6 +188,26 @@ try {
   assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), null, 'shipping is free above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
 
+  const imageFallbackRequests = [];
+  globalThis.fetch = async (url, init) => {
+    imageFallbackRequests.push({ url, init: { ...init, body: String(init.body) } });
+    if (imageFallbackRequests.length === 1) {
+      return Response.json({ error: { type: 'invalid_request_error', param: 'line_items[0][price_data][product_data][images][0]' } }, { status: 400 });
+    }
+    return Response.json({ id: 'cs_without_image', url: 'https://checkout.stripe.com/c/pay/cs_without_image' });
+  };
+  const imageFallbackResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'image-fallback-test' },
+    body: JSON.stringify({ sku: 'KV-NEW', quantity: 1, checkoutRequestId: 'image-fallback-request' }),
+  }), { PRODUCTS: kv, STRIPE_SECRET_KEY: 'sk_test_mock' });
+  assert.equal(imageFallbackResponse.status, 200);
+  assert.equal((await imageFallbackResponse.json()).url, 'https://checkout.stripe.com/c/pay/cs_without_image');
+  assert.equal(imageFallbackRequests.length, 2);
+  assert.match(imageFallbackRequests[0].init.body, /product_data%5D%5Bimages%5D%5B0%5D/);
+  assert.doesNotMatch(imageFallbackRequests[1].init.body, /product_data%5D%5Bimages%5D%5B0%5D/);
+  assert.equal(imageFallbackRequests[1].init.headers['Idempotency-Key'], imageFallbackRequests[0].init.headers['Idempotency-Key']);
+
   const unavailableKv = {
     async get() { throw new Error('temporary KV outage'); },
     async put() { throw new Error('temporary KV outage'); },
