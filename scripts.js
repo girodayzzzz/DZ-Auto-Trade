@@ -112,6 +112,7 @@ let currentCategories = [
   { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli' },
   { id: 'cistila', label: 'Čistila' },
   { id: 'tehnicni-spreji', label: 'Tehnični spreji' },
+  { id: 'poliranje-in-zascita', label: 'Poliranje in zaščita' },
   { id: 'orodja', label: 'Orodja' },
 ];
 let activeFilter = 'all';

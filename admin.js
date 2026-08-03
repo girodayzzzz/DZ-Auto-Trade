@@ -20,8 +20,11 @@ const orderList = document.querySelector('[data-admin-order-list]');
 const refreshOrdersButton = document.querySelector('[data-refresh-orders]');
 
 const defaultCategories = [
-  { id: 'avto-deli', label: 'Avto deli', description: 'Filtri, zavore, brisalci in potrošni deli' },
+  { id: 'novi-avto-deli', label: 'Novi avto deli', description: 'Novi deli za servis in popravila vozil' },
+  { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli', description: 'Preverjeni rabljeni deli za vozila' },
   { id: 'cistila', label: 'Čistila', description: 'Izdelki za nego notranjosti in zunanjosti' },
+  { id: 'tehnicni-spreji', label: 'Tehnični spreji', description: 'Maziva, zaščita in servisna sredstva' },
+  { id: 'poliranje-in-zascita', label: 'Poliranje in zaščita', description: 'Izdelki za poliranje in zaščito površin' },
   { id: 'orodja', label: 'Orodja', description: 'Ročno orodje, diagnostika in delavnica' },
 ];
 let categories = [...defaultCategories];
