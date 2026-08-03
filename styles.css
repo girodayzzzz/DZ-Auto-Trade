@@ -10561,3 +10561,34 @@ button {
     scroll-snap-align: start;
   }
 }
+
+/* Clear visual hierarchy for the reordered shop categories. */
+.shop-page .shop-category-showcase > a.shop-category-featured {
+  background: linear-gradient(145deg, rgba(80, 13, 20, 0.98), rgba(13, 18, 29, 0.99));
+  border-color: rgba(229, 9, 20, 0.62);
+}
+
+.shop-page .shop-category-showcase > a.shop-category-featured .shop-category-icon {
+  box-shadow: 0 10px 28px rgba(229, 9, 20, 0.28);
+}
+
+.shop-page .shop-category-kicker {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  z-index: 2;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(255, 89, 96, 0.42);
+  border-radius: 999px;
+  color: #ff8a90;
+  background: rgba(229, 9, 20, 0.1);
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.shop-page .shop-category-showcase > a.shop-category-new {
+  border-color: rgba(229, 9, 20, 0.38);
+}

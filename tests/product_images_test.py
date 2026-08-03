@@ -71,6 +71,18 @@ class ProductImagesTest(unittest.TestCase):
         self.assertIn('data-product-gallery-image="', script)
         self.assertIn("button.classList.toggle('active'", script)
 
+    def test_shop_cards_do_not_defer_dynamically_inserted_images(self):
+        script = (ROOT / "scripts.js").read_text(encoding="utf-8")
+        card_renderer = script.split("const renderProductCard =", 1)[1].split(
+            "const renderProducts =", 1
+        )[0]
+
+        # The catalog is inserted after an asynchronous API request. Some browsers
+        # fail to schedule native lazy images added this way, leaving blank cards
+        # even though the same image works on its server-rendered product page.
+        self.assertIn("productImageMarkup(product, false)", card_renderer)
+        self.assertNotIn("productImageMarkup(product)", card_renderer)
+
     def test_generated_product_pages_are_grouped(self):
         products = load_products()
         pages = list((ROOT / "izdelki").glob("izdelek-*.html"))
