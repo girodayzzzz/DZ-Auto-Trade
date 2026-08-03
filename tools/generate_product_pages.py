@@ -70,7 +70,7 @@ def image_metadata(relative_path: str) -> tuple[str, int | None, int | None]:
 
 
 DESCRIPTION_HEADING = re.compile(
-    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnični podatki|Tehnične karakteristike|Lastnosti|Uporaba|Komplet vključuje|Vsebina kompleta|Montaža sistema|Redčenje):\s*",
+    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnični podatki|Tehnične karakteristike|Lastnosti|Uporaba|Komplet vključuje|Vsebina kompleta|Montaža sistema|Redčenje|Mešalno razmerje):\s*",
     re.IGNORECASE,
 )
 
