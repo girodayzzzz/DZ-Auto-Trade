@@ -374,7 +374,7 @@ const productSlug = (product = {}) => String(product.name || product.sku || 'izd
   .toLowerCase()
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/(^-|-$)/g, '');
-const createProductUrl = (product) => `izdelek-${productSlug(product)}.html`;
+const createProductUrl = (product) => `/izdelki/izdelek-${productSlug(product)}.html`;
 
 const createInquiryUrl = (product) => {
   const params = new URLSearchParams({
