@@ -905,7 +905,7 @@ const renderFilters = () => {
     shortcut.classList.toggle('is-empty', count === 0);
     shortcut.toggleAttribute('aria-current', activeFilter === shortcut.dataset.shopShortcut);
     const countElement = shortcut.querySelector('[data-category-count]');
-    if (countElement) countElement.textContent = count ? countLabel : 'Ponudba v pripravi';
+    if (countElement) countElement.textContent = count ? countLabel : 'Kmalu v ponudbi';
   });
   bindFilterButtons();
 };
