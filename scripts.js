@@ -111,6 +111,7 @@ let currentCategories = [
   { id: 'novi-avto-deli', label: 'Novi avto deli' },
   { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli' },
   { id: 'cistila', label: 'Čistila' },
+  { id: 'tehnicni-spreji', label: 'Tehnični spreji' },
   { id: 'orodja', label: 'Orodja' },
 ];
 let activeFilter = 'all';
