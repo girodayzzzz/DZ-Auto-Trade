@@ -10279,3 +10279,106 @@ button {
   object-fit: cover;
   object-position: center;
 }
+
+/* Compact shop category bar.
+   Categories are navigation, not promotional cards, so keep them in one
+   scannable row and let the catalogue remain the visual focus. */
+.shop-page #shop-categories.shop-overview {
+  padding: clamp(1.5rem, 3vw, 2.25rem) 0 0.9rem;
+}
+
+.shop-page .shop-category-heading {
+  margin-bottom: 1rem;
+}
+
+.shop-page .shop-category-heading h1 {
+  font-size: clamp(1.75rem, 3vw, 2.6rem);
+}
+
+.shop-page .shop-category-showcase {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.shop-page .shop-category-showcase > a,
+.shop-page .shop-category-showcase > a.shop-category-featured {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-column: auto;
+  align-items: center;
+  min-height: 72px;
+  padding: 0.7rem 0.8rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+}
+
+.shop-page .shop-category-showcase > a::after {
+  right: -48px;
+  bottom: -62px;
+  width: 110px;
+  height: 110px;
+}
+
+.shop-page .shop-category-showcase .shop-category-icon {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.shop-page .shop-category-showcase .shop-category-copy {
+  gap: 0;
+  padding-left: 0.65rem;
+}
+
+.shop-page .shop-category-showcase .shop-category-copy strong {
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+.shop-page .shop-category-showcase .shop-category-copy small,
+.shop-page .shop-category-showcase .shop-category-meta small {
+  display: none;
+}
+
+.shop-page .shop-category-showcase .shop-category-meta {
+  width: auto;
+  margin: 0;
+  padding: 0 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 1050px) {
+  .shop-page .shop-category-showcase {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .shop-page .shop-category-heading {
+    margin-bottom: 0.8rem;
+  }
+
+  .shop-page .shop-category-heading p:last-child {
+    display: none;
+  }
+
+  .shop-page .shop-category-showcase {
+    display: flex;
+    gap: 0.55rem;
+    margin-right: calc(var(--page-gutter, 1rem) * -1);
+    padding-right: var(--page-gutter, 1rem);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+
+  .shop-page .shop-category-showcase > a,
+  .shop-page .shop-category-showcase > a.shop-category-featured {
+    flex: 0 0 min(78vw, 245px);
+    min-height: 68px;
+    scroll-snap-align: start;
+  }
+}
