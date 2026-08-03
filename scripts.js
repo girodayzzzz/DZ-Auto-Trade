@@ -109,12 +109,12 @@ const bundledProductImagesBySku = new Map(
 );
 let currentProducts = bundledProducts;
 let currentCategories = [
-  { id: 'novi-avto-deli', label: 'Novi avto deli' },
-  { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli' },
   { id: 'cistila', label: 'Čistila' },
-  { id: 'tehnicni-spreji', label: 'Tehnični spreji' },
   { id: 'poliranje-in-zascita', label: 'Poliranje in zaščita' },
   { id: 'orodja', label: 'Orodja' },
+  { id: 'tehnicni-spreji', label: 'Tehnični spreji' },
+  { id: 'novi-avto-deli', label: 'Novi avto deli' },
+  { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli' },
 ];
 let activeFilter = 'all';
 
@@ -622,7 +622,7 @@ const renderActiveFilters = (visibleCount) => {
 const renderProductCard = (product) => `
   <article class="product-card product-card-pro" id="${escapeHtml(product.category)}">
     <a class="product-image product-card-link" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
-      ${productImageMarkup(product)}
+      ${productImageMarkup(product, false)}
     </a>
     <div class="product-body">
       <div class="product-card-topline"><span>${escapeHtml(product.brand || product.categoryLabel)}</span><span class="product-stock-dot">Na zalogi</span></div>

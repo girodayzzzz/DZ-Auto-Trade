@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+  <title id="title">SGCB Nano Polishing Pad Soft Kit 5/1</title>
+  <desc id="desc">Komplet petih mehkih nano polirnih gobic premera 40 milimetrov</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="foam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd84d"/>
+      <stop offset="0.62" stop-color="#f7b919"/>
+      <stop offset="1" stop-color="#d58b00"/>
+    </linearGradient>
+    <linearGradient id="side" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffcf33"/>
+      <stop offset="1" stop-color="#c87900"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="200%">
+      <feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#0f172a" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect width="800" height="800" rx="56" fill="url(#bg)"/>
+  <circle cx="690" cy="105" r="120" fill="#e50914" opacity=".07"/>
+  <circle cx="105" cy="700" r="155" fill="#111827" opacity=".05"/>
+  <g fill="#111827" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="400" y="104" font-size="40" font-weight="800" letter-spacing="4">SGCB</text>
+    <text x="400" y="143" font-size="19" font-weight="700" fill="#64748b" letter-spacing="3">NANO POLISHING PAD</text>
+  </g>
+  <g filter="url(#shadow)">
+    <g transform="translate(130 285) rotate(-12 100 110)">
+      <rect x="42" y="40" width="116" height="145" rx="25" fill="url(#side)"/>
+      <ellipse cx="100" cy="42" rx="58" ry="28" fill="url(#foam)"/>
+      <ellipse cx="100" cy="183" rx="58" ry="25" fill="#bf7200" opacity=".85"/>
+    </g>
+    <g transform="translate(245 235) rotate(-6 100 110)">
+      <rect x="42" y="40" width="116" height="155" rx="25" fill="url(#side)"/>
+      <ellipse cx="100" cy="42" rx="58" ry="28" fill="url(#foam)"/>
+      <ellipse cx="100" cy="193" rx="58" ry="25" fill="#bf7200" opacity=".85"/>
+    </g>
+    <g transform="translate(350 215)">
+      <rect x="42" y="40" width="116" height="165" rx="25" fill="url(#side)"/>
+      <ellipse cx="100" cy="42" rx="58" ry="28" fill="url(#foam)"/>
+      <ellipse cx="100" cy="203" rx="58" ry="25" fill="#bf7200" opacity=".85"/>
+    </g>
+    <g transform="translate(455 235) rotate(6 100 110)">
+      <rect x="42" y="40" width="116" height="155" rx="25" fill="url(#side)"/>
+      <ellipse cx="100" cy="42" rx="58" ry="28" fill="url(#foam)"/>
+      <ellipse cx="100" cy="193" rx="58" ry="25" fill="#bf7200" opacity=".85"/>
+    </g>
+    <g transform="translate(570 285) rotate(12 100 110)">
+      <rect x="42" y="40" width="116" height="145" rx="25" fill="url(#side)"/>
+      <ellipse cx="100" cy="42" rx="58" ry="28" fill="url(#foam)"/>
+      <ellipse cx="100" cy="183" rx="58" ry="25" fill="#bf7200" opacity=".85"/>
+    </g>
+  </g>
+  <g transform="translate(400 625)">
+    <rect x="-152" y="-35" width="304" height="70" rx="35" fill="#111827"/>
+    <text x="0" y="9" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800" text-anchor="middle">5 × 40 mm</text>
+  </g>
+  <text x="400" y="710" fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" text-anchor="middle">MEHKE GOBICE ZA TEŽJE DOSTOPNA MESTA</text>
+</svg>
