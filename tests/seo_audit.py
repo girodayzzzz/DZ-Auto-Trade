@@ -19,7 +19,7 @@ class Parser(HTMLParser):
 
 def err(msg): errors.append(msg)
 public=[]
-for f in sorted(ROOT.glob('*.html')):
+for f in sorted(ROOT.rglob('*.html')):
  p=Parser(); text=f.read_text(encoding='utf-8'); p.feed(text)
  robots=[a.get('content','').lower() for t,a in p.tags if t=='meta' and a.get('name','').lower()=='robots']
  indexable=not any('noindex' in x for x in robots)
@@ -36,7 +36,7 @@ for f in sorted(ROOT.glob('*.html')):
   required_tw={'twitter:card','twitter:title','twitter:description','twitter:image'}
   tw={a.get('name') for t,a in p.tags if t=='meta'}
   if f.name!='404.html' and required_tw-tw: err(f'{f.name}: missing Twitter {required_tw-tw}')
-  if f.name.startswith('izdelek-'):
+  if f.parent == ROOT/'izdelki' and f.name.startswith('izdelek-'):
    props={a.get('property'):a.get('content','') for t,a in p.tags if t=='meta' and a.get('property')}
    names={a.get('name'):a.get('content','') for t,a in p.tags if t=='meta' and a.get('name')}
    required_product={'og:locale','og:image:secure_url','og:image:type','og:image:alt','product:price:amount','product:price:currency','product:availability'}
@@ -52,18 +52,20 @@ for f in sorted(ROOT.glob('*.html')):
  for raw in p.json_scripts:
   try: json.loads(raw)
   except json.JSONDecodeError as e: err(f'{f.name}: invalid JSON-LD: {e}')
+ base_href=next((a.get('href') for t,a in p.tags if t=='base' and a.get('href')), '')
+ base_dir=(f.parent/base_href).resolve() if base_href else f.parent
  for tag,a in p.tags:
   attr='href' if tag in {'a','link'} else 'src' if tag in {'img','script'} else None
   if not attr or not a.get(attr) or tag=='link' and a.get('rel') in {'canonical','preconnect'}: continue
   u=urlsplit(a[attr]); path=unquote(u.path)
   if u.scheme or a[attr].startswith(('#','mailto:','tel:','data:')): continue
-  target=(ROOT/path.lstrip('/')) if path.startswith('/') else f.parent/path
+  target=(ROOT/path.lstrip('/')) if path.startswith('/') else base_dir/path
   if path in {'','/'}: target=ROOT/'index.html'
   if not target.exists(): err(f'{f.name}: broken internal {attr}={a[attr]}')
 xml=ElementTree.parse(ROOT/'sitemap.xml'); ns={'s':'http://www.sitemaps.org/schemas/sitemap/0.9'}
 locs=[x.text for x in xml.findall('s:url/s:loc',ns)]
 if len(locs)!=len(set(locs)): err('sitemap: duplicate URLs')
-expected={SITE+'/' if f.name=='index.html' else f'{SITE}/{f.name}' for f in public}
+expected={SITE+'/' if f==ROOT/'index.html' else f'{SITE}/{f.relative_to(ROOT).as_posix()}' for f in public}
 # Checkout result pages are deliberately excluded; all ordinary public pages must be present.
 expected-={f'{SITE}/placilo-uspesno.html',f'{SITE}/placilo-preklicano.html'}
 if expected-set(locs): err(f'sitemap missing: {sorted(expected-set(locs))}')

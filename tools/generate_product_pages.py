@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = "https://dzautotrade.si"
+PRODUCT_DIR = ROOT / "izdelki"
 
 
 def slug(value: str) -> str:
@@ -126,7 +127,7 @@ def description_markup(value: str) -> tuple[str, str]:
 
 def generate_page(template: str, product: dict) -> tuple[str, str]:
     filename = f"izdelek-{slug(product['name'])}.html"
-    url = f"{SITE}/{filename}"
+    url = f"{SITE}/izdelki/{filename}"
     image = absolute_image(product["image"])
     image_type, image_width, image_height = image_metadata(product["image"])
     image_alt = product.get("imageAlt") or product["name"]
@@ -162,7 +163,7 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
             {"@type": "ListItem", "position": 3, "name": product["name"], "item": url},
         ],
     }
-    page = template
+    page = template.replace("  <head>", '  <head>\n    <base href="../" />', 1)
     page = page.replace('    <meta name="robots" content="noindex, follow" />\n', '', 1)
     replacements = {
         r"<title>.*?</title>": f"<title>{html.escape(title)}</title>",
@@ -233,16 +234,19 @@ def main() -> None:
         encoding="utf-8",
     )
     template = (ROOT / "product.html").read_text(encoding="utf-8")
+    PRODUCT_DIR.mkdir(exist_ok=True)
     for old in ROOT.glob("izdelek-*.html"):
+        old.unlink()
+    for old in PRODUCT_DIR.glob("izdelek-*.html"):
         old.unlink()
     filenames = []
     for product in products:
         filename, page = generate_page(template, product)
-        (ROOT / filename).write_text(page, encoding="utf-8")
+        (PRODUCT_DIR / filename).write_text(page, encoding="utf-8")
         filenames.append(filename)
     sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
     sitemap = re.sub(r"\n  <!-- generated-products -->.*?<!-- /generated-products -->", "", sitemap, flags=re.S)
-    entries = "\n".join(f"  <url><loc>{SITE}/{name}</loc><lastmod>2026-07-29</lastmod></url>" for name in filenames)
+    entries = "\n".join(f"  <url><loc>{SITE}/izdelki/{name}</loc><lastmod>2026-08-03</lastmod></url>" for name in filenames)
     sitemap = sitemap.replace("</urlset>", f"  <!-- generated-products -->\n{entries}\n  <!-- /generated-products -->\n</urlset>")
     (ROOT / "sitemap.xml").write_text(sitemap, encoding="utf-8")
     print(f"Generated {len(filenames)} product pages.")
