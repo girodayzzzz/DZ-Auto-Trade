@@ -57,6 +57,15 @@ class ProductImagesTest(unittest.TestCase):
                         f"Configured product image does not exist: {image}",
                     )
 
+    def test_product_images_are_served_from_this_site(self):
+        for product in load_products():
+            with self.subTest(sku=product.get("sku")):
+                images = product.get("images") or [product.get("image")]
+                self.assertTrue(
+                    all(not image.startswith(("https://", "http://")) for image in images),
+                    "External product images can disappear or reject browser hotlinking",
+                )
+
     def test_gallery_products_include_their_primary_image(self):
         for product in load_products():
             images = product.get("images", [])

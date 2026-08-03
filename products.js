@@ -842,7 +842,7 @@ window.products = [
     "checkoutAmount": 3199,
     "featured": false,
     "searchTerms": "chemical guys hydro view hydroview glass ceramic stekla keramična zaščita čistilo vidljivost dež 473ml",
-    "image": "https://chemicalguys.co.uk/cdn/shop/files/CLD30116-hydroview-ceramic-glass-cleaner-coating.jpg?v=1758629278&width=1946",
+    "image": "images/products/chemical-guys-hydro-view-glass-ceramic-473ml.svg",
     "imageAlt": "Chemical Guys Hydro View Glass Ceramic 473ml",
     "theme": "linear-gradient(135deg, #0891b2, #0f172a)"
   },
@@ -891,7 +891,7 @@ window.products = [
     "checkoutAmount": 459,
     "featured": false,
     "searchTerms": "k2 felix platišča pripravljeno čistilo zunanjost",
-    "image": "https://www.operi-avto.si/15821-large_default/k2-felix.jpg",
+    "image": "images/products/k2-felix-750ml.svg",
     "imageAlt": "K2 Felix 750ml",
     "theme": "linear-gradient(135deg, #15803d, #0f172a)",
     "cartEnabled": true
