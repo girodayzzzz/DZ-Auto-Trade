@@ -83,6 +83,7 @@ const facetFilters = document.querySelector('[data-facet-filters]');
 const filterPanel = document.querySelector('[data-filter-panel]');
 const filterToggle = document.querySelector('[data-filter-toggle]');
 const filterTotal = document.querySelector('[data-filter-total]');
+const filterResults = document.querySelector('[data-filter-results]');
 const clearFiltersButton = document.querySelector('[data-clear-filters]');
 const activeFilters = document.querySelector('[data-active-filters]');
 const catalogSummary = document.querySelector('[data-catalog-summary]');
@@ -624,6 +625,7 @@ const renderProductCard = (product) => `
       ${productImageMarkup(product)}
     </a>
     <div class="product-body">
+      <div class="product-card-topline"><span>${escapeHtml(product.brand || product.categoryLabel)}</span><span class="product-stock-dot">Na voljo</span></div>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
       <div class="product-card-footer">
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
@@ -647,6 +649,7 @@ const renderProducts = () => {
   if (productCount) {
     productCount.textContent = `${visibleProducts.length} izdelkov`;
   }
+  if (filterResults) filterResults.textContent = String(visibleProducts.length);
 
   renderActiveFilters(visibleProducts.length);
   renderAdvancedFilters();
@@ -702,6 +705,33 @@ const renderProductDescription = ({ intro, sections }) => `
     ${intro ? `<div class="product-description-overview">${renderDescriptionText(intro)}</div>` : ''}
     ${sections.length ? `<div class="product-description-sections">${sections.map((section) => `<details${/^Prednosti$/i.test(section.title) ? ' open' : ''}><summary>${escapeHtml(section.title)}</summary><div class="product-description-content">${renderDescriptionText(section.content)}</div></details>`).join('')}</div>` : ''}
   </section>`;
+
+const getRelatedProducts = (product, limit = 4) => currentProducts
+  .filter((item) => item.sku !== product.sku && isCheckoutReady(item))
+  .map((item) => {
+    let score = 0;
+    if (item.category === product.category) score += 8;
+    if (item.brand && item.brand === product.brand) score += 3;
+    const productTerms = new Set(getFacetValues(product, 'purpose'));
+    getFacetValues(item, 'purpose').forEach((term) => { if (productTerms.has(term)) score += 2; });
+    return { item, score };
+  })
+  .filter(({ score }) => score > 0)
+  .sort((a, b) => b.score - a.score || Number(b.item.featured) - Number(a.item.featured))
+  .slice(0, limit)
+  .map(({ item }) => item);
+
+const renderRelatedProduct = (product) => `
+  <article class="related-product-card">
+    <a class="related-product-image" href="${createProductUrl(product)}" aria-label="Poglej ${escapeHtml(product.name)}">
+      ${productImageMarkup(product)}
+    </a>
+    <div class="related-product-content">
+      <span>${escapeHtml(product.brand || product.categoryLabel)}</span>
+      <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
+      <div><strong>${escapeHtml(product.price)}</strong><button type="button" data-add-to-cart="${escapeHtml(product.sku)}" aria-label="Dodaj ${escapeHtml(product.name)} v košarico">Dodaj</button></div>
+    </div>
+  </article>`;
 
 
 const renderProductDetail = () => {
@@ -776,6 +806,8 @@ const renderProductDetail = () => {
     : '';
   const productDescription = parseProductDescription(product.description);
   const descriptionMarkup = renderProductDescription(productDescription);
+  const relatedProducts = getRelatedProducts(product);
+  const fitmentLink = createInquiryUrl(product);
   productDetail.innerHTML = `<div class="container product-detail-layout">
     <div class="product-detail-media">
       <a class="product-breadcrumb" href="trgovina.html#${escapeHtml(product.category)}">← Nazaj v ${escapeHtml(product.categoryLabel)}</a>
@@ -791,6 +823,7 @@ const renderProductDetail = () => {
       </div>
       <h1>${escapeHtml(product.name)}</h1>
       <p class="product-detail-lead">${escapeHtml(getProductLead(productDescription.intro || product.description))}</p>
+      <div class="product-assurance-row" aria-label="Prednosti nakupa"><span>✓ Varno Stripe plačilo</span><span>✓ Slovenska podpora</span><span>✓ 14 dni za vračilo</span></div>
       <dl class="product-detail-meta" aria-label="Podatki izdelka">
         <div><dt>Kategorija</dt><dd>${escapeHtml(product.categoryLabel)}</dd></div>
         <div><dt>SKU</dt><dd>${escapeHtml(product.sku)}</dd></div>
@@ -803,15 +836,20 @@ const renderProductDetail = () => {
           <strong>${escapeHtml(product.price)}</strong>
           ${product.regularPrice ? `<span>Redna cena: ${escapeHtml(product.regularPrice)}</span>` : ''}
         </div>
-
+        <span class="product-vat-note">Končna cena z DDV</span>
+      </div>
+      <div class="product-fulfilment" aria-label="Dobava in dostava">
+        <div><span aria-hidden="true">●</span><p><strong>${escapeHtml(product.availability)}</strong><small>${escapeHtml(product.delivery || 'Termin dobave potrdimo po naročilu')}</small></p></div>
+        <div><span aria-hidden="true">↗</span><p><strong>Dostava po Sloveniji</strong><small>${escapeHtml(product.shippingNote || 'Brezplačno nad 60 €, sicer 5,90 €')}</small></p></div>
       </div>
       ${product.orderNote ? `<p class="form-note">${escapeHtml(product.orderNote)}</p>` : ''}
       <div class="product-actions product-detail-actions">${cartButton || `<button class="shop-btn" type="button" disabled>Trenutno ni za košarico</button>`}${checkoutButton}</div>
+      ${product.partNumber || product.compatibility ? `<a class="product-fitment-cta" href="${fitmentLink}"><span><strong>Niste prepričani glede ustreznosti?</strong><small>Pošljite VIN in pred naročilom brezplačno preverimo pravi del.</small></span><b>Preveri po VIN →</b></a>` : ''}
       <p class="form-note product-checkout-status" data-checkout-status aria-live="polite"></p>
       ${descriptionMarkup}
-      <div class="related-products"><h2>Pogosto skupaj</h2><div class="related-products-grid">${currentProducts.filter((item) => item.category === product.category && item.sku !== product.sku).slice(0, 3).map((item) => `<a href="${createProductUrl(item)}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.price)}</span></a>`).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></div>
     </article>
-  </div>`;
+  </div>
+  <section class="container related-products related-products-section" aria-labelledby="related-products-title"><header><div><p class="eyebrow">Izbrano za vas</p><h2 id="related-products-title">Sorodni izdelki</h2></div><a href="trgovina.html#${escapeHtml(product.category)}">Poglej celotno kategorijo →</a></header><div class="related-products-grid">${relatedProducts.map(renderRelatedProduct).join('') || '<p class="form-note">Sorodni izdelki bodo prikazani, ko bo v kategoriji več ponudbe.</p>'}</div></section>`;
 };
 
 const renderFeaturedProductCard = (product) => `
@@ -943,6 +981,10 @@ const setFilterPanelOpen = (open) => {
 };
 document.querySelector('[data-filter-close]')?.addEventListener('click', () => {
   setFilterPanelOpen(false);
+});
+document.querySelector('[data-filter-apply]')?.addEventListener('click', () => {
+  setFilterPanelOpen(false);
+  document.querySelector('#catalog')?.scrollIntoView({ block: 'start' });
 });
 document.querySelector('[data-filter-backdrop]')?.addEventListener('click', () => {
   setFilterPanelOpen(false);
