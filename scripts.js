@@ -625,7 +625,7 @@ const renderProductCard = (product) => `
       ${productImageMarkup(product)}
     </a>
     <div class="product-body">
-      <div class="product-card-topline"><span>${escapeHtml(product.brand || product.categoryLabel)}</span><span class="product-stock-dot">Na voljo</span></div>
+      <div class="product-card-topline"><span>${escapeHtml(product.brand || product.categoryLabel)}</span><span class="product-stock-dot">Na zalogi</span></div>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
       <div class="product-card-footer">
         <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
