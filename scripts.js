@@ -815,7 +815,7 @@ const renderProductDetail = () => {
         <span class="product-image-badge">${escapeHtml(product.badge)}</span>
         ${productImageMarkup(product, false)}
       </div>
-      ${product.images.length > 1 ? `<div class="product-image-gallery" aria-label="Dodatne slike izdelka">${product.images.map((image, index) => `<button class="product-image-thumb${index === 0 ? ' active' : ''}" type="button" data-product-gallery-image="${escapeHtml(image)}" aria-label="Prikaži sliko ${index + 1} za ${escapeHtml(product.name)}">${productImageMarkup(product, true, image)}</button>`).join('')}</div>` : ''}
+      ${product.images.length > 1 ? `<div class="product-image-gallery" aria-label="Galerija izdelka, ${product.images.length} slike">${product.images.map((image, index) => `<button class="product-image-thumb${index === 0 ? ' active' : ''}" type="button" data-product-gallery-image="${escapeHtml(image)}" aria-label="Prikaži sliko ${index + 1} od ${product.images.length} za ${escapeHtml(product.name)}" aria-pressed="${index === 0 ? 'true' : 'false'}">${productImageMarkup(product, true, image)}</button>`).join('')}</div>` : ''}
     </div>
     <article class="card product-detail-info">
       <div class="product-detail-kicker">
@@ -1079,6 +1079,7 @@ document.addEventListener('click', async (event) => {
       image.src = galleryButton.dataset.productGalleryImage;
       galleryButton.parentElement?.querySelectorAll('[data-product-gallery-image]').forEach((button) => {
         button.classList.toggle('active', button === galleryButton);
+        button.setAttribute('aria-pressed', button === galleryButton ? 'true' : 'false');
       });
     }
     return;

@@ -514,6 +514,10 @@ window.products = [
     "featured": false,
     "searchTerms": "meguiar's meguiars perfect clarity glass cleaner stekla insekti smola cigaretni dim ptičji iztrebki cestna umazanija 710ml",
     "image": "images/products/meguiar-s-perfect-clarity-glass-cleaner-710ml.avif",
+    "images": [
+      "images/products/meguiar-s-perfect-clarity-glass-cleaner-710ml.avif",
+      "images/products/meguiar-s-perfect-clarity-glass-cleaner-710ml (1).avif"
+    ],
     "imageAlt": "Meguiar's Perfect Clarity Glass Cleaner 710ml",
     "theme": "linear-gradient(135deg, #f59e0b, #111827)"
   },
@@ -842,7 +846,7 @@ window.products = [
     "checkoutAmount": 3199,
     "featured": false,
     "searchTerms": "chemical guys hydro view hydroview glass ceramic stekla keramična zaščita čistilo vidljivost dež 473ml",
-    "image": "https://chemicalguys.co.uk/cdn/shop/files/CLD30116-hydroview-ceramic-glass-cleaner-coating.jpg?v=1758629278&width=1946",
+    "image": "images/products/chemical-guys-hydro-view-glass-ceramic-473ml.svg",
     "imageAlt": "Chemical Guys Hydro View Glass Ceramic 473ml",
     "theme": "linear-gradient(135deg, #0891b2, #0f172a)"
   },
@@ -891,7 +895,7 @@ window.products = [
     "checkoutAmount": 459,
     "featured": false,
     "searchTerms": "k2 felix platišča pripravljeno čistilo zunanjost",
-    "image": "https://www.operi-avto.si/15821-large_default/k2-felix.jpg",
+    "image": "images/products/k2-felix-750ml.svg",
     "imageAlt": "K2 Felix 750ml",
     "theme": "linear-gradient(135deg, #15803d, #0f172a)",
     "cartEnabled": true
@@ -1679,6 +1683,10 @@ window.products = [
     "cartEnabled": true,
     "featured": false,
     "image": "images/products/angelwax-absolution-500ml.avif",
+    "images": [
+      "images/products/angelwax-absolution-500ml.avif",
+      "images/products/angelwax-absolution-500ml (1).avif"
+    ],
     "name": "Angelwax Absolution 500ml",
     "description": "Angelwax Absolution je perfektna rešitev za odstranjevanje vseh trdovratnih madežev v notranjosti vozil in z vseh vrst tapet in tkanin. Vsebuje kompleksne sestavine, ki hitro in učinkovito odstranijo umazanijo, olje in ostale madeže. Notranjost vozila po uporabi ponovno postane lepa in čista in prijetnega vonja.\n\nNavodila za uporabo:\nNapršite sredstvo na madež in podrgnite z mikro krpo ali z krtačko za čiščenje tekstila. Sredstva ni potrebno izpirati.\n\nVarnostni napotki:\nPozor: H319 Povzroča hudo draženje oči. P102 Hraniti zunaj dosega otrok. P264 Po uporabi temeljito umiti roke. P305 + P351 + P338 PRI STIKU Z OČMI: previdno izpirajte z vodo nekaj minut. Odstranite kontaktne leče, če jih imate in če to lahko storite brez težav. Nadaljujte z izpiranjem. P337 + P313 Če draženje oči ne preneha: poiščite zdravniško pomoč/oskrbo. P501 Odstraniti vsebino/posodo v skladu z nacionalnimi predpisi. Vsebuje pomarančevec, sladki, ekstrakti. Lahko povzroči alergijski odziv. Sestavine po Uredbi o detergentih EC 648/2004 < 5%: neionske površinsko aktivne snovi, amfoterne površinsko aktivne snovi, EDTA in njene soli, polikarboksilati, parfumi.",
     "price": "14,97 €",
