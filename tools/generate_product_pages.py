@@ -128,7 +128,8 @@ def description_markup(value: str) -> tuple[str, str]:
 def generate_page(template: str, product: dict) -> tuple[str, str]:
     filename = f"izdelek-{slug(product['name'])}.html"
     url = f"{SITE}/izdelki/{filename}"
-    image = absolute_image(product["image"])
+    product_images = product.get("images") or [product["image"]]
+    image = absolute_image(product_images[0])
     image_type, image_width, image_height = image_metadata(product["image"])
     image_alt = product.get("imageAlt") or product["name"]
     title = f"{product['name']} | DZ Auto Trade"
@@ -140,7 +141,11 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         "sku": product["sku"],
         "category": product["categoryLabel"],
         "description": product["description"],
-        "image": image,
+        "image": (
+            [absolute_image(value) for value in product_images]
+            if len(product_images) > 1
+            else image
+        ),
         "inLanguage": "sl-SI",
         "url": url,
         "offers": {
@@ -207,12 +212,32 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         if product.get("partNumber") and product.get("compatibility") else ""
     )
     lead, full_description = description_markup(product["description"])
+    fallback = "assets/product-placeholder.svg"
+    main_image = (
+        f'<img src="{html.escape(product_images[0], quote=True)}" alt="{html.escape(image_alt, quote=True)}"'
+        f'{f" width=\"{image_width}\" height=\"{image_height}\"" if image_width and image_height else ""}'
+        f' data-product-fallback="{fallback}" fetchpriority="high" />'
+    )
+    gallery = ""
+    if len(product_images) > 1:
+        thumbnails = "".join(
+            f'<button class="product-image-thumb{" active" if index == 0 else ""}" type="button" '
+            f'data-product-gallery-image="{html.escape(value, quote=True)}" '
+            f'aria-label="Prikaži sliko {index + 1} od {len(product_images)} za {html.escape(product["name"], quote=True)}" '
+            f'aria-pressed="{"true" if index == 0 else "false"}">'
+            f'<img src="{html.escape(value, quote=True)}" alt="" loading="lazy" data-product-fallback="{fallback}" />'
+            f'</button>'
+            for index, value in enumerate(product_images)
+        )
+        gallery = (
+            f'<div class="product-image-gallery" aria-label="Galerija izdelka, {len(product_images)} slike">'
+            f'{thumbnails}</div>'
+        )
     content = (
         f'<section class="section product-detail-shell" data-product-detail data-product-sku="{html.escape(product["sku"], quote=True)}">'
         f'<div class="container product-detail-layout"><div class="product-detail-media">'
         f'<a class="product-breadcrumb" href="trgovina.html#{html.escape(product["category"])}">← Nazaj v {html.escape(product["categoryLabel"])}</a>'
-        f'<div class="product-detail-image"><img src="{html.escape(product["image"], quote=True)}" alt="{html.escape(image_alt, quote=True)}"'
-        f'{f" width=\"{image_width}\" height=\"{image_height}\"" if image_width and image_height else ""} fetchpriority="high" /></div></div>'
+        f'<div class="product-detail-image">{main_image}</div>{gallery}</div>'
         f'<article class="card product-detail-info"><div class="product-detail-kicker"><span class="badge">{html.escape(product["categoryLabel"])}</span></div>'
         f'<h1>{html.escape(product["name"])}</h1><p class="product-detail-lead">{html.escape(lead)}</p>'
         f'<dl class="product-detail-meta"><div><dt>Kategorija</dt><dd>{html.escape(product["categoryLabel"])}</dd></div><div><dt>SKU</dt><dd>{html.escape(product["sku"])}</dd></div>'

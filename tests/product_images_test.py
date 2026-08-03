@@ -1,10 +1,17 @@
 import json
 import re
 import unittest
+import unicodedata
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def slug(value):
+    normalized = unicodedata.normalize("NFD", value)
+    ascii_value = "".join(char for char in normalized if unicodedata.category(char) != "Mn")
+    return re.sub(r"(^-|-$)", "", re.sub(r"[^a-z0-9]+", "-", ascii_value.lower()))
 
 
 def load_products():
@@ -73,6 +80,30 @@ class ProductImagesTest(unittest.TestCase):
                 continue
             with self.subTest(sku=product.get("sku")):
                 self.assertEqual(product.get("image"), images[0])
+
+    def test_every_product_image_file_is_connected_to_the_catalog(self):
+        configured = {
+            image
+            for product in load_products()
+            for image in (product.get("images") or [product.get("image")])
+            if image and image.startswith("images/products/")
+        }
+        available = {
+            path.relative_to(ROOT).as_posix()
+            for path in (ROOT / "images" / "products").iterdir()
+            if path.is_file() and path.name != ".gitkeep"
+        }
+        self.assertEqual(available, configured)
+
+    def test_generated_product_pages_render_all_gallery_images(self):
+        for product in load_products():
+            images = product.get("images", [])
+            if len(images) < 2:
+                continue
+            page = (ROOT / "izdelki" / f"izdelek-{slug(product['name'])}.html").read_text(encoding="utf-8")
+            with self.subTest(sku=product.get("sku")):
+                self.assertEqual(page.count('data-product-gallery-image="'), len(images))
+                self.assertTrue(all(f'data-product-gallery-image="{image}"' in page for image in images))
 
     def test_product_page_renders_gallery_controls(self):
         script = (ROOT / "scripts.js").read_text(encoding="utf-8")
