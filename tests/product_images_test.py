@@ -39,8 +39,8 @@ class ProductImagesTest(unittest.TestCase):
 
     def test_new_cleaners_and_technical_sprays_are_categorized(self):
         products = {product.get("sku"): product for product in load_products()}
-        cleaner_skus = {f"DZ-CP0{number}" for number in range(65, 72)}
-        technical_skus = {"DZ-CP072", "DZ-CP073"}
+        cleaner_skus = {f"DZ-CP0{number}" for number in range(65, 71)}
+        technical_skus = {"DZ-SP01", "DZ-SP02", "DZ-SP03"}
 
         self.assertTrue((cleaner_skus | technical_skus).issubset(products))
         self.assertTrue(all(products[sku]["category"] == "cistila" for sku in cleaner_skus))
