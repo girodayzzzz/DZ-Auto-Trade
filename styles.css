@@ -4163,6 +4163,9 @@ body.home-page .compact-trust-strip article + article {
 body.home-page .compact-trust-strip article > div {
   display: grid;
   gap: 0.2rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 body.home-page .compact-trust-strip strong,
