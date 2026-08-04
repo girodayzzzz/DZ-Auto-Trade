@@ -240,8 +240,10 @@ const getProductImage = (product) => resolveProductImage(product);
 const productImageMarkup = (product, lazy = true, imageOverride = '') => {
   const fallback = createProductPlaceholder(product);
   const image = imageOverride || getProductImage(product);
+  const candidates = (imageOverride ? [imageOverride] : resolveProductImages(product))
+    .filter((candidate) => candidate && candidate !== image && candidate !== fallback);
   const isPlaceholder = image === fallback;
-  return `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.imageAlt || product.name)}"${lazy ? ' loading="lazy"' : ''} data-product-fallback="${escapeHtml(fallback)}"${isPlaceholder ? ' data-product-placeholder="true"' : ''} />`;
+  return `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.imageAlt || product.name)}"${lazy ? ' loading="lazy"' : ''} data-product-fallback="${escapeHtml(fallback)}" data-product-image-candidates="${escapeHtml(JSON.stringify(candidates))}"${isPlaceholder ? ' data-product-placeholder="true"' : ''} />`;
 };
 
 const normalizeProduct = (product) => ({
@@ -1113,6 +1115,13 @@ document.addEventListener('error', (event) => {
   const image = event.target;
   if (!(image instanceof HTMLImageElement) || !image.dataset.productFallback) return;
   if (image.currentSrc === image.dataset.productFallback || image.src === image.dataset.productFallback) return;
+  const candidates = JSON.parse(image.dataset.productImageCandidates || '[]');
+  const nextImage = candidates.shift();
+  if (nextImage) {
+    image.dataset.productImageCandidates = JSON.stringify(candidates);
+    image.src = nextImage;
+    return;
+  }
   image.closest('.product-image, .product-detail-image, .admin-image-preview')?.classList.add('is-fallback');
   image.alt = `${image.alt} (nadomestna slika)`;
   image.src = image.dataset.productFallback;

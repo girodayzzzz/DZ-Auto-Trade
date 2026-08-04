@@ -111,6 +111,12 @@ class ProductImagesTest(unittest.TestCase):
         self.assertIn('data-product-gallery-image="', script)
         self.assertIn("button.classList.toggle('active'", script)
 
+    def test_failed_api_image_tries_bundled_product_image_before_placeholder(self):
+        script = (ROOT / "scripts.js").read_text(encoding="utf-8")
+        self.assertIn('data-product-image-candidates="', script)
+        self.assertIn("const candidates = JSON.parse(image.dataset.productImageCandidates", script)
+        self.assertIn("image.src = nextImage", script)
+
     def test_shop_cards_do_not_defer_dynamically_inserted_images(self):
         script = (ROOT / "scripts.js").read_text(encoding="utf-8")
         card_renderer = script.split("const renderProductCard =", 1)[1].split(
