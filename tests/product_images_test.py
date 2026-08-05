@@ -95,6 +95,13 @@ class ProductImagesTest(unittest.TestCase):
         }
         self.assertEqual(available, configured)
 
+    def test_product_image_audit_has_no_missing_or_untracked_images(self):
+        from tools.audit_product_images import audit
+
+        _products, _configured, missing, untracked, _unused = audit()
+        self.assertEqual(missing, [])
+        self.assertEqual(untracked, [])
+
     def test_generated_product_pages_render_all_gallery_images(self):
         for product in load_products():
             images = product.get("images", [])
