@@ -76,6 +76,7 @@ const featuredGrids = document.querySelectorAll('[data-featured-products]');
 const filterList = document.querySelector('[data-filter-list]');
 let filterButtons = document.querySelectorAll('[data-filter]');
 const productCount = document.querySelector('[data-product-count]');
+const totalProductCountLink = document.querySelector('[data-total-product-count]');
 const productSearch = document.querySelector('[data-product-search]');
 const productSort = document.querySelector('[data-product-sort]');
 const productDetail = document.querySelector('[data-product-detail]');
@@ -349,6 +350,20 @@ const loadProducts = async () => {
   }
   currentCategories = categories.length ? categories : deriveCategoriesFromProducts(currentProducts);
   validateProductsForDevelopment(currentProducts);
+};
+
+
+const formatProductCountLabel = (count) => {
+  const normalizedCount = Number(count) || 0;
+  if (normalizedCount === 1) return '1 izdelek';
+  if (normalizedCount === 2) return '2 izdelka';
+  return `${normalizedCount} izdelkov`;
+};
+
+const updateTotalProductCountLink = () => {
+  if (!totalProductCountLink) return;
+  const total = currentProducts.filter(isCheckoutReady).length;
+  totalProductCountLink.innerHTML = `Poglej vseh ${formatProductCountLabel(total)} <span aria-hidden="true">→</span>`;
 };
 
 const getCategoryLabel = (id) => currentCategories.find((category) => category.id === id)?.label || id;
@@ -649,7 +664,7 @@ const renderProducts = () => {
     : '<div class="empty-state"><h3>Ni najdenih izdelkov</h3><p>Poskusite z drugim iskalnim izrazom ali filtrom.</p></div>';
 
   if (productCount) {
-    productCount.textContent = `${visibleProducts.length} izdelkov`;
+    productCount.textContent = formatProductCountLabel(visibleProducts.length);
   }
   if (filterResults) filterResults.textContent = String(visibleProducts.length);
 
@@ -941,7 +956,7 @@ const renderFilters = () => {
     .join('')}`;
   document.querySelectorAll('[data-shop-shortcut]').forEach((shortcut) => {
     const count = countByCategory[shortcut.dataset.shopShortcut] || 0;
-    const countLabel = count === 1 ? '1 izdelek' : `${count} izdelkov`;
+    const countLabel = formatProductCountLabel(count);
     shortcut.classList.toggle('is-active', activeFilter === shortcut.dataset.shopShortcut);
     shortcut.classList.toggle('is-empty', count === 0);
     shortcut.toggleAttribute('aria-current', activeFilter === shortcut.dataset.shopShortcut);
@@ -966,6 +981,7 @@ clearFiltersButton?.addEventListener('click', () => {
   if (productSearch) productSearch.value = '';
   if (productSort) productSort.value = 'featured';
   Object.values(selectedFacets).forEach((values) => values.clear());
+  updateTotalProductCountLink();
   renderFilters();
   renderProducts();
 });
@@ -1151,6 +1167,7 @@ const initializeStore = async () => {
   if (activeFilter !== 'all' && !currentCategories.some((category) => category.id === activeFilter)) {
     activeFilter = 'all';
   }
+  updateTotalProductCountLink();
   renderFilters();
   renderAdvancedFilters();
   renderShopInsights();
