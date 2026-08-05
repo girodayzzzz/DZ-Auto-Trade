@@ -4198,7 +4198,7 @@ body.home-page .compact-trust-strip .trust-icon {
 
 body.home-page .home-bestsellers-section {
   padding-block: clamp(3.5rem, 7vw, 6.5rem);
-  background: linear-gradient(180deg, #f7f8fb 0%, #eef1f6 100%);
+  background: transparent;
 }
 
 body.home-page .featured-heading-actions,
