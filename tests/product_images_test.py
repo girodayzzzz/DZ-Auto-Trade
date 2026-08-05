@@ -118,6 +118,18 @@ class ProductImagesTest(unittest.TestCase):
         self.assertIn('data-product-gallery-image="', script)
         self.assertIn("button.classList.toggle('active'", script)
 
+
+    def test_shop_products_prefer_bundled_catalog_photos(self):
+        script = (ROOT / "scripts.js").read_text(encoding="utf-8")
+        image_resolver = script.split("const resolveProductImages =", 1)[1].split(
+            "const resolveProductImage =", 1
+        )[0]
+
+        self.assertIn("const bundledImage = getBundledProductImage(product)", image_resolver)
+        self.assertIn("const preferredImages = bundledImage", image_resolver)
+        self.assertIn("? [bundledImage, ...configuredImages]", image_resolver)
+        self.assertNotIn("TRUSTED_BUNDLED_IMAGE_SKUS", script)
+
     def test_failed_api_image_tries_bundled_product_image_before_placeholder(self):
         script = (ROOT / "scripts.js").read_text(encoding="utf-8")
         self.assertIn('data-product-image-candidates="', script)

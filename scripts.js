@@ -223,7 +223,7 @@ const splitImageList = (value) => {
 const resolveProductImages = (product = {}) => {
   const configuredImages = [...splitImageList(product.images), ...splitImageList(product.image)];
   const bundledImage = getBundledProductImage(product);
-  const preferredImages = bundledImage && (!configuredImages.length || configuredImages.every(isInlineSvgImage))
+  const preferredImages = bundledImage
     ? [bundledImage, ...configuredImages]
     : [...configuredImages, bundledImage];
   const images = preferredImages
