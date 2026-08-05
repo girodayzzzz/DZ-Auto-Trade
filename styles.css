@@ -10440,15 +10440,18 @@ button {
   }
 }
 
-/* Full-bleed storefront photography.
-   Product sources are predominantly square, so a square, edge-to-edge frame
-   shows them larger without leaving an extra inset around the image. */
+/* Storefront product photography.
+   Keep a consistent square frame, but never crop bottles, tools, or car parts:
+   source images use a mix of portrait, landscape, and square proportions. */
 .shop-page .shop-grid .product-card-pro .product-image {
   width: 100%;
   height: auto;
   min-height: 0;
   aspect-ratio: 1 / 1;
-  background: #ffffff;
+  padding: clamp(0.45rem, 1.2vw, 0.85rem);
+  background:
+    radial-gradient(circle at 50% 38%, #ffffff 0 42%, transparent 72%),
+    linear-gradient(145deg, #ffffff, #eef2f6);
 }
 
 .shop-page .shop-grid .product-card-pro .product-image img {
@@ -10458,7 +10461,7 @@ button {
   max-width: none;
   max-height: none;
   padding: 0;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -10573,25 +10576,4 @@ button {
 
 .shop-page .shop-category-showcase > a.shop-category-featured .shop-category-icon {
   box-shadow: 0 10px 28px rgba(229, 9, 20, 0.28);
-}
-
-.shop-page .shop-category-kicker {
-  position: absolute;
-  top: 1.1rem;
-  right: 1.1rem;
-  z-index: 2;
-  padding: 0.35rem 0.55rem;
-  border: 1px solid rgba(255, 89, 96, 0.42);
-  border-radius: 999px;
-  color: #ff8a90;
-  background: rgba(229, 9, 20, 0.1);
-  font-size: 0.65rem;
-  font-weight: 850;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.shop-page .shop-category-showcase > a.shop-category-new {
-  border-color: rgba(229, 9, 20, 0.38);
 }
