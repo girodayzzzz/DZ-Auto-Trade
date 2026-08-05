@@ -252,7 +252,7 @@ const normalizeProduct = (product) => ({
   categoryLabel: product.categoryLabel ?? 'Avto deli',
   description: product.description ?? '',
   price: product.price ?? 'Po povpraševanju',
-  badge: product.badge ?? 'Novo',
+  badge: product.badge ?? '',
   sku: product.sku ?? '',
   partNumber: product.partNumber ?? '',
   availability: product.availability ?? 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
@@ -814,7 +814,7 @@ const renderProductDetail = () => {
     <div class="product-detail-media">
       <a class="product-breadcrumb" href="trgovina.html#${escapeHtml(product.category)}">← Nazaj v ${escapeHtml(product.categoryLabel)}</a>
       <div class="product-detail-image" style="--product-bg: ${escapeHtml(product.theme)}">
-        <span class="product-image-badge">${escapeHtml(product.badge)}</span>
+        ${product.badge ? `<span class="product-image-badge">${escapeHtml(product.badge)}</span>` : ''}
         ${productImageMarkup(product, false)}
       </div>
       ${product.images.length > 1 ? `<div class="product-image-gallery" aria-label="Galerija izdelka, ${product.images.length} slike">${product.images.map((image, index) => `<button class="product-image-thumb${index === 0 ? ' active' : ''}" type="button" data-product-gallery-image="${escapeHtml(image)}" aria-label="Prikaži sliko ${index + 1} od ${product.images.length} za ${escapeHtml(product.name)}" aria-pressed="${index === 0 ? 'true' : 'false'}">${productImageMarkup(product, true, image)}</button>`).join('')}</div>` : ''}

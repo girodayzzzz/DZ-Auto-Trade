@@ -100,11 +100,13 @@
       <section class="section alt" id="rezervacija">
         <div class="container booking-panel">
           <div><p class="eyebrow">Hitra izbira</p><h2>Pošljite povpraševanje za katerokoli storitev.</h2><p>Napišite, ali gre za posredniško prodajo, prevoz ali čiščenje. Za hitrejšo oceno dodajte podatke vozila, relacijo prevoza ali fotografije stanja.</p></div>
-          <form class="contact-form booking-form" action="mailto:dzautotrade@gmail.com" method="post" enctype="text/plain">
+          <form class="contact-form booking-form" action="https://formspree.io/f/xwvgbkwn" method="POST" data-formspree-form="contact">
+            <p class="form-note" data-formspree-status></p>
             <label for="service-name">Ime in priimek</label><input id="service-name" name="Ime" type="text" required />
             <div class="form-grid"><label for="service-email">Email<input id="service-email" name="Email" type="email" required /></label><label for="service-phone">Telefon<input id="service-phone" name="Telefon" type="tel" /></label></div>
             <label for="service-package">Storitev<select id="service-package" name="Storitev"><option>Posredniška prodaja vozila</option><option>Prevoz vozila</option><option>Prevoz blaga</option><option>Notranje čiščenje</option><option>Zunanje čiščenje</option><option>Globinsko čiščenje</option><option>Poliranje / zaščita</option></select></label>
             <label for="service-message">Opis</label><textarea id="service-message" name="Sporočilo" rows="5" placeholder="Opišite vozilo, relacijo, stanje, željen termin ali obseg storitve..."></textarea>
+            <input type="hidden" name="_subject" value="Povpraševanje za storitev DZ Auto Trade" />
             <button class="btn-primary" type="submit">Pošlji povpraševanje</button>
           </form>
         </div>
@@ -158,6 +160,8 @@
     </footer>
     <script src="products.js?v=2026-07-20-1"></script>
     <script src="checkout.js?v=2026-07-30-3"></script>
+    <script src="formspree-config.js"></script>
+    <script src="formspree.js"></script>
     <script src="scripts.js?v=2026-08-04-1"></script>
   </body>
 </html>

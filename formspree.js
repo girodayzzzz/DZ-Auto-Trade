@@ -7,6 +7,7 @@ const setFormspreeStatus = (form, message, type = 'info') => {
   status.textContent = message;
   status.hidden = !message;
   status.dataset.type = type;
+  if (message) status.focus?.({ preventScroll: false });
 };
 
 const getFormspreeEndpoint = (form) => {
@@ -27,7 +28,12 @@ formspreeForms.forEach((form) => {
   form.action = endpoint;
   form.method = 'POST';
   const status = form.querySelector('[data-formspree-status]');
-  if (status) status.hidden = true;
+  if (status) {
+    status.hidden = true;
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    status.setAttribute('tabindex', '-1');
+  }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -37,8 +43,10 @@ formspreeForms.forEach((form) => {
       return;
     }
     const submitButton = form.querySelector('[type="submit"]');
+    const submitLabel = submitButton?.textContent;
     submitButton?.setAttribute('disabled', 'true');
-    setFormspreeStatus(form, 'Pošiljamo sporočilo...', 'info');
+    if (submitButton) submitButton.textContent = 'Pošiljamo...';
+    setFormspreeStatus(form, 'Pošiljamo obrazec...', 'info');
 
     try {
       const response = await fetch(endpoint, {
@@ -49,11 +57,12 @@ formspreeForms.forEach((form) => {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || 'Sporočila ni bilo mogoče poslati.');
       form.reset();
-      setFormspreeStatus(form, 'Hvala! Sporočilo je poslano. Odgovorili bomo v najkrajšem možnem času.', 'success');
+      setFormspreeStatus(form, 'Hvala, obrazec je bil uspešno poslan. Odgovorili bomo v najkrajšem možnem času.', 'success');
     } catch (error) {
       setFormspreeStatus(form, `${error.message} Če se težava ponovi, pišite na dzautotrade@gmail.com.`, 'error');
     } finally {
       submitButton?.removeAttribute('disabled');
+      if (submitButton && submitLabel) submitButton.textContent = submitLabel;
     }
   });
 });

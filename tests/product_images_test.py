@@ -129,6 +129,25 @@ class ProductImagesTest(unittest.TestCase):
         self.assertIn("productImageMarkup(product, false)", card_renderer)
         self.assertNotIn("productImageMarkup(product)", card_renderer)
 
+    def test_shop_product_images_show_the_complete_product(self):
+        styles = (ROOT / "styles.css").read_text(encoding="utf-8")
+        shop_image_rule = styles.rsplit(
+            ".shop-page .shop-grid .product-card-pro .product-image img", 1
+        )[1].split("}", 1)[0]
+
+        self.assertIn("object-fit: contain", shop_image_rule)
+        self.assertNotIn("object-fit: cover", shop_image_rule)
+
+    def test_shop_page_does_not_show_new_offer_promotional_labels(self):
+        shop_page = (ROOT / "trgovina.html").read_text(encoding="utf-8")
+        products = (ROOT / "products.js").read_text(encoding="utf-8")
+        script = (ROOT / "scripts.js").read_text(encoding="utf-8")
+
+        self.assertNotIn("Novo v ponudbi", shop_page)
+        self.assertNotIn('"badge": "Novo"', products)
+        self.assertIn("badge: product.badge ?? ''", script)
+        self.assertNotIn("badge: product.badge ?? 'Novo'", script)
+
     def test_generated_product_pages_are_grouped(self):
         products = load_products()
         pages = list((ROOT / "izdelki").glob("izdelek-*.html"))
