@@ -1175,6 +1175,20 @@ h1 {
   gap: 0.35rem;
 }
 
+.checkbox-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.checkbox-line input {
+  margin-top: 0.2rem;
+  width: auto;
+}
+
 .optional {
   color: var(--muted);
   font-size: 0.85rem;
@@ -5469,6 +5483,20 @@ body {
 .product-detail-lead,
 .product-detail-help ul,
 .form-note,
+.checkbox-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.checkbox-line input {
+  margin-top: 0.2rem;
+  width: auto;
+}
+
 .optional {
   color: var(--muted);
 }

@@ -1163,6 +1163,9 @@ if (selectedProductCard && productFromQuery) {
 }
 
 const initializeStore = async () => {
+  if (productCount && bundledProducts.length) {
+    productCount.textContent = formatProductCountLabel(bundledProducts.filter(isCheckoutReady).length);
+  }
   await loadProducts();
   if (activeFilter !== 'all' && !currentCategories.some((category) => category.id === activeFilter)) {
     activeFilter = 'all';
