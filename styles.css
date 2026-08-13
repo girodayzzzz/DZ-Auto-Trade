@@ -6859,6 +6859,26 @@ body:has([data-product-grid]) .product-card-pro .product-brand-pill {
   box-shadow: 16px 0 0 #111827;
 }
 
+.icon-transport::before {
+  width: 29px;
+  height: 17px;
+  left: 7px;
+  top: 14px;
+  border: 3px solid #111827;
+  border-radius: 4px 7px 4px 4px;
+  background: linear-gradient(90deg, rgba(229, 9, 20, 0.18) 0 62%, transparent 62%);
+}
+
+.icon-transport::after {
+  width: 7px;
+  height: 7px;
+  left: 11px;
+  top: 28px;
+  border-radius: 50%;
+  background: #111827;
+  box-shadow: 17px 0 0 #111827;
+}
+
 .icon-guide::before {
   width: 21px;
   height: 27px;
