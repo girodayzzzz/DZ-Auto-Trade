@@ -10736,3 +10736,23 @@ body.home-page .showcase-help a {
     flex-direction: column;
   }
 }
+
+/* Shared fallback artwork for paid services without their own image. */
+.service-checkout-image {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #f3f5f8;
+}
+
+.service-checkout-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}

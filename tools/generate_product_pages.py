@@ -212,7 +212,7 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         if product.get("partNumber") and product.get("compatibility") else ""
     )
     lead, full_description = description_markup(product["description"])
-    fallback = "assets/product-placeholder.svg"
+    fallback = "assets/dzautotrade-placeholder.png"
     main_image = (
         f'<img src="{html.escape(product_images[0], quote=True)}" alt="{html.escape(image_alt, quote=True)}"'
         f'{f" width=\"{image_width}\" height=\"{image_height}\"" if image_width and image_height else ""}'
