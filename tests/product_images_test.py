@@ -23,6 +23,8 @@ def load_products():
 
 
 class ProductImagesTest(unittest.TestCase):
+    PLACEHOLDER = "assets/dzautotrade-placeholder.png"
+
     def test_catalog_skus_are_unique(self):
         skus = [product.get("sku") for product in load_products()]
         self.assertEqual(len(skus), len(set(skus)))
@@ -118,6 +120,36 @@ class ProductImagesTest(unittest.TestCase):
         self.assertIn('data-product-gallery-image="', script)
         self.assertIn("button.classList.toggle('active'", script)
 
+    def test_shared_placeholder_is_used_for_missing_and_failed_images(self):
+        script = (ROOT / "scripts.js").read_text(encoding="utf-8")
+        self.assertTrue((ROOT / self.PLACEHOLDER).is_file())
+        self.assertIn(f"const PRODUCT_PLACEHOLDER_IMAGE = '{self.PLACEHOLDER}'", script)
+        self.assertIn("const getItemImage =", script)
+        self.assertIn("resolveSiteImageUrl(image) || createProductPlaceholder()", script)
+        self.assertIn("image.dataset.productFallbackApplied = 'true'", script)
+        self.assertIn("image.onerror = null", script)
+        self.assertIn("image.alt = PRODUCT_PLACEHOLDER_ALT", script)
+
+    def test_generated_product_pages_use_shared_placeholder(self):
+        generator = (ROOT / "tools" / "generate_product_pages.py").read_text(encoding="utf-8")
+        self.assertIn(f'fallback = "{self.PLACEHOLDER}"', generator)
+        for page in (ROOT / "izdelki").glob("izdelek-*.html"):
+            with self.subTest(page=page.name):
+                self.assertIn(f'data-product-fallback="{self.PLACEHOLDER}"', page.read_text(encoding="utf-8"))
+
+    def test_stripe_services_without_images_show_shared_placeholder(self):
+        for page_name in ("notranje-ciscenje.html", "zunanje-ciscenje.html", "globinsko-ciscenje.html"):
+            page = (ROOT / page_name).read_text(encoding="utf-8")
+            with self.subTest(page=page_name):
+                self.assertIn("data-checkout", page)
+                self.assertIn(f'src="{self.PLACEHOLDER}"', page)
+                self.assertIn('alt="Slika izdelka trenutno ni na voljo – DZ Auto Trade"', page)
+
+    def test_placeholder_images_keep_their_aspect_ratio(self):
+        styles = (ROOT / "styles.css").read_text(encoding="utf-8")
+        service_rule = styles.rsplit(".service-checkout-image img", 1)[1].split("}", 1)[0]
+        self.assertIn("object-fit: contain", service_rule)
+
 
     def test_shop_products_prefer_bundled_catalog_photos(self):
         script = (ROOT / "scripts.js").read_text(encoding="utf-8")
@@ -133,7 +165,7 @@ class ProductImagesTest(unittest.TestCase):
     def test_failed_api_image_tries_bundled_product_image_before_placeholder(self):
         script = (ROOT / "scripts.js").read_text(encoding="utf-8")
         self.assertIn('data-product-image-candidates="', script)
-        self.assertIn("const candidates = JSON.parse(image.dataset.productImageCandidates", script)
+        self.assertIn("candidates = JSON.parse(image.dataset.productImageCandidates", script)
         self.assertIn("image.src = nextImage", script)
 
     def test_shop_cards_do_not_defer_dynamically_inserted_images(self):

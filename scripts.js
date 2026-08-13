@@ -97,7 +97,8 @@ const MAX_CART_QUANTITY = 10;
 // Every priced shop product can be ordered. Availability remains useful
 // delivery information, but must never remove an item from checkout.
 const isCheckoutReady = (product = {}) => Number(product.checkoutAmount || 0) >= 50;
-const PRODUCT_PLACEHOLDER_IMAGE = 'assets/product-placeholder.svg';
+const PRODUCT_PLACEHOLDER_IMAGE = 'assets/dzautotrade-placeholder.png';
+const PRODUCT_PLACEHOLDER_ALT = 'Slika izdelka trenutno ni na voljo – DZ Auto Trade';
 const LOCAL_IMAGE_PATH_PATTERN = /^(?:\.{1,2}\/|\/|images\/|assets\/)/i;
 const bundledProducts = Array.isArray(window.products) ? window.products : [];
 const bundledProductImagesBySku = new Map(
@@ -201,6 +202,15 @@ const resolveSiteImageUrl = (image = '') => {
 
 const createProductPlaceholder = () => resolveSiteImageUrl(PRODUCT_PLACEHOLDER_IMAGE);
 
+const getItemImage = (image = '') => resolveSiteImageUrl(image) || createProductPlaceholder();
+
+const getItemImageAlt = (item = {}, isPlaceholder = false) => {
+  if (isPlaceholder) return PRODUCT_PLACEHOLDER_ALT;
+  const configuredAlt = String(item.imageAlt || '').trim();
+  const itemName = String(item.name || '').trim();
+  return configuredAlt || (itemName ? `${itemName} – DZ Auto Trade` : PRODUCT_PLACEHOLDER_ALT);
+};
+
 const isInlineSvgImage = (image = '') => image.trim().toLowerCase().startsWith('data:image/svg+xml');
 
 
@@ -231,7 +241,7 @@ const resolveProductImages = (product = {}) => {
     .filter(Boolean)
     .filter((image, index, list) => list.indexOf(image) === index);
 
-  return images.length ? images : [createProductPlaceholder(product)];
+  return images.length ? images : [getItemImage()];
 };
 
 const resolveProductImage = (product = {}) => resolveProductImages(product)[0];
@@ -244,7 +254,7 @@ const productImageMarkup = (product, lazy = true, imageOverride = '') => {
   const candidates = (imageOverride ? [imageOverride] : resolveProductImages(product))
     .filter((candidate) => candidate && candidate !== image && candidate !== fallback);
   const isPlaceholder = image === fallback;
-  return `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.imageAlt || product.name)}"${lazy ? ' loading="lazy"' : ''} data-product-fallback="${escapeHtml(fallback)}" data-product-image-candidates="${escapeHtml(JSON.stringify(candidates))}"${isPlaceholder ? ' data-product-placeholder="true"' : ''} />`;
+  return `<img src="${escapeHtml(getItemImage(image))}" alt="${escapeHtml(getItemImageAlt(product, isPlaceholder))}"${lazy ? ' loading="lazy"' : ''} data-product-fallback="${escapeHtml(fallback)}" data-product-image-candidates="${escapeHtml(JSON.stringify(candidates))}"${isPlaceholder ? ' data-product-placeholder="true"' : ''} />`;
 };
 
 const normalizeProduct = (product) => ({
@@ -1130,16 +1140,24 @@ document.addEventListener('load', (event) => {
 document.addEventListener('error', (event) => {
   const image = event.target;
   if (!(image instanceof HTMLImageElement) || !image.dataset.productFallback) return;
-  if (image.currentSrc === image.dataset.productFallback || image.src === image.dataset.productFallback) return;
-  const candidates = JSON.parse(image.dataset.productImageCandidates || '[]');
+  if (image.dataset.productFallbackApplied === 'true') return;
+  let candidates = [];
+  try {
+    candidates = JSON.parse(image.dataset.productImageCandidates || '[]');
+  } catch (_error) {
+    candidates = [];
+  }
   const nextImage = candidates.shift();
   if (nextImage) {
     image.dataset.productImageCandidates = JSON.stringify(candidates);
     image.src = nextImage;
     return;
   }
+  image.dataset.productFallbackApplied = 'true';
+  image.dataset.productPlaceholder = 'true';
+  image.onerror = null;
   image.closest('.product-image, .product-detail-image, .admin-image-preview')?.classList.add('is-fallback');
-  image.alt = `${image.alt} (nadomestna slika)`;
+  image.alt = PRODUCT_PLACEHOLDER_ALT;
   image.src = image.dataset.productFallback;
 }, true);
 
