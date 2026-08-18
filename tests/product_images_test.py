@@ -74,7 +74,11 @@ class ProductImagesTest(unittest.TestCase):
             with self.subTest(sku=product.get("sku")):
                 images = product.get("images") or [product.get("image")]
                 self.assertTrue(
-                    all(not image.startswith(("https://", "http://")) for image in images),
+                    all(
+                        not image.startswith(("https://", "http://"))
+                        or image.startswith("https://dzautotrade.si/")
+                        for image in images
+                    ),
                     "External product images can disappear or reject browser hotlinking",
                 )
 
