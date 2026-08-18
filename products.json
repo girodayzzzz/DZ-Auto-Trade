@@ -2749,6 +2749,29 @@
       "checkoutEnabled": true,
       "cartEnabled": true,
       "featured": false
+    },
+    {
+      "name": "Koncentriran šampon za mat vozila in tekočo gumo, Autosol Matte Shampoo 500ml",
+      "price": "15,97 €",
+      "sku": "DZ-CP096",
+      "brand": "Autosol",
+      "badge": "Šampon za mat vozila",
+      "checkoutAmount": 1597,
+      "image": "images/products/autosol-matte-shampoo-500ml.avif",
+      "imageAlt": "Autosol Matte Shampoo 500ml koncentriran šampon za mat vozila in tekočo gumo",
+      "theme": "linear-gradient(135deg, #64748b, #111827)",
+      "compatibility": "mat lak, folije in tekoča guma",
+      "searchTerms": "autosol matte shampoo 500ml koncentriran šampon mat vozila folije tekoča guma ročno pranje",
+      "description": "Koncentriran šampon za ročno pranje mat vozil ter folij in tekoče gume. Odlikuje ga izjemna čistilna moč, obenem pa ne poškoduje površine.\n\nNavodila za uporabo:\nVozilo dobro sperite z visokotlačnim čistilcem, da odstranite večje delce umazanije. Šampona nikoli ne uporabljajte na vroči površini ali neposredni sončni svetlobi! Zmešajte cca. 60 ml šampona z 10 L tople vode. S pripravljeno raztopino operite vozilo. Po pranju vozilo sperite s čisto vodo in do suhega obrišite z namensko mikro krpo. Po končanem čiščenju priporočamo še zaščito s katerim izmed mat zaščitnih sredstev.\n\nVarnostni napotki:\nPred uporabo natančno preberite navodila za uporabo. P102 Hraniti izven dosega otrok. Varnostni list je na voljo na zahtevo.",
+      "category": "cistila",
+      "categoryLabel": "Čistila",
+      "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
+      "orderNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": false
     }
   ]
 }
