@@ -43,7 +43,7 @@ class ProductImagesTest(unittest.TestCase):
         products = {product.get("sku"): product for product in load_products()}
         cleaner_skus = {
             *(f"DZ-CP0{number}" for number in range(65, 71)),
-            *(f"DZ-CP0{number}" for number in range(85, 91)),
+            *(f"DZ-CP0{number}" for number in range(85, 96)),
         }
         technical_skus = {"DZ-SP01", "DZ-SP02", "DZ-SP03"}
 
