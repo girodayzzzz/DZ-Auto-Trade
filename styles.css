@@ -4025,7 +4025,8 @@ body:has([data-product-grid]) {
   .shop-page .product-card-actions { display: grid; grid-template-columns: 1fr; }
   .shop-page .product-card-actions .btn-secondary { display: none; }
   .shop-page .product-card-actions .shop-btn { min-height: 42px; padding-inline: 0.45rem; font-size: 0.82rem; }
-  .shop-page .product-card-topline { font-size: 0.58rem; }
+  /* Stock and category labels must remain legible on compact product cards. */
+  .shop-page .product-card-topline { font-size: 0.68rem; }
 }
 
 /* Shop-only category menu: a compact, image-free row above the catalog. */

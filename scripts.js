@@ -524,7 +524,7 @@ const renderCart = () => {
           </div>
           <p class="cart-note" data-cart-shipping-note>Brezplačna poštnina nad 60 €.</p>
           <p class="cart-terms">Z oddajo naročila se strinjate s <a href="splosni-pogoji.html">splošnimi pogoji</a>, <a href="dostava-placila.html">dostavo in plačili</a> ter <a href="vracila-reklamacije.html">vračili/reklamacijami</a>.</p>
-          <button class="shop-btn" type="button" data-cart-checkout>Plačaj varno s Stripe</button>
+          <button class="shop-btn" type="button" data-cart-checkout>Nadaljuj na plačilo</button>
           <p class="cart-note" data-checkout-status>Plačilo poteka prek Stripe Checkout. Naročilo se po uspešnem plačilu samodejno zabeleži za obdelavo.</p>
           <button class="btn-secondary" type="button" data-cart-clear>Izprazni košarico</button>
         </div>
@@ -850,7 +850,7 @@ const renderProductDetail = () => {
       </div>
       <h1>${escapeHtml(product.name)}</h1>
       <p class="product-detail-lead">${escapeHtml(getProductLead(productDescription.intro || product.description))}</p>
-      <div class="product-assurance-row" aria-label="Prednosti nakupa"><span>✓ Varno Stripe plačilo</span><span>✓ Slovenska podpora</span><span>✓ 14 dni za vračilo</span></div>
+      <div class="product-assurance-row" aria-label="Prednosti nakupa"><span>✓ Varno spletno plačilo</span><span>✓ Slovenska podpora</span><span>✓ 14 dni za vračilo</span></div>
       <dl class="product-detail-meta" aria-label="Podatki izdelka">
         <div><dt>Kategorija</dt><dd>${escapeHtml(product.categoryLabel)}</dd></div>
         <div><dt>SKU</dt><dd>${escapeHtml(product.sku)}</dd></div>

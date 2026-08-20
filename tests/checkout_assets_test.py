@@ -20,7 +20,7 @@ assert all(version == EXPECTED_SCRIPTS_VERSION for _, version in scripts_refs), 
 scripts_source = Path(__file__).resolve().parents[1].joinpath("scripts.js").read_text()
 assert "data-cart-terms" not in scripts_source, "Checkout must not require an extra confirmation checkbox"
 assert "termsAccepted" not in scripts_source, "Checkout must start with one click"
-assert "Plačaj varno s Stripe" in scripts_source
+assert "Nadaljuj na plačilo" in scripts_source
 assert "Z oddajo naročila se strinjate" in scripts_source
 
 print(f"Checkout asset versions passed: {len(checkout_refs)} checkout.js and {len(scripts_refs)} scripts.js references.")
