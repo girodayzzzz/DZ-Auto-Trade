@@ -9,6 +9,8 @@ import re
 import unicodedata
 from pathlib import Path
 
+from site_footer import apply_footer
+
 ROOT = Path(__file__).resolve().parents[1]
 SITE = "https://dzautotrade.si"
 PRODUCT_DIR = ROOT / "izdelki"
@@ -246,6 +248,7 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         f'<p class="form-note">{html.escape(product["availability"])}</p>{full_description}</article></div></section>'
     )
     page = re.sub(r'<section class="section product-detail-shell" data-product-detail>.*?</section>', content, page, count=1, flags=re.S)
+    page = apply_footer(page)
     page = re.sub(r"[ \t]+\n", "\n", page)
     return filename, page
 
