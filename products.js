@@ -3209,5 +3209,29 @@ window.products = [
     ],
     "image": "images/products/poka-premium-machine-holder-tripple.avif",
     "imageAlt": "Stenski nosilec Poka Premium za tri polirne stroje"
+  },
+  {
+    "name": "MOTORNO OLJE MERCEDES 5W-30 MB229.52 5L",
+    "category": "vse-za-servis-vozila",
+    "categoryLabel": "Vse za servis vozila",
+    "description": "Motorno olje Mercedes 5W-30 5L Original MB 229.52 je vrhunsko popolnoma sintetično olje, razvito posebej za sodobne motorje Mercedes-Benz. Temelji na specifikaciji MB 229.52, ki je najnovejši standard za motorje z nizkimi emisijami in visoko učinkovitostjo. To originalno olje nudi zanesljivo zaščito, zmanjšuje trenje in zagotavlja čistejše delovanje motorja v vseh voznih razmerah.\n\nNapredna viskoznost 5W-30:\nViskoznost 5W-30 omogoča hitro kroženje olja ob hladnem zagonu in stabilen oljni film pri visokih temperaturah. Motor je zaščiten od prvega zagona, kar zmanjšuje obrabo in povečuje življenjsko dobo notranjih komponent. Pri delovni temperaturi olje ohranja stabilnost in preprečuje prekomerno trenje tudi pri visokih obremenitvah.\n\nLow-SAPS tehnologija:\nOlje uporablja Low-SAPS tehnologijo (nizka vsebnost pepela, žvepla in fosforja). Ta lastnost je bistvena za zaščito DPF filtrov in naprednih katalizatorjev. Zmanjšuje nastanek oblog, ohranja čistočo izpušnega sistema in podaljšuje življenjsko dobo sistemov za naknadno obdelavo izpušnih plinov. Formula pripomore tudi k manjši porabi goriva in varčnejši vožnji.\n\nPrimerno za LongLife intervale:\nMotorno olje Mercedes MB 229.52 je razvito za vozila z LongLife servisnimi intervali, ki jih določa proizvajalec vozila. Omogoča daljše intervale med menjavami, vendar vedno skladno z navodili. Lastniku zagotavlja večje udobje, nižje stroške vzdrževanja in maksimalno zaščito motorja.\n\nZa katera vozila je primerno:\nTo olje je idealno za najnovejše modele Mercedes-Benz z motorji Euro 6. Primerno je za bencinske in dizelske motorje z direktnim vbrizgavanjem, turbopolnilniki in sistemi za nadzor emisij. Posebej je priporočljivo za motorje, kjer proizvajalec predpisuje specifikacijo MB 229.52, saj zagotavlja optimalno delovanje, manj trenja in nižjo porabo goriva.\n\nOriginalna embalaža in praktičnost:\nOlje je pakirano v originalni 5-litrski plastenki, ki je primerna za redno menjavo olja ali kot zaloga za dolivanje. Originalna embalaža zagotavlja, da dobite preverjen in neponarejen izdelek, kar je pomembno za ohranitev garancije in optimalno delovanje motorja.\n\nČe iščete preverjeno in kakovostno motorno olje za svoj avtomobil Mercedes-Benz, je MB 229.52 5W-30 prava izbira.\n\nKljučne specifikacije:\n- Viskoznost: 5W-30\n- Standard: MB 229.52, ACEA C3\n- Low-SAPS formula za motorje z DPF in katalizatorji\n- Embalaža: 5 l originalna plastenka\n\nRazvrstitev nevarnosti po zakonu o kemikalijah:\nH302 Zdravju škodljivo pri zaužitju.\nH317 Lahko povzroči alergijski odziv kože.",
+    "price": "76,44 €",
+    "regularPrice": "83,49 €",
+    "badge": "Motorno olje",
+    "sku": "DZ-OP02",
+    "brand": "Mercedes-Benz",
+    "compatibility": "Mercedes-Benz bencinski in dizelski motorji, za katere je predpisana specifikacija MB 229.52",
+    "orderNote": "Pred uporabo preverite zahtevano specifikacijo motornega olja v navodilih proizvajalca vozila.",
+    "checkoutAmount": 7644,
+    "searchTerms": "Mercedes-Benz original motorno olje 5W-30 5L MB 229.52 ACEA C3 Low-SAPS DPF LongLife Euro 6",
+    "image": "images/products/MOTORNO-OLJE-MERCEDES-5W-30-5L-MB229.52-2-1-2.jpg",
+    "imageAlt": "Originalno motorno olje Mercedes-Benz 5W-30 MB 229.52 v 5-litrski embalaži",
+    "theme": "linear-gradient(135deg, #111827, #94a3b8)",
+    "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
+    "delivery": "Po potrditvi dobavitelja",
+    "shippingNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
+    "checkoutEnabled": true,
+    "cartEnabled": true,
+    "featured": true
   }
 ];
