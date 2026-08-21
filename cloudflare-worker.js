@@ -3238,6 +3238,30 @@ const DEFAULT_PRODUCTS = {
       "checkoutEnabled": true,
       "cartEnabled": true,
       "featured": true
+    },
+    {
+      "name": "OLJE ZA AVTOMATIK HALDEX VOLVO 31367940 original",
+      "category": "vse-za-servis-vozila",
+      "categoryLabel": "Vse za servis vozila",
+      "description": "Motorno olje Volvo je namensko razvito za sklopke Haldex, ki se uporabljajo pri Volvo vozilih s štirikolesnim pogonom (AWD/4×4). Gre za tovarniško predpisano mazivo, ki zagotavlja pravilno delovanje sklopke, dolgoročno zanesljivost in preprečuje obrabo mehanskih komponent.\n\nZdružljivost z Volvo vozili:\nTo olje je primerno za različne generacije Haldex pogonskih sistemov, ki jih najdemo v modelih:\n- Volvo XC60\n- Volvo XC70\n- Volvo XC90\n- Volvo V60 AWD\n- Volvo V70 AWD\n- Volvo S60 AWD\n- Volvo S80 AWD\n- in drugih modelih 4×4\n\nUporaba neoriginalnega olja lahko povzroči motnje pri prenosu moči, vibracije, zamike pri vklopu zadnje osi ali trajne poškodbe sklopke.\n\nZakaj uporabiti originalno olje Haldex?:\nOriginal Volvo olje 31367940 zagotavlja:\n- pravilno delovanje štirikolesnega pogona\n- zaščito pred pregrevanjem sklopke\n- optimalno mazanje lamel\n- tišje in bolj uglajeno delovanje\n- daljšo življenjsko dobo menjalnega sklopa\n\nPrimerno je tudi za redno servisiranje pogonskega sistema. Menjava se priporoča na 60.000–80.000 km, odvisno od načina vožnje.\n\nTehnične značilnosti:\nOlje je zasnovano posebej za:\n- Haldex sklopke (4. generacije in izbrane 5. generacije)\n- avtomatski prenos moči na zadnjo os\n- optimalno viskoznost pri visokih temperaturah\n- preprečevanje trenja in obrabe\n- pravilno delovanje senzorjev in črpalk\n\nKer je formulacija izdelana namensko, ga ni priporočljivo mešati z univerzalnimi nadomestki.\n\nPakiranje 1 liter:\nProstornina 1 L zadostuje za standardni servis Haldex pogona pri večini vozil Volvo. Ker je potrebna natančna količina pri menjavi, je izdelek idealen tako za pooblaščene servise kot za zahtevnejše uporabnike.\n\nBrezhibno delovanje AWD sistema:\nRedna menjava Haldex olja:\n- ohranja oprijem in trakcijo\n- preprečuje zdrse pri speljevanju\n- zmanjša porabo sklopke\n- podaljša življenjsko dobo črpalke\n- izboljša varnost na mokrih in zasneženih cestah\n\nZaključek:\nVolvo original olje 31367940 za Haldex pogonske sisteme je prava izbira za vse, ki želijo ohraniti brezhibno delovanje svojega 4×4 vozila. Zagotavlja natančno mazanje, prilagojeno delovanju sklopke, in s tem podaljšuje življenjsko dobo vseh povezanih komponent.\n\nRazvrstitev nevarnosti po zakonu o kemikalijah:\nH302 Zdravju škodljivo pri zaužitju.\nH317 Lahko povzroči alergijski odziv kože.",
+      "price": "57,68 €",
+      "badge": "Originalno Haldex olje",
+      "sku": "DZ-OP03",
+      "brand": "Volvo",
+      "partNumber": "31367940",
+      "compatibility": "Volvo AWD/4×4 s sklopko Haldex 4. generacije in izbranimi sistemi 5. generacije",
+      "orderNote": "Pred uporabo preverite ustreznost olja in zahtevano količino v navodilih proizvajalca vozila.",
+      "checkoutAmount": 5768,
+      "searchTerms": "Volvo original Haldex olje 31367940 avtomatik AWD 4x4 XC60 XC70 XC90 V60 V70 S60 S80 1L",
+      "image": "images/products/OLJE-ZA-AVTOMATIK-HALDEX-VOLVO-31367940-original-3.jpg",
+      "imageAlt": "Originalno olje Volvo 31367940 za avtomatsko sklopko Haldex v 1-litrski embalaži",
+      "theme": "linear-gradient(135deg, #1e3a5f, #94a3b8)",
+      "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true
     }
   ]
 };
