@@ -20,6 +20,7 @@ const orderList = document.querySelector('[data-admin-order-list]');
 const refreshOrdersButton = document.querySelector('[data-refresh-orders]');
 
 const defaultCategories = [
+  { id: 'vse-za-servis-vozila', label: 'Vse za servis vozila', description: 'Motorna olja in potrošni material za redno vzdrževanje' },
   { id: 'novi-avto-deli', label: 'Novi avto deli', description: 'Novi deli za servis in popravila vozil' },
   { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli', description: 'Preverjeni rabljeni deli za vozila' },
   { id: 'cistila', label: 'Čistila', description: 'Izdelki za nego notranjosti in zunanjosti' },
