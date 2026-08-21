@@ -72,7 +72,7 @@ def image_metadata(relative_path: str) -> tuple[str, int | None, int | None]:
 
 
 DESCRIPTION_HEADING = re.compile(
-    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnični podatki|Tehnične karakteristike|Lastnosti|Uporaba|Komplet vključuje|Vsebina kompleta|Montaža sistema|Redčenje|Mešalno razmerje):\s*",
+    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnični podatki|Tehnične karakteristike|Lastnosti|Uporaba|Uporabnost|Tovarniške odobritve in združljivost|Zaključek|Razvrstitev nevarnosti po zakonu o kemikalijah|Komplet vključuje|Vsebina kompleta|Montaža sistema|Redčenje|Mešalno razmerje):\s*",
     re.IGNORECASE,
 )
 
@@ -235,6 +235,8 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
             f'<div class="product-image-gallery" aria-label="Galerija izdelka, {len(product_images)} slike">'
             f'{thumbnails}</div>'
         )
+    regular_price = product.get("regularPrice")
+    regular_price_markup = f'<span>Redna cena: {html.escape(regular_price)}</span>' if regular_price else ""
     content = (
         f'<section class="section product-detail-shell" data-product-detail data-product-sku="{html.escape(product["sku"], quote=True)}">'
         f'<div class="container product-detail-layout"><div class="product-detail-media">'
@@ -244,7 +246,8 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         f'<h1>{html.escape(product["name"])}</h1><p class="product-detail-lead">{html.escape(lead)}</p>'
         f'<dl class="product-detail-meta"><div><dt>Kategorija</dt><dd>{html.escape(product["categoryLabel"])}</dd></div><div><dt>SKU</dt><dd>{html.escape(product["sku"])}</dd></div>'
         f'{part_number_meta}{compatibility_meta}</dl>'
-        f'<div class="product-buy-panel"><div><small>Cena</small><strong>{html.escape(product["price"])}</strong></div></div>'
+        f'<div class="product-buy-panel"><div><small>Cena</small><strong>{html.escape(product["price"])}</strong>'
+        f'{regular_price_markup}</div></div>'
         f'<p class="form-note">{html.escape(product["availability"])}</p>{full_description}</article></div></section>'
     )
     page = re.sub(r'<section class="section product-detail-shell" data-product-detail>.*?</section>', content, page, count=1, flags=re.S)

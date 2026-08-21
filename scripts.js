@@ -689,7 +689,7 @@ const renderShopInsights = () => {
 
 const parseProductDescription = (description = '') => {
   const cleanDescription = String(description).replace(/\r\n?/g, '\n').trim();
-  const sectionHeading = /(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba|Vsebina kompleta|Montaža sistema|Redčenje):\s*/gi;
+  const sectionHeading = /(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnične karakteristike|Lastnosti|Uporaba|Uporabnost|Tovarniške odobritve in združljivost|Zaključek|Razvrstitev nevarnosti po zakonu o kemikalijah|Vsebina kompleta|Montaža sistema|Redčenje):\s*/gi;
   const sections = [];
   const matches = [...cleanDescription.matchAll(sectionHeading)];
   const introEnd = matches[0]?.index ?? cleanDescription.length;
