@@ -111,6 +111,7 @@ const bundledProductImagesBySku = new Map(
 );
 let currentProducts = bundledProducts;
 let currentCategories = [
+  { id: 'vse-za-servis-vozila', label: 'Vse za servis vozila' },
   { id: 'cistila', label: 'Čistila' },
   { id: 'poliranje-in-zascita', label: 'Poliranje in zaščita' },
   { id: 'orodja', label: 'Orodja' },

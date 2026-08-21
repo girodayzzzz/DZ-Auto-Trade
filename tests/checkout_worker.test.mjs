@@ -84,6 +84,32 @@ try {
     assert.ok((await productsResponse.json()).products.length > 0);
   }
 
+  const legacyCatalogKv = {
+    async get(key) {
+      if (key === 'categories') return [{ id: 'novi-avto-deli', label: 'Novi avto deli' }];
+      if (key === 'products') return [{
+        name: 'CASTROL 5W 30 5L EDGE LL',
+        category: 'vse-za-servis-vozila',
+        sku: 'DZ-OP01',
+      }];
+      return null;
+    },
+    async put() {},
+    async list() { return { keys: [] }; },
+  };
+  const legacyCatalogResponse = await worker.fetch(
+    new Request('https://dzautotrade.si/api/products'),
+    { PRODUCTS_KV: legacyCatalogKv },
+  );
+  const legacyCatalog = await legacyCatalogResponse.json();
+  const castrol = legacyCatalog.products.find((product) => product.sku === 'DZ-OP01');
+  assert.equal(castrol.category, 'vse-za-servis-vozila');
+  assert.equal(castrol.categoryLabel, 'Vse za servis vozila');
+  assert.ok(
+    legacyCatalog.categories.some((category) => category.id === 'vse-za-servis-vozila'),
+    'new bundled categories must remain available when KV contains a legacy category list',
+  );
+
   const missingConfigurationResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'missing-config-test' },

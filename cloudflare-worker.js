@@ -3390,6 +3390,7 @@ const listOrders = async (env, limit = 50) => {
 };
 
 const DEFAULT_CATEGORIES = [
+  { id: 'vse-za-servis-vozila', label: 'Vse za servis vozila', description: 'Motorna olja in potrošni material za redno vzdrževanje' },
   { id: 'novi-avto-deli', label: 'Novi avto deli', description: 'Novi deli za servis in popravila vozil' },
   { id: 'rabljeni-avto-deli', label: 'Rabljeni avto deli', description: 'Preverjeni rabljeni deli za vozila' },
   { id: 'cistila', label: 'Čistila', description: 'Izdelki za nego notranjosti in zunanjosti' },
@@ -3487,7 +3488,18 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
 
 const readCategories = async (env) => {
   const savedCategories = await runtimeBindings(env).productsKv.get(CATEGORIES_KEY, 'json');
-  if (Array.isArray(savedCategories) && savedCategories.length) return savedCategories.map(normalizeCategory).filter((category) => category.id && category.label);
+  if (Array.isArray(savedCategories) && savedCategories.length) {
+    const normalizedSavedCategories = savedCategories.map(normalizeCategory).filter((category) => category.id && category.label);
+    const savedCategoryIds = new Set(normalizedSavedCategories.map((category) => category.id));
+    // KV can retain a category list from an older deployment. Include newly
+    // bundled categories so products assigned to them are not normalized back
+    // into the first legacy category (for example Castrol engine oil into car
+    // parts instead of "Vse za servis vozila").
+    const newBundledCategories = DEFAULT_CATEGORIES
+      .map(normalizeCategory)
+      .filter((category) => category.id && category.label && !savedCategoryIds.has(category.id));
+    return [...normalizedSavedCategories, ...newBundledCategories];
+  }
   return DEFAULT_CATEGORIES;
 };
 
