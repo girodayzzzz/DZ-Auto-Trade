@@ -3292,6 +3292,9 @@ const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
       active: product.checkoutEnabled !== false,
       maxQuantity: DEFAULT_MAX_QUANTITY,
       image: String(product.image || '').trim(),
+      shippingCents: product.shippingAmount === '' || product.shippingAmount == null
+        ? null
+        : Math.max(0, Math.round(Number(product.shippingAmount) || 0)),
       metadata: { type: 'product', category: String(product.category || ''), brand: String(product.brand || '') },
     }));
   return new Map([...products, ...SERVICE_CHECKOUT_PRODUCTS].map((item) => [item.sku, item]));
@@ -3505,6 +3508,9 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
   const image = String(product.image || '').trim();
   const imageOverride = productImageOverrides[sku];
   const checkoutAmount = Math.max(0, Math.round(Number(product.checkoutAmount || 0)));
+  const shippingAmount = product.shippingAmount === '' || product.shippingAmount == null
+    ? null
+    : Math.max(0, Math.round(Number(product.shippingAmount) || 0));
 
   return {
     name: String(product.name || '').trim(),
@@ -3522,6 +3528,7 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
     regularPrice: String(product.regularPrice || '').trim(),
     supplierPrice: String(product.supplierPrice || '').trim(),
     shippingNote: String(product.shippingNote || '').trim(),
+    shippingAmount,
     purchaseUrl: String(product.purchaseUrl || '').trim(),
     checkoutEnabled: checkoutAmount >= 50 && product.checkoutEnabled !== false,
     checkoutAmount,
@@ -3669,7 +3676,18 @@ const createStripeCheckoutSession = async (request, env) => {
   const orderId = createOrderId();
   const createdAt = new Date().toISOString();
   const subtotal = lineItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
-  const shipping = lineItems.some((item) => item.metadata?.type === 'product') && subtotal > 0 && subtotal < 6000 ? 590 : 0;
+  const productItems = lineItems.filter((item) => item.metadata?.type === 'product');
+  const customShipping = productItems
+    .map((item) => item.shippingCents)
+    .filter((amount) => amount != null);
+  const standardShipping = productItems.some((item) => item.shippingCents == null)
+    && subtotal > 0
+    && subtotal < 6000
+    ? 590
+    : 0;
+  // A mixed cart is shipped together, so charge the highest applicable
+  // product rate once rather than adding a separate parcel for every line.
+  const shipping = Math.max(standardShipping, ...customShipping, 0);
   const stripeLineItems = [...lineItems];
   if (shipping) stripeLineItems.push({ sku: 'SHIPPING-SI', name: 'Dostava', priceCents: shipping, currency: 'eur', quantity: 1, metadata: { type: 'shipping' } });
 
