@@ -131,7 +131,8 @@ const DEFAULT_PRODUCTS = {
       "shippingAmount": 1000,
       "checkoutEnabled": true,
       "cartEnabled": true,
-      "featured": true
+      "featured": true,
+      "regularPrice": "8,99 €"
     },
     {
       "name": "COTTON LED BMW E46 A+B",
@@ -155,6 +156,34 @@ const DEFAULT_PRODUCTS = {
       ],
       "imageAlt": "COTTON LED Angel Eyes obroči za BMW serije 3 E46",
       "theme": "linear-gradient(135deg, #dbeafe, #111827)",
+      "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 10,00 €",
+      "shippingAmount": 1000,
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true,
+      "regularPrice": "97,62 €"
+    },
+    {
+      "name": "H7 LONGLIFE BLISTER",
+      "category": "novi-avto-deli",
+      "categoryLabel": "Novi avto deli",
+      "description": "Tehnični podatki:\n- Barvna temperatura: 3000 K\n- Delovna napetost: 9 V–16 V\n- Tip žarnice: H7\n- Delovna temperatura: -40 °C do +50 °C\n- Dovoljeno za uporabo na javnih cestah: Da\n- Svetilnost: 1350 lm\n- Število kosov v kompletu: 1\n- Stopnja zahtevnosti namestitve: Enostavna",
+      "price": "6,29 €",
+      "regularPrice": "7,29 €",
+      "badge": "Avto žarnica",
+      "sku": "DZ-N07",
+      "checkoutAmount": 629,
+      "searchTerms": "H7 LONGLIFE BLISTER žarnica 3000K 1350 lm homologirana javne ceste",
+      "image": "images/products/1987301632-h7-longlife-blister.jpg",
+      "images": [
+        "images/products/1987301632-h7-longlife-blister.jpg",
+        "images/products/1987301632-h7-longlife-blister (1).jpg",
+        "images/products/1987301632-h7-longlife-blister (2).jpg"
+      ],
+      "imageAlt": "H7 Longlife avtomobilska žarnica v blister embalaži",
+      "theme": "linear-gradient(135deg, #f59e0b, #111827)",
       "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
       "delivery": "Po potrditvi dobavitelja",
       "shippingNote": "Poštnina 10,00 €",
