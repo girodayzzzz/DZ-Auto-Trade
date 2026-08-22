@@ -99,6 +99,37 @@
       "featured": true
     },
     {
+      "name": "Čep za dolivanje olja EPOIL07",
+      "category": "novi-avto-deli",
+      "categoryLabel": "Novi avto deli",
+      "description": "EPOIL07 Pokrovček za dolivanje olja\n\nPokrovček za dolivanje olja se uporablja za varno zapiranje odprtine za dolivanje motornega olja. Ščiti mazalni sistem pred umazanijo, vlago in uhajanjem olja ter ohranja ustrezen tlak in čistočo znotraj pokrova ventilov.\n\nIzdelek podjetja EinParts Automotive je visokokakovostna zamenjava za originalni del. Izdelan je iz trpežnega materiala, odpornega na visoke temperature in motorna olja. Zagotavlja popolno tesnjenje in hitro ročno namestitev – brez uporabe orodja.\n\nTehnične specifikacije:\n- Vrsta dela: Pokrovček za dolivanje olja\n- Material: Plastika, odporna na olja in visoke temperature\n- Barva: Črna\n- Namestitev: Plug&Play – ročna namestitev brez orodja\n- Vrsta motorja: Bencin, LPG in dizel\n- Prostornina motorja: Citroën / Peugeot / Fiat: 2,2 L (HDi / Multijet – dizel); Ford: od 1,0 L do 3,2 L (bencin, LPG, dizel)\n- Količina v kompletu: 1 kos\n\nNamenjeno za:\n- CITROEN JUMPER Bus (250_) 2006–DANES\n- CITROEN JUMPER Van (250_) 2006–DANES\n- CITROEN JUMPER Platform / Chassis (250_) 2006–DANES\n- FIAT DUCATO Bus (250_, 290_) 2006–DANES\n- FIAT DUCATO Van (250_, 290_) 2006–DANES\n- FIAT DUCATO Platform / Chassis (250_, 290_) 2006–DANES\n- FORD C-MAX (DM2) 2007–2010\n- FORD C-MAX II (DXA/CB7, DXA/CEU) 2010–2019\n- FORD ECOSPORT 2013–DANES\n- FORD FIESTA V (JH_, JD_) 2001–2008\n- FORD FIESTA VI (CB1, CCN) 2008–2017\n- FORD FOCUS I (DAW, DBW, DFW, DNW) 1998–2004\n- FORD FOCUS II (DA_, HCP, DP, DS) 2004–2011\n- FORD FOCUS III (DYB, DEB, DPB, DJB) 2011–2018\n- FORD FOCUS C-MAX (DM2) 2003–2007\n- FORD FUSION (JU_) 2002–2012\n- FORD GALAXY II (WA6) 2006–2015\n- FORD KA (RB_) 1996–2008\n- FORD MONDEO III (B4Y, B5Y, BWY) 2000–2007\n- FORD MONDEO IV (BA7) 2007–2015\n- FORD MONDEO V (CE, CF) 2015–DANES\n- FORD PUMA (EC_) 1997–2002\n- FORD RANGER (TKE) 2011–DANES\n- FORD S-MAX (WA6) 2006–2014\n- FORD TOURNEO CONNECT / GRAND TOURNEO CONNECT (V408) 2013–DANES\n- FORD TRANSIT Bus (FD_, FB_, FS_, FZ_, FC_) 2006–2014\n- FORD TRANSIT Van (FA_) 2006–2014\n- FORD TRANSIT Platform / Chassis (FM_, FN_) 2006–2014\n- FORD TRANSIT (V363) 2013–DANES\n- FORD TRANSIT CONNECT (V408) 2013–DANES\n- FORD TRANSIT COURIER (V362) 2014–DANES\n- PEUGEOT BOXER Bus (250_) 2006–DANES\n- PEUGEOT BOXER Van (250_) 2006–DANES\n- PEUGEOT BOXER Platform / Chassis (250_) 2006–DANES\n\nOpomba:\nUstreza samo motorjem Citroën / Peugeot / Fiat 2,2 L (HDi / Multijet – dizel) ter Ford od 1,0 L do 3,2 L (bencin, LPG in dizel). Preverite oznako in prostornino motorja!\n\nOE številke:\n- CITROËN: 1180.R1\n- FIAT: 1135010, 9662149180, YS4G6766AA\n- FORD: 1135010, YS4G6766AA\n- LANCIA: 1135010, 9662149180\n- OPEL: YS4G6766AA\n- PEUGEOT: 1180R1\n\nNadomestne številke:\n- IMPERGOM: 43039\n- JAPANPARTS: KO-004\n- JAPKO: 147004",
+      "price": "6,99 €",
+      "badge": "Avto del",
+      "sku": "DZ-N05",
+      "partNumber": "EPOIL07",
+      "brand": "EinParts Automotive",
+      "compatibility": "Citroën, Peugeot in Fiat 2,2 L HDi/Multijet; Ford 1,0–3,2 L bencin, LPG in dizel – preverite oznako in prostornino motorja",
+      "orderNote": "Pred naročilom preverite oznako in prostornino motorja. OE: 1180.R1, 1180R1, 1135010, 9662149180, YS4G6766AA.",
+      "checkoutAmount": 699,
+      "searchTerms": "EPOIL07 čep pokrovček dolivanje olja EinParts 1180.R1 1180R1 1135010 9662149180 YS4G6766AA IMPERGOM 43039 JAPANPARTS KO-004 JAPKO 147004 Citroen Peugeot Fiat Ford Opel Lancia",
+      "image": "assets/dzautotrade-placeholder.png",
+      "requestedImages": [
+        "images/products/oil-filler-plug-epoil07.jpg",
+        "images/products/oil-filler-plug-epoil07 (1).jpg",
+        "images/products/oil-filler-plug-epoil07 (2).jpg",
+        "images/products/oil-filler-plug-epoil07 (3).jpg"
+      ],
+      "imageAlt": "Črn pokrovček za dolivanje motornega olja EinParts EPOIL07",
+      "theme": "linear-gradient(135deg, #1f2937, #0f172a)",
+      "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 10,00 €",
+      "shippingAmount": 1000,
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true
+    },
+    {
       "name": "CASTROL 5W 30 5L EDGE LL",
       "category": "vse-za-servis-vozila",
       "categoryLabel": "Vse za servis vozila",
