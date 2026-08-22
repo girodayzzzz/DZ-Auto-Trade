@@ -274,6 +274,9 @@ const normalizeProduct = (product) => ({
   orderNote: product.orderNote ?? '',
   regularPrice: product.regularPrice ?? '',
   shippingNote: product.shippingNote ?? '',
+  shippingAmount: product.shippingAmount === '' || product.shippingAmount == null
+    ? null
+    : Math.max(0, Math.round(Number(product.shippingAmount) || 0)),
   checkoutEnabled: Number(product.checkoutAmount || 0) >= 50,
   checkoutAmount: Number(product.checkoutAmount || 0),
   cartEnabled: Number(product.checkoutAmount || 0) >= 50,
@@ -466,6 +469,7 @@ const getCartLine = (item) => {
     name: product.name || item.name || item.sku,
     price: product.price || item.price || 'Po povpraševanju',
     unitCents,
+    shippingAmount: product.shippingAmount,
     quantity,
     lineCents: unitCents * quantity,
   };
@@ -476,14 +480,22 @@ const getCartLines = () => readCart().map(getCartLine).filter((line) => isChecko
 const getCartSummary = () => {
   const lines = getCartLines().filter((item) => item.unitCents >= 50 && item.quantity > 0);
   const subtotalCents = lines.reduce((sum, item) => sum + item.lineCents, 0);
-  const shippingCents = subtotalCents > 0 && subtotalCents < FREE_SHIPPING_THRESHOLD_CENTS ? STANDARD_SHIPPING_CENTS : 0;
+  const customShipping = lines
+    .map((item) => item.shippingAmount)
+    .filter((amount) => amount != null);
+  const standardShipping = lines.some((item) => item.shippingAmount == null)
+    && subtotalCents > 0
+    && subtotalCents < FREE_SHIPPING_THRESHOLD_CENTS
+    ? STANDARD_SHIPPING_CENTS
+    : 0;
+  const shippingCents = Math.max(standardShipping, ...customShipping, 0);
   return {
     lines,
     count: lines.reduce((sum, item) => sum + item.quantity, 0),
     subtotalCents,
     shippingCents,
     totalCents: subtotalCents + shippingCents,
-    freeShippingRemainingCents: Math.max(FREE_SHIPPING_THRESHOLD_CENTS - subtotalCents, 0),
+    freeShippingRemainingCents: customShipping.length ? null : Math.max(FREE_SHIPPING_THRESHOLD_CENTS - subtotalCents, 0),
   };
 };
 
@@ -546,7 +558,13 @@ const renderCart = () => {
   if (cartSubtotal) cartSubtotal.textContent = formatCurrency(subtotalCents);
   if (cartShipping) cartShipping.textContent = shippingCents ? formatCurrency(shippingCents) : 'Brezplačno';
   if (cartTotal) cartTotal.textContent = formatCurrency(totalCents);
-  if (shippingNote) shippingNote.textContent = subtotalCents === 0 ? 'Brezplačna poštnina nad 60 €.' : freeShippingRemainingCents > 0 ? `Do brezplačne poštnine manjka še ${formatCurrency(freeShippingRemainingCents)}.` : 'Dosegli ste brezplačno poštnino.';
+  if (shippingNote) shippingNote.textContent = subtotalCents === 0
+    ? 'Brezplačna poštnina nad 60 €.'
+    : freeShippingRemainingCents == null
+      ? 'Poštnina je določena glede na izbrane izdelke.'
+      : freeShippingRemainingCents > 0
+        ? `Do brezplačne poštnine manjka še ${formatCurrency(freeShippingRemainingCents)}.`
+        : 'Dosegli ste brezplačno poštnino.';
   if (cartItems) {
     cartItems.innerHTML = lines.length
       ? lines

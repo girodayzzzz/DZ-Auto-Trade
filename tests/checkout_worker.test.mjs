@@ -16,6 +16,7 @@ const currentProducts = [{
   checkoutEnabled: true,
   cartEnabled: true,
   checkoutAmount: 1234,
+  shippingAmount: 790,
   image: 'images/products/kv-test-product.avif',
 }, {
   // Older KV records can predate every checkout field. The Worker must merge
@@ -233,8 +234,22 @@ try {
   assert.match(stripeBody.get('line_items[1][price_data][product_data][name]'), /DZ-T07/);
   assert.equal(stripeBody.get('line_items[2][price_data][unit_amount]'), '2500');
   assert.match(stripeBody.get('line_items[2][price_data][product_data][name]'), /DIRECT-ONLY/);
-  assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), null, 'shipping is free above 60 €');
+  assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), '790', 'a product-specific shipping rate remains applicable above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
+
+  globalThis.fetch = async (url, init) => {
+    stripeRequest = { url, init };
+    return Response.json({ id: 'cs_custom_shipping', url: 'https://checkout.stripe.com/c/pay/cs_custom_shipping' });
+  };
+  const customShippingResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'custom-shipping-test' },
+    body: JSON.stringify({ sku: 'KV-NEW', quantity: 1 }),
+  }), { PRODUCTS: kv, STRIPE_SECRET_KEY: 'sk_test_mock' });
+  assert.equal(customShippingResponse.status, 200);
+  const customShippingBody = new URLSearchParams(stripeRequest.init.body);
+  assert.equal(customShippingBody.get('line_items[1][price_data][unit_amount]'), '790');
+  assert.equal(customShippingBody.get('metadata[order_total]'), '2024');
 
   const imageFallbackRequests = [];
   globalThis.fetch = async (url, init) => {

@@ -110,6 +110,9 @@ const normalizeProduct = (product) => {
     regularPrice: product.regularPrice?.trim() ?? '',
     supplierPrice: product.supplierPrice?.trim() ?? '',
     shippingNote: product.shippingNote?.trim() ?? '',
+    shippingAmount: product.shippingAmount === '' || product.shippingAmount == null
+      ? null
+      : Math.max(0, Math.round(Number(product.shippingAmount) || 0)),
     purchaseUrl: product.purchaseUrl?.trim() ?? '',
     checkoutEnabled: Number(product.checkoutAmount || 0) >= 50,
     cartEnabled: Number(product.checkoutAmount || 0) >= 50,
@@ -187,6 +190,7 @@ const fillForm = (product) => {
   form.elements.regularPrice.value = product.regularPrice;
   form.elements.supplierPrice.value = product.supplierPrice;
   form.elements.shippingNote.value = product.shippingNote;
+  form.elements.shippingAmount.value = product.shippingAmount ?? '';
   form.elements.purchaseUrl.value = product.purchaseUrl;
   form.elements.checkoutAmount.value = product.checkoutAmount || '';
   form.elements.searchTerms.value = product.searchTerms;
