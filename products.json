@@ -130,6 +130,36 @@
       "featured": true
     },
     {
+      "name": "COTTON LED BMW E46 A+B",
+      "category": "novi-avto-deli",
+      "categoryLabel": "Novi avto deli",
+      "description": "LED obroči (Angel Eyes) za BMW serije 3 E46 z žarometi z lečo, letnik 2001–2005. Komplet oddaja hladno belo svetlobo in je pripravljen za CANBUS.\n\nTehnične karakteristike:\n- Barvna temperatura: 6000 K\n- CANBUS: Da\n- Delovna napetost: 9 V–16 V\n- Vrsta LED: COTTON LED\n- Delovna temperatura: -40 °C do +50 °C\n- Elektromagnetna združljivost: Da\n- Širina: 113 / 119 mm\n- Dolžina: 131 / 146 mm\n- Barva: Hladno bela\n- Stran namestitve: UNIVERZALNO (LEVO/DESNO)\n- Odpornost na udarce: Da\n- Tehnologija: Cotton LED\n- Stopnja zahtevnosti namestitve: Enostavna\n- Embalaža: Škatla\n\nSpecifikacije:\n- Premer večjih obročev: 119 mm / 146 mm\n- Premer manjših obročev: 113 mm / 131 mm\n- Vrsta obročev: LED\n- LED diode: LED COTTON (4 × diode)\n- Barvna temperatura: 6000 K – hladno bela\n- Združljivost s CANBUS: Pripravljeno za CANBUS (brez napak žarnic na OBC)\n- Dodatne informacije: Ne vpliva na radijski sprejem.\n\nVsebina paketa:\n- 4 × LED obroč (2 × večja, 2 × manjša)\n- Modul za samodejni vklop luči\n- Navodila za namestitev\n\nGarancija:\n24 mesecev",
+      "price": "72,43 €",
+      "badge": "Angel Eyes",
+      "sku": "DZ-N06",
+      "brand": "EinParts Automotive",
+      "compatibility": "BMW serije 3 E46 z žarometi z lečo, letnik 2001–2005",
+      "orderNote": "Pred naročilom preverite tip žarometov. Garancija: 24 mesecev.",
+      "checkoutAmount": 7243,
+      "searchTerms": "COTTON LED BMW E46 A+B Angel Eyes obroči 6000K CANBUS hladno bela 2001 2005",
+      "image": "images/products/epr26-ringi-cotton-led-bmw-e46-ab.jpg",
+      "images": [
+        "images/products/epr26-ringi-cotton-led-bmw-e46-ab.jpg",
+        "images/products/epr26-ringi-cotton-led-bmw-e46-ab (1).jpg",
+        "images/products/epr26-ringi-cotton-led-bmw-e46-ab (2).jpg",
+        "images/products/epr26-ringi-cotton-led-bmw-e46-ab (3).jpg"
+      ],
+      "imageAlt": "COTTON LED Angel Eyes obroči za BMW serije 3 E46",
+      "theme": "linear-gradient(135deg, #dbeafe, #111827)",
+      "availability": "Dobavljivo pri dobavitelju – potrdimo pred naročilom",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 10,00 €",
+      "shippingAmount": 1000,
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true
+    },
+    {
       "name": "CASTROL 5W 30 5L EDGE LL",
       "category": "vse-za-servis-vozila",
       "categoryLabel": "Vse za servis vozila",

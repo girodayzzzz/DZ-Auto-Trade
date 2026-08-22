@@ -72,7 +72,7 @@ def image_metadata(relative_path: str) -> tuple[str, int | None, int | None]:
 
 
 DESCRIPTION_HEADING = re.compile(
-    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnični podatki|Tehnične specifikacije|Tehnične značilnosti|Tehnične karakteristike|Lastnosti|Uporaba|Uporabnost|Tovarniške odobritve in združljivost|Združljivost z Volvo vozili|Zakaj uporabiti originalno olje Haldex\?|Pakiranje 1 liter|Brezhibno delovanje AWD sistema|Zaključek|Razvrstitev nevarnosti po zakonu o kemikalijah|Komplet vključuje|Vsebina kompleta|Montaža sistema|Redčenje|Mešalno razmerje|Napredna viskoznost 5W-30|Low-SAPS tehnologija|Primerno za LongLife intervale|Za katera vozila je primerno|Originalna embalaža in praktičnost|Ključne specifikacije|Namenjeno za|Opomba|OE številke|Nadomestne številke):\s*",
+    r"(?:^|\n)\s*(Navodila za uporabo|Varnostni napotki|Prednosti|Tehnični podatki|Tehnične specifikacije|Tehnične značilnosti|Tehnične karakteristike|Specifikacije|Lastnosti|Uporaba|Uporabnost|Tovarniške odobritve in združljivost|Združljivost z Volvo vozili|Zakaj uporabiti originalno olje Haldex\?|Pakiranje 1 liter|Brezhibno delovanje AWD sistema|Zaključek|Razvrstitev nevarnosti po zakonu o kemikalijah|Komplet vključuje|Vsebina kompleta|Vsebina paketa|Garancija|Montaža sistema|Redčenje|Mešalno razmerje|Napredna viskoznost 5W-30|Low-SAPS tehnologija|Primerno za LongLife intervale|Za katera vozila je primerno|Originalna embalaža in praktičnost|Ključne specifikacije|Namenjeno za|Opomba|OE številke|Nadomestne številke):\s*",
     re.IGNORECASE,
 )
 
