@@ -14,8 +14,13 @@ class AdminInventoryTest(unittest.TestCase):
             'value="out_of_stock"',
             "data-admin-stock-filter",
             "data-admin-product-list",
+            '>Na zalogi</option>',
+            '>Ni na zalogi</option>',
         ):
             self.assertIn(marker, page)
+
+        self.assertNotIn("Dobavljivo po naročilu", page)
+        self.assertNotIn("Trenutno ni dobavljivo", page)
 
     def test_inventory_is_persisted_and_enforced_server_side(self):
         worker = (ROOT / "cloudflare-worker.js").read_text(encoding="utf-8")
@@ -30,6 +35,7 @@ class AdminInventoryTest(unittest.TestCase):
         script = (ROOT / "scripts.js").read_text(encoding="utf-8")
         self.assertIn("getStockStatus(product) !== 'out_of_stock'", script)
         self.assertIn("https://schema.org/OutOfStock", script)
+        self.assertIn("https://schema.org/InStock", script)
         self.assertNotIn("stockQuantity:", script)
 
 

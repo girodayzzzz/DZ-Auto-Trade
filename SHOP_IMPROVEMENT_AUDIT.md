@@ -8,7 +8,7 @@ Da — spletno mesto je vizualno prepričljivo in že vsebuje večino ključnih 
 
 ### Kaj bi posodobil najprej
 
-1. **Resnična dobavljivost in dobavni rok.** Izdelki se naročajo pri dobavitelju šele po prejemu naročila, zato sistem ne vodi količin lastne zaloge. Admin omogoča samo praktični stanji »Dobavljivo po naročilu« in »Trenutno ni dobavljivo«; slednje varno onemogoči Checkout. Naslednja koristna izboljšava bi bila natančnejši dobavni rok po dobaviteljih.
+1. **Resnična dobavljivost in dobavni rok.** Sistem ne vodi količin lastne zaloge. Admin omogoča samo preprosti stanji »Na zalogi« in »Ni na zalogi«; slednje varno onemogoči Checkout. Naslednja koristna izboljšava bi bila natančnejši dobavni rok po dobaviteljih.
 2. **Dokaz zaupanja.** Dodal bi preverjene ocene strank, fotografije izvedenih čiščenj prej/potem in nekaj resničnih referenc. Trenutne obljube so jasne, vendar obiskovalec potrebuje tudi dokaz.
 3. **Fotografije storitev in vozil.** Produktne fotografije so dobre, storitvene strani pa bi pridobile z doslednimi lastnimi fotografijami. Uporabil bi enako razmerje stranic, osvetlitev in obdelavo.
 4. **Krajša pot do odločitve na mobilniku.** Preveril bi trgovino, filtre, košarico in Checkout na resničnih telefonih ter dodal lepljiv gumb za nakup na dolgih straneh izdelkov.

@@ -272,7 +272,7 @@ const normalizeProduct = (product) => ({
   sku: product.sku ?? '',
   stockStatus: getStockStatus(product),
   partNumber: product.partNumber ?? '',
-  availability: product.availability ?? 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
+  availability: getStockStatus(product) === 'out_of_stock' ? 'Ni na zalogi' : 'Na zalogi',
   delivery: product.delivery ?? 'Po potrditvi dobavitelja',
   brand: product.brand ?? '',
   compatibility: product.compatibility ?? '',
@@ -828,7 +828,7 @@ const renderProductDetail = () => {
       price: String(parsePrice(product.price) || '').replace(',', '.'),
       availability: product.stockStatus === 'out_of_stock'
           ? 'https://schema.org/OutOfStock'
-          : 'https://schema.org/PreOrder',
+          : 'https://schema.org/InStock',
       seller: { '@id': 'https://dzautotrade.si/#business' }
     }
   });
