@@ -94,9 +94,13 @@ const ANALYTICS_STORAGE_KEY = 'dzAutoTradeEvents';
 const FREE_SHIPPING_THRESHOLD_CENTS = 6000;
 const STANDARD_SHIPPING_CENTS = 590;
 const MAX_CART_QUANTITY = 10;
-// Every priced shop product can be ordered. Availability remains useful
-// delivery information, but must never remove an item from checkout.
-const isCheckoutReady = (product = {}) => Number(product.checkoutAmount || 0) >= 50;
+const getStockStatus = (product = {}) => {
+  if (product.stockStatus === 'out_of_stock') return 'out_of_stock';
+  const availability = String(product.availability || '').toLowerCase();
+  if (availability.includes('ni na zalogi') || availability.includes('ni dobavljivo')) return 'out_of_stock';
+  return 'supplier';
+};
+const isCheckoutReady = (product = {}) => Number(product.checkoutAmount || 0) >= 50 && getStockStatus(product) !== 'out_of_stock';
 const PRODUCT_PLACEHOLDER_IMAGE = 'assets/dzautotrade-placeholder.png';
 const PRODUCT_PLACEHOLDER_ALT = 'Slika izdelka trenutno ni na voljo – DZ Auto Trade';
 const LOCAL_IMAGE_PATH_PATTERN = /^(?:\.{1,2}\/|\/|images\/|assets\/)/i;
@@ -266,6 +270,7 @@ const normalizeProduct = (product) => ({
   price: product.price ?? 'Po povpraševanju',
   badge: product.badge ?? '',
   sku: product.sku ?? '',
+  stockStatus: getStockStatus(product),
   partNumber: product.partNumber ?? '',
   availability: product.availability ?? 'Dobavljivo pri dobavitelju – potrdimo pred naročilom',
   delivery: product.delivery ?? 'Po potrditvi dobavitelja',
@@ -277,9 +282,9 @@ const normalizeProduct = (product) => ({
   shippingAmount: product.shippingAmount === '' || product.shippingAmount == null
     ? null
     : Math.max(0, Math.round(Number(product.shippingAmount) || 0)),
-  checkoutEnabled: Number(product.checkoutAmount || 0) >= 50,
+  checkoutEnabled: Number(product.checkoutAmount || 0) >= 50 && getStockStatus(product) !== 'out_of_stock',
   checkoutAmount: Number(product.checkoutAmount || 0),
-  cartEnabled: Number(product.checkoutAmount || 0) >= 50,
+  cartEnabled: Number(product.checkoutAmount || 0) >= 50 && getStockStatus(product) !== 'out_of_stock',
   featured: Boolean(product.featured),
   searchTerms: product.searchTerms ?? '',
   images: resolveProductImages(product),
@@ -821,9 +826,9 @@ const renderProductDetail = () => {
       url: productUrl,
       priceCurrency: 'EUR',
       price: String(parsePrice(product.price) || '').replace(',', '.'),
-      availability: product.availability?.toLowerCase().includes('zalogi')
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/PreOrder',
+      availability: product.stockStatus === 'out_of_stock'
+          ? 'https://schema.org/OutOfStock'
+          : 'https://schema.org/PreOrder',
       seller: { '@id': 'https://dzautotrade.si/#business' }
     }
   });

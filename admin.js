@@ -14,6 +14,8 @@ const adminSearch = document.querySelector('[data-admin-search]');
 const productStat = document.querySelector('[data-stat-products]');
 const categoryStat = document.querySelector('[data-stat-categories]');
 const featuredStat = document.querySelector('[data-stat-featured]');
+const availableStat = document.querySelector('[data-stat-available]');
+const stockFilter = document.querySelector('[data-admin-stock-filter]');
 const imageInput = document.querySelector('[data-image-input]');
 const imagePreview = document.querySelector('[data-image-preview]');
 const orderList = document.querySelector('[data-admin-order-list]');
@@ -31,7 +33,20 @@ const defaultCategories = [
 let categories = [...defaultCategories];
 let products = [];
 let searchTerm = '';
+let selectedStockStatus = 'all';
 let orders = [];
+
+const STOCK_STATUS = Object.freeze({
+  supplier: { label: 'Dobavljivo po naročilu', availability: 'Dobavljivo po naročilu – potrdimo pri dobavitelju', delivery: 'Po potrditvi dobavitelja' },
+  out_of_stock: { label: 'Trenutno ni dobavljivo', availability: 'Trenutno ni dobavljivo', delivery: 'Dobavni rok trenutno ni znan' },
+});
+
+const getStockStatus = (product = {}) => {
+  if (product.stockStatus === 'out_of_stock') return 'out_of_stock';
+  const availability = String(product.availability || '').toLowerCase();
+  if (availability.includes('ni na zalogi') || availability.includes('ni dobavljivo')) return 'out_of_stock';
+  return 'supplier';
+};
 
 const setStatus = (message, type = 'info') => {
   if (!statusBox) return;
@@ -94,6 +109,8 @@ const normalizeCategory = (category) => {
 
 const normalizeProduct = (product) => {
   const category = product.category || categories[0]?.id || 'avto-deli';
+  const stockStatus = getStockStatus(product);
+  const stock = STOCK_STATUS[stockStatus];
   return {
     name: product.name?.trim() ?? '',
     category,
@@ -102,8 +119,9 @@ const normalizeProduct = (product) => {
     price: product.price?.trim() ?? 'Po povpraševanju',
     badge: product.badge?.trim() ?? 'Novo',
     sku: product.sku?.trim() ?? '',
-    availability: product.availability?.trim() ?? 'Po naročilu',
-    delivery: product.delivery?.trim() ?? 'Po dogovoru',
+    stockStatus,
+    availability: stock.availability,
+    delivery: product.delivery?.trim() || stock.delivery,
     brand: product.brand?.trim() ?? '',
     compatibility: product.compatibility?.trim() ?? '',
     orderNote: product.orderNote?.trim() ?? '',
@@ -114,8 +132,8 @@ const normalizeProduct = (product) => {
       ? null
       : Math.max(0, Math.round(Number(product.shippingAmount) || 0)),
     purchaseUrl: product.purchaseUrl?.trim() ?? '',
-    checkoutEnabled: Number(product.checkoutAmount || 0) >= 50,
-    cartEnabled: Number(product.checkoutAmount || 0) >= 50,
+    checkoutEnabled: Number(product.checkoutAmount || 0) >= 50 && stockStatus !== 'out_of_stock',
+    cartEnabled: Number(product.checkoutAmount || 0) >= 50 && stockStatus !== 'out_of_stock',
     checkoutAmount: Number(product.checkoutAmount || 0),
     featured: Boolean(product.featured),
     searchTerms: product.searchTerms?.trim() ?? '',
@@ -153,12 +171,13 @@ const updateStats = () => {
   productStat.textContent = products.length;
   categoryStat.textContent = categories.length;
   featuredStat.textContent = products.filter((product) => product.featured).length;
+  if (availableStat) availableStat.textContent = products.filter((product) => product.stockStatus === 'supplier').length;
 };
 
 const loadProducts = async () => {
   setStatus('Nalaganje kataloga...');
   try {
-    const data = await apiRequest('/api/products');
+    const data = await apiRequest('/api/admin/products');
     categories = Array.isArray(data.categories) && data.categories.length ? data.categories.map(normalizeCategory) : [...defaultCategories];
     products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : [];
     renderCategoryOptions();
@@ -169,7 +188,7 @@ const loadProducts = async () => {
   } catch (error) {
     loadBundledCatalog();
     const message = products.length
-      ? `Prikazan je lokalni katalog (${products.length} izdelkov). Shranjevanje zahteva delujoč /api/products.`
+      ? `Prikazan je lokalni katalog (${products.length} izdelkov). Shranjevanje zahteva Cloudflare Access in delujoč /api/admin/products.`
       : `${error.message} Lokalni katalog je prazen.`;
     setStatus(message, products.length ? 'warning' : 'error');
   }
@@ -181,7 +200,7 @@ const fillForm = (product) => {
   form.elements.badge.value = product.badge;
   form.elements.price.value = product.price;
   form.elements.sku.value = product.sku;
-  form.elements.availability.value = product.availability;
+  form.elements.stockStatus.value = product.stockStatus;
   form.elements.delivery.value = product.delivery;
   form.elements.description.value = product.description;
   form.elements.brand.value = product.brand;
@@ -273,11 +292,14 @@ const renderCategories = () => {
 };
 
 const renderProducts = () => {
-  const filteredProducts = products.filter((product) => `${product.name} ${product.sku} ${product.categoryLabel} ${product.searchTerms}`.toLowerCase().includes(searchTerm));
+  const filteredProducts = products.filter((product) =>
+    `${product.name} ${product.sku} ${product.categoryLabel} ${product.searchTerms}`.toLowerCase().includes(searchTerm)
+    && (selectedStockStatus === 'all' || product.stockStatus === selectedStockStatus)
+  );
   productList.innerHTML = filteredProducts.length ? categories.map((category) => {
     const group = filteredProducts.filter((product) => product.category === category.id);
     if (!group.length) return '';
-    return `<section class="admin-product-group"><h3>${escapeHtml(category.label)} <span>${group.length}</span></h3>${group.map((product) => `<article class="admin-product-item"><div><strong>${escapeHtml(product.name)}</strong><span>${escapeHtml(product.sku)} • ${escapeHtml(product.price)}${product.regularPrice ? ` • Redna ${escapeHtml(product.regularPrice)}` : ''}${product.supplierPrice ? ` • Dobavna ${escapeHtml(product.supplierPrice)}` : ''} • ${product.checkoutEnabled ? `Stripe ${(product.checkoutAmount / 100).toFixed(2)} €` : 'Povpraševanje'} • ${escapeHtml(product.availability)}</span></div><div class="admin-item-actions"><button class="btn-secondary" type="button" data-edit-sku="${escapeHtml(product.sku)}">Uredi</button><button class="btn-secondary danger-btn" type="button" data-delete-sku="${escapeHtml(product.sku)}">Izbriši</button></div></article>`).join('')}</section>`;
+    return `<section class="admin-product-group"><h3>${escapeHtml(category.label)} <span>${group.length}</span></h3>${group.map((product) => `<article class="admin-product-item"><div><strong>${escapeHtml(product.name)}</strong><span>${escapeHtml(product.sku)} • ${escapeHtml(product.price)}${product.regularPrice ? ` • Redna ${escapeHtml(product.regularPrice)}` : ''}${product.supplierPrice ? ` • Dobavna ${escapeHtml(product.supplierPrice)}` : ''} • ${product.checkoutEnabled ? `Stripe ${(product.checkoutAmount / 100).toFixed(2)} €` : 'Povpraševanje'}</span><span class="admin-stock-badge" data-stock-status="${escapeHtml(product.stockStatus)}">${escapeHtml(STOCK_STATUS[product.stockStatus].label)}</span></div><div class="admin-item-actions"><button class="btn-secondary" type="button" data-edit-sku="${escapeHtml(product.sku)}">Uredi</button><button class="btn-secondary danger-btn" type="button" data-delete-sku="${escapeHtml(product.sku)}">Izbriši</button></div></article>`).join('')}</section>`;
   }).join('') : '<p class="form-note">Ni izdelkov. Dodajte prvi izdelek v obrazcu.</p>';
 };
 
@@ -328,6 +350,7 @@ categoryList?.addEventListener('click', (event) => {
 });
 
 adminSearch?.addEventListener('input', (event) => { searchTerm = event.target.value.toLowerCase().trim(); renderProducts(); });
+stockFilter?.addEventListener('change', (event) => { selectedStockStatus = event.target.value; renderProducts(); });
 imageInput?.addEventListener('input', () => renderImagePreview(imageInput.value));
 imageInput?.addEventListener('paste', (event) => handleImagePaste(event));
 resetButton?.addEventListener('click', resetForm);

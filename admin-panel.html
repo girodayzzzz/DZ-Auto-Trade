@@ -42,12 +42,13 @@
           <div>
             <p class="eyebrow">Admin panel</p>
             <h1>Upravljajte katalog kot profesionalna spletna trgovina.</h1>
-            <p class="hero-copy">Dodajajte kategorije, urejajte izdelke, označite priporočene artikle in hitro brišite zastarele ponudbe. Podatki se shranjujejo prek Cloudflare Workerja na <code>/api/products</code>.</p>
+            <p class="hero-copy">Dodajajte kategorije, urejajte izdelke, označite priporočene artikle in hitro brišite zastarele ponudbe. Podatki se varno shranjujejo prek Cloudflare Workerja na zaščitenem <code>/api/admin/products</code>.</p>
             <p class="admin-status" data-admin-status>Nalaganje kataloga...</p>
           </div>
           <div class="admin-stat-panel" aria-label="Pregled kataloga">
             <div><strong data-stat-products>0</strong><span>izdelkov</span></div>
             <div><strong data-stat-categories>0</strong><span>kategorij</span></div>
+            <div><strong data-stat-available>0</strong><span>dobavljivih</span></div>
             <div><strong data-stat-featured>0</strong><span>priporočenih</span></div>
           </div>
         </div>
@@ -92,8 +93,11 @@
                 <label for="admin-sku">Šifra/SKU
                   <input id="admin-sku" name="sku" type="text" placeholder="npr. DZ-FIL-001" required />
                 </label>
-                <label for="admin-availability">Zaloga
-                  <input id="admin-availability" name="availability" type="text" placeholder="Dobavljivo pri dobavitelju – potrdimo pred naročilom" required />
+                <label for="admin-stock-status">Dobavljivost
+                  <select id="admin-stock-status" name="stockStatus" required>
+                    <option value="supplier">Dobavljivo po naročilu</option>
+                    <option value="out_of_stock">Trenutno ni dobavljivo</option>
+                  </select>
                 </label>
                 <label for="admin-delivery">Dobava
                   <input id="admin-delivery" name="delivery" type="text" placeholder="Po potrditvi dobavitelja" required />
@@ -186,7 +190,16 @@
 
           <aside id="catalog-manager" class="card admin-products-card glass-card">
             <div class="section-head split-head"><div><p class="eyebrow">Katalog</p><h2>Izdelki po kategorijah</h2></div></div>
-            <input class="admin-search-input" type="search" placeholder="Išči po imenu, SKU ali kategoriji..." data-admin-search />
+            <div class="admin-catalog-filters">
+              <input class="admin-search-input" type="search" placeholder="Išči po imenu, SKU ali kategoriji..." data-admin-search />
+              <label for="admin-stock-filter">Prikaži
+                <select id="admin-stock-filter" data-admin-stock-filter>
+                  <option value="all">Vseh izdelkov</option>
+                  <option value="supplier">Dobavljivo po naročilu</option>
+                  <option value="out_of_stock">Trenutno ni dobavljivo</option>
+                </select>
+              </label>
+            </div>
             <div class="admin-product-list" data-admin-product-list></div>
           </aside>
 
@@ -199,7 +212,7 @@
       </section>
     </main>
     <script src="products.js?v=2026-07-20-1"></script>
-    <script src="scripts.js?v=2026-08-04-1"></script>
-    <script src="admin.js"></script>
+    <script src="scripts.js?v=2026-08-25-1"></script>
+    <script src="admin.js?v=2026-08-25-1"></script>
   </body>
 </html>

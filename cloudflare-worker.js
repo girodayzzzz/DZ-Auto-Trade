@@ -3371,15 +3371,13 @@ const SERVICE_CHECKOUT_PRODUCTS = [
 
 const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
   const products = catalogProducts
-    // Every product with a valid trusted price can be ordered. Stock wording
-    // is delivery information and stale KV flags must not block checkout.
     .filter((product) => Number(product.checkoutAmount || 0) >= 50)
     .map((product) => ({
       sku: String(product.sku || '').trim().toUpperCase(),
       name: String(product.name || '').trim(),
       priceCents: Math.round(Number(product.checkoutAmount || 0)),
       currency: 'eur',
-      active: product.checkoutEnabled !== false,
+      active: product.checkoutEnabled !== false && product.stockStatus !== 'out_of_stock',
       maxQuantity: DEFAULT_MAX_QUANTITY,
       image: String(product.image || '').trim(),
       shippingCents: product.shippingAmount === '' || product.shippingAmount == null
@@ -3601,6 +3599,16 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
   const shippingAmount = product.shippingAmount === '' || product.shippingAmount == null
     ? null
     : Math.max(0, Math.round(Number(product.shippingAmount) || 0));
+  const legacyAvailability = String(product.availability || '').toLowerCase();
+  const stockStatus = product.stockStatus === 'out_of_stock'
+    ? 'out_of_stock'
+    : legacyAvailability.includes('ni na zalogi') || legacyAvailability.includes('ni dobavljivo')
+      ? 'out_of_stock'
+      : 'supplier';
+  const stockCopy = {
+    supplier: { availability: 'Dobavljivo po naročilu – potrdimo pri dobavitelju', delivery: 'Po potrditvi dobavitelja' },
+    out_of_stock: { availability: 'Trenutno ni dobavljivo', delivery: 'Dobavni rok trenutno ni znan' },
+  }[stockStatus];
 
   return {
     name: String(product.name || '').trim(),
@@ -3610,8 +3618,9 @@ const normalizeProduct = (product, categories = DEFAULT_CATEGORIES) => {
     price: String(product.price || 'Po povpraševanju').trim(),
     badge: String(product.badge || 'Novo').trim(),
     sku,
-    availability: String(product.availability || 'Po naročilu').trim(),
-    delivery: String(product.delivery || 'Po dogovoru').trim(),
+    stockStatus,
+    availability: stockCopy.availability,
+    delivery: String(product.delivery || stockCopy.delivery).trim(),
     brand: String(product.brand || '').trim(),
     compatibility: String(product.compatibility || '').trim(),
     orderNote: String(product.orderNote || '').trim(),
@@ -3695,6 +3704,11 @@ const readProducts = async (env) => {
 const writeProducts = async (env, products) => {
   const categories = await readCategories(env);
   await runtimeBindings(env).productsKv.put(PRODUCTS_KEY, JSON.stringify(products.map((product) => normalizeProduct(product, categories)), null, 2));
+};
+
+const publicProduct = (product) => {
+  const { supplierPrice, purchaseUrl, ...safeProduct } = product;
+  return safeProduct;
 };
 
 
@@ -3951,7 +3965,7 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/api/products') {
       try {
-        return checkoutJson(request, { products: await readProducts(env), categories: await readCategories(env) });
+        return checkoutJson(request, { products: (await readProducts(env)).map(publicProduct), categories: await readCategories(env) });
       } catch (error) {
         console.error('Products KV catalog request failed.', { message: error?.message || String(error) });
         return checkoutJson(request, {
@@ -4022,6 +4036,10 @@ export default {
 
     if (url.pathname.startsWith('/api/admin/') && !requireAccess(request)) {
       return json({ error: 'Admin access required. Protect this route with Cloudflare Access OTP.' }, { status: 401 });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/admin/products') {
+      return json({ products: await readProducts(env), categories: await readCategories(env) });
     }
 
     if (request.method === 'GET' && url.pathname === '/api/admin/orders') {

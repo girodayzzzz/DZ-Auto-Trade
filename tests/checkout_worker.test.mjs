@@ -13,6 +13,7 @@ const currentProducts = [{
   category: 'cistila',
   sku: 'KV-NEW',
   availability: 'Na zalogi',
+  stockStatus: 'supplier',
   checkoutEnabled: true,
   cartEnabled: true,
   checkoutAmount: 1234,
@@ -38,14 +39,15 @@ const currentProducts = [{
   cartEnabled: false,
   checkoutAmount: 2500,
 }, {
-  // Stock labels and legacy opt-out flags are informational. Every priced
-  // shop product must still be accepted by checkout.
-  name: 'Previously blocked product',
+  // The server must enforce an admin-managed out-of-stock status even if a
+  // stale browser still shows a checkout button.
+  name: 'Out-of-stock product',
   category: 'cistila',
   sku: 'ALWAYS-ORDERABLE',
   availability: 'Ni na zalogi',
-  checkoutEnabled: false,
-  cartEnabled: false,
+  stockStatus: 'out_of_stock',
+  checkoutEnabled: true,
+  cartEnabled: true,
   checkoutAmount: 990,
 }];
 const kv = {
@@ -84,6 +86,17 @@ try {
     assert.equal(productsResponse.headers.get('Access-Control-Allow-Origin'), origin);
     assert.ok((await productsResponse.json()).products.length > 0);
   }
+
+  const publicCatalogResponse = await worker.fetch(new Request('https://dzautotrade.si/api/products'), { PRODUCTS_KV: kv });
+  const publicCatalog = await publicCatalogResponse.json();
+  assert.ok(publicCatalog.products.length >= currentProducts.length);
+  assert.ok(publicCatalog.products.every((product) => !('supplierPrice' in product) && !('purchaseUrl' in product)), 'public catalog must not expose supplier data');
+
+  const protectedCatalogResponse = await worker.fetch(new Request('https://dzautotrade.si/api/admin/products', {
+    headers: { 'Cf-Access-Authenticated-User-Email': 'admin@example.si' },
+  }), { PRODUCTS_KV: kv });
+  assert.equal(protectedCatalogResponse.status, 200);
+  assert.ok((await protectedCatalogResponse.json()).products.length >= currentProducts.length, 'admin catalog includes every saved and bundled product');
 
   const legacyCatalogKv = {
     async get(key) {
@@ -236,6 +249,27 @@ try {
   assert.match(stripeBody.get('line_items[2][price_data][product_data][name]'), /DIRECT-ONLY/);
   assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), '790', 'a product-specific shipping rate remains applicable above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
+
+  const outOfStockResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'out-of-stock-test' },
+    body: JSON.stringify({ sku: 'ALWAYS-ORDERABLE', quantity: 1 }),
+  }), { PRODUCTS: kv, STRIPE_SECRET_KEY: 'sk_test_mock' });
+  assert.equal(outOfStockResponse.status, 400);
+  assert.equal((await outOfStockResponse.json()).code, 'PRODUCT_NOT_AVAILABLE');
+
+  const anonymousAdminResponse = await worker.fetch(new Request('https://dzautotrade.si/api/admin/products', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: currentProducts[0] }),
+  }), { PRODUCTS: kv });
+  assert.equal(anonymousAdminResponse.status, 401, 'admin writes require a Cloudflare Access identity');
+
+  const authenticatedAdminResponse = await worker.fetch(new Request('https://dzautotrade.si/api/admin/products', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Cf-Access-Authenticated-User-Email': 'admin@example.si' },
+    body: JSON.stringify({ product: { ...currentProducts[0], stockStatus: 'out_of_stock' } }),
+  }), { PRODUCTS: kv });
+  assert.equal(authenticatedAdminResponse.status, 200, 'Cloudflare Access authenticated admins can update stock');
+  assert.ok(saved.has('products'), 'admin stock changes are persisted to Products KV');
 
   globalThis.fetch = async (url, init) => {
     stripeRequest = { url, init };
