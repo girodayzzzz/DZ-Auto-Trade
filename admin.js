@@ -37,8 +37,8 @@ let selectedStockStatus = 'all';
 let orders = [];
 
 const STOCK_STATUS = Object.freeze({
-  supplier: { label: 'Dobavljivo po naročilu', availability: 'Dobavljivo po naročilu – potrdimo pri dobavitelju', delivery: 'Po potrditvi dobavitelja' },
-  out_of_stock: { label: 'Trenutno ni dobavljivo', availability: 'Trenutno ni dobavljivo', delivery: 'Dobavni rok trenutno ni znan' },
+  supplier: { label: 'Na zalogi', availability: 'Na zalogi', delivery: 'Po potrditvi dobavitelja' },
+  out_of_stock: { label: 'Ni na zalogi', availability: 'Ni na zalogi', delivery: 'Dobavni rok trenutno ni znan' },
 });
 
 const getStockStatus = (product = {}) => {
