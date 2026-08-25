@@ -1,31 +1,33 @@
 # DZ Auto Trade — pregled celotnega spletnega mesta
 
-## Ponovni pregled (18. avgust 2026)
+## Ponovni pregled (25. avgust 2026)
 
 ### Kratek odgovor
 
-Da — spletno mesto je vizualno prepričljivo in že vsebuje večino ključnih temeljev (jasno ponudbo, trgovino, košarico, Stripe Checkout, obrazce, pravne strani, SEO metapodatke in strukturirane podatke), vendar bi še posodobil nekaj stvari. Največji naslednji učinek ne bo pri dodatni dekoraciji, ampak pri zaupanju, jasnosti dobave in doslednosti podatkov.
+Da — spletno mesto je vizualno prepričljivo in že vsebuje večino ključnih temeljev (jasno ponudbo, trgovino, košarico, Stripe Checkout, obrazce, pravne strani, SEO metapodatke in strukturirane podatke), vendar bi še posodobil nekaj stvari. Največji naslednji učinek ne bo pri dodatni dekoraciji, ampak pri zaupanju, jasnosti dobave in doslednosti podatkov. Pregled je zajel vseh **162 indeksiranih strani**, katalog, slike, obrazce, Checkout, Worker, SEO in konfiguracijo objave.
 
 ### Kaj bi posodobil najprej
 
-1. **Resnična razpoložljivost in dobavni rok.** Veliko izdelkov ima enako sporočilo »Dobavljivo pri dobavitelju – potrdimo pred naročilom«. Uvedel bi tri jasna stanja (na zalogi, dobavljivo v določenem roku, po povpraševanju) in jih povezal z dejanskim stanjem dobavitelja. To je najpomembnejša ovira pred nakupom.
+1. **Resnična dobavljivost in dobavni rok.** Izdelki se naročajo pri dobavitelju šele po prejemu naročila, zato sistem ne vodi količin lastne zaloge. Admin omogoča samo praktični stanji »Dobavljivo po naročilu« in »Trenutno ni dobavljivo«; slednje varno onemogoči Checkout. Naslednja koristna izboljšava bi bila natančnejši dobavni rok po dobaviteljih.
 2. **Dokaz zaupanja.** Dodal bi preverjene ocene strank, fotografije izvedenih čiščenj prej/potem in nekaj resničnih referenc. Trenutne obljube so jasne, vendar obiskovalec potrebuje tudi dokaz.
 3. **Fotografije storitev in vozil.** Produktne fotografije so dobre, storitvene strani pa bi pridobile z doslednimi lastnimi fotografijami. Uporabil bi enako razmerje stranic, osvetlitev in obdelavo.
 4. **Krajša pot do odločitve na mobilniku.** Preveril bi trgovino, filtre, košarico in Checkout na resničnih telefonih ter dodal lepljiv gumb za nakup na dolgih straneh izdelkov.
-5. **Merjenje konverzij.** Zasebnosti prijazno bi meril iskanja, uporabljene filtre, oglede izdelkov, dodajanja v košarico, začete nakupe, uspešna plačila in oddane obrazce. Brez tega ni mogoče zanesljivo določiti naslednje prioritete.
+5. **Merjenje konverzij.** Zasebnosti prijazno bi meril iskanja, uporabljene filtre, oglede izdelkov, dodajanja v košarico, začete nakupe, uspešna plačila in oddane obrazce. Brez tega ni mogoče zanesljivo določiti naslednje prioritete. Pred uvedbo naj bo pripravljen tudi jasen načrt privolitev in hrambe podatkov.
 6. **Vsebinska in jezikovna redakcija.** Poenotil bi izraze, velike začetnice, merske enote in opise, nato pa pregledal dolga navodila ter varnostna opozorila. Pri izdelkih naj bo najprej kratek prodajni povzetek, podrobnosti pa v zložljivih sklopih.
 7. **Dostopnost in zmogljivost.** Pred naslednjo vizualno prenovo bi izvedel ročni pregled tipkovnice in bralnika zaslona ter Lighthouse/WCAG pregled na domači strani, trgovini, izdelku, obrazcu in košarici.
 
 ### Tehnične ugotovitve tega pregleda
 
-- Katalog vsebuje **108 generiranih strani izdelkov** in uporablja skupen vir podatkov; generator je bil ponovno zagnan, da so zadnje strani dobile enako rezervno sliko kot preostali katalog.
-- Odstranjenih je bilo **16 neuporabljenih produktnih slik**, ki niso bile povezane z nobenim izdelkom in so po nepotrebnem povečevale repozitorij oziroma objavo.
+- Katalog vsebuje **137 izdelkov in 137 generiranih strani izdelkov** ter uporablja skupen vir podatkov. Vsi izdelki imajo ceno, opis, lokalno sliko in omogočen Checkout.
+- SEO pregled je uspešno preveril **162 indeksiranih HTML strani in 162 URL-jev v zemljevidu strani**.
+- Odstranjeni sta bili **2 neuporabljeni podvojeni sliki QuickJack**, ki nista bili povezani z nobenim izdelkom in sta povzročali neuspeh preverjanja slik.
+- Strukturni testi strani, obrazcev, Checkout odjemalca, varnosti Workerja, SEO in konfiguracije so uspešni. Testi namerno simulirajo tudi napake Stripe; izpis teh pričakovanih napak ne pomeni napake produkcijskega sistema.
 - Generične oznake »Novo« pri štirih avtomobilskih delih so bile zamenjane z informativno oznako »Avto del«, da kartice ne prikazujejo časovno neomejene promocijske trditve.
 - Samodejni testi pokrivajo Checkout, varnost delavca, obrazce, SEO, slike, konfiguracijo in generirane strani. Poleg teh testov je pred objavo še vedno smiseln ročni pregled produkcijskega Stripe/Formspree toka, saj lokalni testi ne morejo potrditi zunanjih računov in skrivnosti.
 
 ### Predlagan vrstni red
 
-- **Ta teden:** potrditi zalogo/dobavne roke, produkcijski Checkout in vse obrazce; pregledati mobilni nakupni tok.
+- **Ta teden:** potrditi zalogo/dobavne roke za vseh 137 izdelkov, produkcijski Checkout in vse obrazce; pregledati mobilni nakupni tok na resničnih napravah.
 - **Naslednje:** dodati reference, prej/potem fotografije in merjenje konverzij.
 - **Nato:** izboljšati besedila, dostopnost, Core Web Vitals in kategorijske pristajalne strani na podlagi dejanskih podatkov uporabe.
 
