@@ -1070,8 +1070,12 @@ h1 {
   height: 2.25rem;
   place-items: center;
   border-radius: 10px;
-  background: rgba(229, 9, 20, 0.2);
+  background: #1877f2;
   color: #ffffff;
+}
+
+.footer-social a:nth-child(2) .footer-social-icon {
+  background: linear-gradient(135deg, #833ab4, #e1306c 55%, #fcb045);
 }
 
 .footer-social-icon svg {
