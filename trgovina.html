@@ -69,79 +69,20 @@
       </div>
     </header>
     <main id="main-content">
-      <section class="shop-overview" id="shop-categories" aria-labelledby="shop-categories-title">
-        <div class="container">
-          <div class="section-head shop-category-heading">
-            <div><p class="eyebrow">Nakup po kategorijah</p><h1 id="shop-categories-title">Vse za vaš avto, urejeno po namenu.</h1><p>Najprej nega in poliranje, nato oprema ter avto deli — do pravega izdelka brez zamudnega iskanja.</p></div>
-            <a href="#catalog" class="shop-all-products-link" data-total-product-count>Poglej vse izdelke <span aria-hidden="true">→</span></a>
-          </div>
-          <div class="shop-category-shortcuts shop-category-showcase" aria-label="Glavne kategorije trgovine">
-            <a href="#cistila" data-shop-shortcut="cistila" class="shop-category-featured">
-              <span class="shop-category-icon" aria-hidden="true">✦</span>
-              <span class="shop-category-copy"><strong>Čistila in nega</strong><small>Največja izbira za brezhibno notranjost in zunanjost vozila</small></span>
-              <span class="shop-category-meta"><small data-category-count>Preveri ponudbo</small><span aria-hidden="true">→</span></span>
-            </a>
-            <a href="#poliranje-in-zascita" data-shop-shortcut="poliranje-in-zascita">
-              <span class="shop-category-icon" aria-hidden="true">◇</span>
-              <span class="shop-category-copy"><strong>Poliranje in zaščita</strong><small>Gobice, polirna sredstva in premazi za obstojen sijaj</small></span>
-              <span class="shop-category-meta"><small data-category-count>Preveri ponudbo</small><span aria-hidden="true">→</span></span>
-            </a>
-            <a href="#orodja" data-shop-shortcut="orodja">
-              <span class="shop-category-icon" aria-hidden="true">⌁</span>
-              <span class="shop-category-copy"><strong>Orodja in oprema</strong><small>Praktična oprema za garažo in delavnico</small></span>
-              <span class="shop-category-meta"><small data-category-count>Preveri ponudbo</small><span aria-hidden="true">→</span></span>
-            </a>
-            <a href="#tehnicni-spreji" data-shop-shortcut="tehnicni-spreji">
-              <span class="shop-category-icon" aria-hidden="true">◌</span>
-              <span class="shop-category-copy"><strong>Tehnični spreji</strong><small>Maziva, zaščita in servisna sredstva</small></span>
-              <span class="shop-category-meta"><small data-category-count>Preveri ponudbo</small><span aria-hidden="true">→</span></span>
-            </a>
-            <a href="#vse-za-servis-vozila" data-shop-shortcut="vse-za-servis-vozila">
-              <span class="shop-category-icon" aria-hidden="true">◆</span>
-              <span class="shop-category-copy"><strong>Vse za servis vozila</strong><small>Motorna olja in potrošni material za redno vzdrževanje</small></span>
-              <span class="shop-category-meta"><small data-category-count>Preveri ponudbo</small><span aria-hidden="true">→</span></span>
-            </a>
-            <a href="#novi-avto-deli" data-shop-shortcut="novi-avto-deli">
-              <span class="shop-category-icon" aria-hidden="true">⚙</span>
-              <span class="shop-category-copy"><strong>Novi avto deli</strong><small>Zanesljivi deli za servis in popravila</small></span>
-              <span class="shop-category-meta"><small data-category-count>Preveri ponudbo</small><span aria-hidden="true">→</span></span>
-            </a>
-            <a href="#rabljeni-avto-deli" data-shop-shortcut="rabljeni-avto-deli" data-extra-category>
-              <span class="shop-category-icon" aria-hidden="true">↻</span>
-              <span class="shop-category-copy"><strong>Rabljeni avto deli</strong><small>Preverjeni deli po ugodnejši ceni</small></span>
-              <span class="shop-category-meta"><small data-category-count>Preveri ponudbo</small><span aria-hidden="true">→</span></span>
-            </a>
-          </div>
-          <button class="btn-secondary shop-category-more" type="button" data-category-more aria-expanded="false">Prikaži vse kategorije <span aria-hidden="true">↓</span></button>
-        </div>
-      </section>
-      <section class="section bestsellers-section" aria-labelledby="shop-bestsellers-title">
-        <div class="container bestsellers-panel">
-          <div class="section-head split-head">
-            <div>
-              <p class="eyebrow">Najbolj prodajano</p>
-              <h2 id="shop-bestsellers-title">Priporočeni izdelki za hiter začetek.</h2>
-              <p>Preverjen izbor aktualnih izdelkov, ki jih lahko takoj dodate v košarico.</p>
-            </div>
-            <a href="#catalog" class="text-link">Celoten katalog →</a>
-          </div>
-          <div class="featured-row" data-featured-products aria-label="Najbolj prodajani izdelki"></div>
-        </div>
-      </section>
       <section class="section shop-catalog-section" id="catalog">
         <div class="container catalog-results-panel">
           <div class="section-head split-head">
             <div>
-              <p class="eyebrow">Katalog</p>
-              <h2>Vsi izdelki</h2>
-              <p data-catalog-summary>Urejen pregled izdelkov z iskanjem, razvrščanjem in filtri.</p>
+              <p class="eyebrow">Spletna trgovina</p>
+              <h1>Izberite. Dodajte. Naročite.</h1>
+              <p data-catalog-summary>Izdelki za nego, servis in opremo vašega vozila.</p>
             </div>
             <p class="product-count" data-product-count aria-live="polite">Izdelki se nalagajo</p>
           </div>
           <div class="catalog-tools catalog-tools-stationary" aria-label="Iskanje, kategorije in razvrščanje izdelkov">
             <div class="catalog-search-wrap">
               <label for="product-search">Iskanje<input id="product-search" type="search" placeholder="Poišči izdelek, znamko ali namen" list="product-search-suggestions" autocomplete="off" data-product-search /><datalist id="product-search-suggestions" data-search-suggestions></datalist></label>
-              <label for="product-sort">Razvrsti<select id="product-sort" data-product-sort><option value="featured">Priporočeno</option><option value="price-asc">Cena: najprej nižja</option><option value="price-desc">Cena: najprej višja</option><option value="name">Ime izdelka</option></select></label>
+              <label for="product-sort">Razvrsti<select id="product-sort" data-product-sort><option value="featured">Najprej znižano</option><option value="price-asc">Cena: najprej nižja</option><option value="price-desc">Cena: najprej višja</option><option value="name">Ime izdelka</option></select></label>
               <button class="btn-secondary catalog-mobile-filter-toggle" type="button" data-filter-toggle aria-expanded="false" aria-controls="catalog-filters">Filtri <span data-filter-total>0</span></button>
             </div>
             <div class="shop-category-shortcuts shop-category-filter-grid catalog-filter-rail" data-filter-list aria-label="Filtriranje po kategorijah izdelkov"></div>

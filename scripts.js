@@ -155,6 +155,11 @@ const escapeHtml = (value = '') =>
     .replace(/'/g, '&#039;');
 
 const parsePrice = (price) => Number(price?.replace(/[^0-9,]/g, '').replace(',', '.') ?? 0);
+const isDiscounted = (product) => parsePrice(product.regularPrice) > parsePrice(product.price);
+const getDiscountPercentage = (product) => {
+  if (!isDiscounted(product)) return 0;
+  return Math.round((1 - parsePrice(product.price) / parsePrice(product.regularPrice)) * 100);
+};
 const priceToCents = (price) => Math.round(parsePrice(price) * 100);
 const uniqueSorted = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'sl'));
 const slugifyFacet = (value = '') => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -651,6 +656,8 @@ const getVisibleProducts = () => {
     if (sort === 'price-asc') return parsePrice(a.price) - parsePrice(b.price);
     if (sort === 'price-desc') return parsePrice(b.price) - parsePrice(a.price);
     if (sort === 'name') return a.name.localeCompare(b.name, 'sl');
+    const discountDifference = getDiscountPercentage(b) - getDiscountPercentage(a);
+    if (discountDifference) return discountDifference;
     return Number(b.featured) - Number(a.featured);
   });
 };
@@ -681,18 +688,15 @@ const renderProductCard = (product) => `
   <article class="product-card product-card-pro" id="${escapeHtml(product.category)}">
     <a class="product-image product-card-link" href="${createProductUrl(product)}" style="--product-bg: ${escapeHtml(product.theme)}" aria-label="Poglej izdelek ${escapeHtml(product.name)}">
       ${productImageMarkup(product, false)}
+      ${isDiscounted(product) ? `<span class="product-sale-badge">−${getDiscountPercentage(product)} %</span>` : ''}
     </a>
     <div class="product-body">
       <div class="product-card-topline"><span>${escapeHtml(product.brand || product.categoryLabel)}</span><span class="product-stock-dot">${escapeHtml(product.availability || 'Preveri dobavljivost')}</span></div>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
-      <p class="product-card-summary">${escapeHtml(getFeaturedSummary(product.description))}</p>
-      <div class="product-card-tags">${[product.badge, ...getProductFeatures(product).slice(0, 1)].filter(Boolean).map((label) => `<span>${escapeHtml(label)}</span>`).join('')}</div>
       <div class="product-card-footer">
-        <div><small>${getUnitPrice(product) ? escapeHtml(getUnitPrice(product)) : 'Cena'}</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
+        <div>${isDiscounted(product) ? `<small class="product-regular-price">${escapeHtml(product.regularPrice)}</small>` : getUnitPrice(product) ? `<small>${escapeHtml(getUnitPrice(product))}</small>` : ''}<strong class="product-price">${escapeHtml(product.price)}</strong></div>
       </div>
-      <p class="product-shipping-note">${escapeHtml(product.delivery || 'Rok dobave potrdimo po naročilu')}</p>
       <div class="product-actions product-card-actions">
-        <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
         <button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>
       </div>
     </div>
