@@ -79,6 +79,7 @@ const productCount = document.querySelector('[data-product-count]');
 const totalProductCountLink = document.querySelector('[data-total-product-count]');
 const productSearch = document.querySelector('[data-product-search]');
 const productSort = document.querySelector('[data-product-sort]');
+const searchSuggestions = document.querySelector('[data-search-suggestions]');
 const productDetail = document.querySelector('[data-product-detail]');
 const facetFilters = document.querySelector('[data-facet-filters]');
 const filterPanel = document.querySelector('[data-filter-panel]');
@@ -178,6 +179,12 @@ const getProductFeatures = (product = {}) => {
   const text = `${product.name || ''} ${product.description || ''} ${product.searchTerms || ''}`.toLowerCase();
   const rules = [['pH-nevtralno', /ph[ -]?nevtral/], ['Koncentrat', /koncentrat|koncentrirano|redčit/], ['Hidrofobni učinek', /hidrofob/], ['Keramična zaščita', /keramič/], ['Profesionalna uporaba', /profesional/]];
   return rules.filter(([, pattern]) => pattern.test(text)).map(([label]) => label);
+};
+const getUnitPrice = (product = {}) => {
+  const volume = getProductVolume(product);
+  if (!volume) return '';
+  const unitPrice = parsePrice(product.price) / (volume / 1000);
+  return Number.isFinite(unitPrice) ? `${unitPrice.toLocaleString('sl-SI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €/l` : '';
 };
 const formatCurrency = (cents = 0) =>
   new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR' }).format(Number(cents || 0) / 100);
@@ -676,11 +683,14 @@ const renderProductCard = (product) => `
       ${productImageMarkup(product, false)}
     </a>
     <div class="product-body">
-      <div class="product-card-topline"><span>${escapeHtml(product.brand || product.categoryLabel)}</span><span class="product-stock-dot">Na zalogi</span></div>
+      <div class="product-card-topline"><span>${escapeHtml(product.brand || product.categoryLabel)}</span><span class="product-stock-dot">${escapeHtml(product.availability || 'Preveri dobavljivost')}</span></div>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
+      <p class="product-card-summary">${escapeHtml(getFeaturedSummary(product.description))}</p>
+      <div class="product-card-tags">${[product.badge, ...getProductFeatures(product).slice(0, 1)].filter(Boolean).map((label) => `<span>${escapeHtml(label)}</span>`).join('')}</div>
       <div class="product-card-footer">
-        <div><small>Cena</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
+        <div><small>${getUnitPrice(product) ? escapeHtml(getUnitPrice(product)) : 'Cena'}</small><strong class="product-price">${escapeHtml(product.price)}</strong></div>
       </div>
+      <p class="product-shipping-note">${escapeHtml(product.delivery || 'Rok dobave potrdimo po naročilu')}</p>
       <div class="product-actions product-card-actions">
         <a class="btn-secondary" href="${createProductUrl(product)}">Podrobnosti</a>
         <button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj v košarico</button>
@@ -695,7 +705,7 @@ const renderProducts = () => {
   const visibleProducts = getVisibleProducts();
   productGrid.innerHTML = visibleProducts.length
     ? visibleProducts.map(renderProductCard).join('')
-    : '<div class="empty-state"><h3>Ni najdenih izdelkov</h3><p>Poskusite z drugim iskalnim izrazom ali filtrom.</p></div>';
+    : '<div class="empty-state"><h3>Za izbrane pogoje ni izdelkov</h3><p>Počistite filtre, poskusite s krajšim izrazom ali nam pošljite podatke o izdelku, ki ga iščete.</p><div class="empty-state-actions"><button class="btn-secondary" type="button" data-empty-reset>Počisti iskanje in filtre</button><a class="btn-primary" href="kontakt.html">Pošlji povpraševanje</a></div></div>';
 
   if (productCount) {
     productCount.textContent = formatProductCountLabel(visibleProducts.length);
@@ -942,6 +952,16 @@ const renderFeaturedProducts = () => {
   });
 };
 
+const renderSearchSuggestions = () => {
+  if (!searchSuggestions) return;
+  const suggestions = uniqueSorted([
+    ...currentProducts.map((product) => product.brand),
+    ...currentCategories.map((category) => category.label),
+    ...currentProducts.filter((product) => product.featured).slice(0, 12).map((product) => product.name),
+  ]).slice(0, 40);
+  searchSuggestions.innerHTML = suggestions.map((suggestion) => `<option value="${escapeHtml(suggestion)}"></option>`).join('');
+};
+
 const initializeFeaturedCarousels = () => {
   featuredGrids.forEach((grid) => {
     const section = grid.closest('.bestsellers-section');
@@ -1018,6 +1038,23 @@ clearFiltersButton?.addEventListener('click', () => {
   updateTotalProductCountLink();
   renderFilters();
   renderProducts();
+});
+
+productGrid?.addEventListener('click', (event) => {
+  const resetButton = event.target.closest('[data-empty-reset]');
+  if (!resetButton) return;
+  clearFiltersButton?.click();
+  productSearch?.focus();
+});
+
+const categoryMoreButton = document.querySelector('[data-category-more]');
+categoryMoreButton?.addEventListener('click', () => {
+  const expanded = categoryMoreButton.getAttribute('aria-expanded') !== 'true';
+  categoryMoreButton.setAttribute('aria-expanded', String(expanded));
+  document.querySelector('.shop-category-showcase')?.classList.toggle('is-expanded', expanded);
+  categoryMoreButton.innerHTML = expanded
+    ? 'Prikaži manj kategorij <span aria-hidden="true">↑</span>'
+    : 'Prikaži vse kategorije <span aria-hidden="true">↓</span>';
 });
 
 filterToggle?.addEventListener('click', () => {
@@ -1218,6 +1255,7 @@ const initializeStore = async () => {
   renderShopInsights();
   renderProducts();
   renderFeaturedProducts();
+  renderSearchSuggestions();
   initializeFeaturedCarousels();
   renderProductDetail();
   renderCart();

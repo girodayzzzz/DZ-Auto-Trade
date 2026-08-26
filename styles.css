@@ -11047,3 +11047,64 @@ body.home-page .showcase-help a:hover {
   object-fit: contain;
   object-position: center;
 }
+
+/* Focused shop discovery: a shorter category menu, useful card facts and clear recovery. */
+.shop-page .shop-category-more {
+  display: none;
+  width: fit-content;
+  margin: 1rem auto 0;
+}
+
+.shop-page .product-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 1.65rem;
+  margin-top: 0.7rem;
+}
+
+.shop-page .product-card-tags span {
+  padding: 0.28rem 0.5rem;
+  border: 1px solid rgba(229, 9, 20, 0.16);
+  border-radius: 999px;
+  color: #fecaca;
+  background: rgba(229, 9, 20, 0.1);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.shop-page .product-shipping-note {
+  min-height: 2.4em;
+  margin: 0.65rem 0 0;
+}
+
+.shop-page .empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 901px) {
+  .shop-page .catalog-tools-stationary {
+    position: sticky;
+    top: 84px;
+    z-index: 12;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  }
+}
+
+@media (max-width: 900px) {
+  .shop-page .shop-category-showcase > a:nth-child(n + 5) {
+    display: none;
+  }
+
+  .shop-page .shop-category-showcase.is-expanded > a {
+    display: grid;
+  }
+
+  .shop-page .shop-category-more {
+    display: inline-flex;
+  }
+}
