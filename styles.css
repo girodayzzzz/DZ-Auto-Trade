@@ -11108,3 +11108,80 @@ body.home-page .showcase-help a:hover {
     display: inline-flex;
   }
 }
+
+/* Focused shop: one category selector, compact controls and purchase-first cards. */
+.shop-page .shop-catalog-section {
+  padding-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.shop-page .catalog-results-panel > .section-head {
+  margin-bottom: 1.25rem;
+}
+
+.shop-page .catalog-results-panel > .section-head h1 {
+  max-width: 760px;
+  margin: 0.2rem 0 0.45rem;
+  color: #fff;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
+}
+
+.shop-page .catalog-filter-rail {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 0.15rem 0 0.45rem;
+  scrollbar-width: thin;
+}
+
+.shop-page .shop-category-filter-grid .filter-btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.55rem;
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  align-items: center;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.shop-page .shop-category-filter-grid .filter-btn::before { display: none; }
+.shop-page .shop-category-filter-grid .filter-btn span { font-size: 0.88rem; }
+.shop-page .shop-category-filter-grid .filter-btn strong {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.76rem;
+}
+
+.shop-page .product-card-pro .product-body { gap: 0.7rem; }
+.shop-page .product-card-pro h3 { min-height: 2.5em; }
+.shop-page .product-card-pro .product-card-footer { margin-top: auto; }
+.shop-page .product-card-actions { grid-template-columns: 1fr; }
+.shop-page .product-card-actions .shop-btn { width: 100%; }
+
+.shop-page .product-sale-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+  padding: 0.38rem 0.58rem;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  border-radius: 8px;
+  background: #e50914;
+  box-shadow: 0 8px 22px rgba(229, 9, 20, 0.34);
+}
+
+.shop-page .product-regular-price {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+@media (max-width: 640px) {
+  .shop-page .catalog-results-panel { padding: 0.9rem; border-radius: 20px; }
+  .shop-page .catalog-results-panel > .section-head { gap: 0.5rem; }
+  .shop-page .catalog-results-panel > .section-head h1 { font-size: clamp(2rem, 11vw, 2.8rem); }
+  .shop-page .shop-category-filter-grid .filter-btn { min-height: 42px; }
+}
