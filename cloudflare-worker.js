@@ -3418,6 +3418,35 @@ const DEFAULT_PRODUCTS = {
       "checkoutEnabled": true,
       "cartEnabled": true,
       "featured": true
+    },
+    {
+      "name": "PREMIUM AVTORADIO 7\" GPS USB 4 GB EPCR12",
+      "category": "novi-avto-deli",
+      "categoryLabel": "Novi avto deli",
+      "description": "Nova premium multimedijska postaja EPCR12 s 7-palčnim zaslonom na dotik in ločljivostjo HD 1280 × 720 px. Operacijski sistem Android 13, 32 GB notranjega pomnilnika, 4 GB delovnega pomnilnika ter štirijedrni procesor Allwinner T3L s frekvenco 1,6 GHz zagotavljajo tekoče delovanje sistema in vseh funkcij.\n\nAndroid sistem:\nAndroid 13 omogoča brskanje po spletu, uporabo številnih aplikacij iz trgovine Google Play ter dostop do družbenih omrežij.\n\nDeljeni zaslon:\nTehnologija PIP omogoča sočasno uporabo dveh aplikacij v načinu deljenega zaslona. Tako lahko na istem zaslonu poslušate glasbo prek YouTuba ali Spotifyja in hkrati spremljate pot v Google Zemljevidih.\n\nPovečana funkcionalnost:\nDva vgrajena priključka USB omogočata sočasno polnjenje telefona in uporabo podatkovnega nosilca, na primer pomnilniškega ključka ali kartice. Radio ima tudi dva izhoda RCA 2.1 in izhod za nizkotonec.\n\nGPS navigacija in Beidou:\nRadio podpira satelitska navigacijska sistema GPS in Beidou ter uporabo številnih navigacijskih aplikacij.\n\nModul Wi-Fi, 4G in funkcija Dongle:\nPrek modula Wi-Fi lahko napravo povežete z brezžičnim omrežjem. Vgrajena funkcija Dongle omogoča brezžični prenos slike iz mobilne naprave neposredno na zaslon. Mobilni internet 4G je na voljo prek dodatnega zunanjega vmesnika; vgrajenega modula 4G ni.\n\nDiagnostični vmesnik OBDII:\nVgrajeni diagnostični vmesnik OBDII omogoča branje in brisanje napak ter spremljanje parametrov delovanja motorja v živo ob uporabi združljive dodatne opreme.\n\nRadijski sprejemnik:\nVgrajeni sprejemnik SI4745 podpira FM v frekvenčnem območju od 64 do 108 MHz in AM od 520 do 1710 kHz ter brez težav sprejema signale RDS/RBDS. Modul Bluetooth 4.0 omogoča poslušanje glasbe in uporabo prostoročnega telefoniranja.\n\nTehnični podatki:\n- Stanje: nov izdelek\n- Delovna napetost: 9–16 V\n- Delovna temperatura: od −40 do +50 °C\n- Barva: črna (št. 52)\n- Priključek: ISO\n- Procesor: štirijedrni Allwinner T3L Cortex A7, 1,6 GHz\n- Grafični procesor: Mali-400MP2\n- Zaslon: 7-palčni na dotik\n- Ločljivost zaslona: HD 1280 × 720 px\n- Operacijski sistem: Android 13 (API 29)\n- Notranji pomnilnik: 32 GB\n- Delovni pomnilnik RAM: 4 GB\n- Pomnilniške kartice: podprte\n- Bluetooth: 4.0\n- Mikrofon: ni vgrajen\n- Odpornost proti udarcem: da\n- Navigacija: GPS in Beidou\n- Internet: Wi-Fi in podpora za zunanji 4G Dongle\n- Vgrajeno frekvenčno območje 4G: ne\n- Radijski sprejemnik: SI4745 FM/AM/RDS/RBDS\n- Sprejem signalov RDS: da\n- Izenačevalnik: 13-pasovni\n- Avdio izhodi: 2 × RCA in 1 × izhod za nizkotonec, 2.1-kanalni izhod\n- Ojačevalnik: YD7388\n- Vhodi: USB in AUX\n- Izhodi USB: 2 × USB\n- Izhod A/V: da\n- Deljeni zaslon: da (PIP)\n- Podpora za kamero AHD: da; kamera ni priložena\n- Android Auto in CarPlay: ne\n- DSP: ne\n- Podprta dodatna oprema: USB DVR, TPMS in OBD\n- Zahtevnost namestitve: preprosta\n- Pakiranje: škatla",
+      "price": "175,94 €",
+      "badge": "Premium avtoradio",
+      "sku": "DZ-N010",
+      "brand": "EPCR12",
+      "checkoutAmount": 17594,
+      "searchTerms": "premium avtoradio radio 7 palcev GPS USB 4 GB RAM 32 GB Android 13 EPCR12 Bluetooth WiFi Beidou OBDII PIP",
+      "images": [
+        "images/products/epcr12-premium-car-radio-7-gps-usb-2gb.jpg",
+        "images/products/epcr12-premium-car-radio-7-gps-usb-2gb (1).jpg",
+        "images/products/epcr12-premium-car-radio-7-gps-usb-2gb (2).jpg",
+        "images/products/epcr12-premium-car-radio-7-gps-usb-2gb (3).jpg",
+        "images/products/epcr12-premium-car-radio-7-gps-usb-2gb (4).jpg"
+      ],
+      "image": "images/products/epcr12-premium-car-radio-7-gps-usb-2gb.jpg",
+      "imageAlt": "Premium avtoradio EPCR12 s 7-palčnim zaslonom, GPS, USB in 4 GB RAM",
+      "theme": "linear-gradient(135deg, #111827, #2563eb)",
+      "availability": "Na zalogi",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 10,00 €",
+      "shippingAmount": 1000,
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true
     }
   ]
 };
