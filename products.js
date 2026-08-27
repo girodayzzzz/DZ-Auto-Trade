@@ -3495,5 +3495,36 @@ window.products = [
     "checkoutEnabled": true,
     "cartEnabled": true,
     "featured": true
+  },
+  {
+    "name": "Hexagon LED razsvetljava 6500K 220V 243 × 166 cm",
+    "category": "orodja",
+    "categoryLabel": "Orodja",
+    "description": "Modularna LED razsvetljava v obliki petih povezanih šestkotnikov zagotavlja enakomerno hladno belo svetlobo za delavnice, garaže, avtopralnice in detailing studie. Sistem meri 243 × 166 cm ter je zasnovan za priklop na omrežno napetost 220 V.\n\nTehnični podatki:\n- Barvna temperatura: 6500 K\n- Napajalna napetost: 220 V\n- Dimenzije sestavljenega sistema: 243 × 166 cm\n- Oblika: 5 povezanih šestkotnikov\n- Barva svetlobe: hladno bela\n- Oznaka izdelka: EPHCL07\n\nVsebina paketa:\n- LED svetlobne cevi\n- Kotni, ravni in trismerni povezovalni elementi\n- Napajalni priključek\n\nOpomba:\nElektrični priklop naj izvede ustrezno usposobljena oseba.",
+    "price": "129,99 €",
+    "badge": "LED razsvetljava",
+    "sku": "DZ-N013",
+    "brand": "EinParts Automotive",
+    "partNumber": "EPHCL07",
+    "checkoutAmount": 12999,
+    "searchTerms": "EPHCL07 hexagon LED razsvetljava 6500K 220V 243 166 cm garaža delavnica detailing studio pet šestkotnikov",
+    "images": [
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm.jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (1).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (2).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (3).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (4).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (5).jpg"
+    ],
+    "image": "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm.jpg",
+    "imageAlt": "Hexagon LED razsvetljava EPHCL07 s petimi povezanimi šestkotniki",
+    "theme": "linear-gradient(135deg, #e0f2fe, #1e3a8a)",
+    "availability": "Na zalogi",
+    "delivery": "Po potrditvi dobavitelja",
+    "shippingNote": "Poštnina 10,00 €",
+    "shippingAmount": 1000,
+    "checkoutEnabled": true,
+    "cartEnabled": true,
+    "featured": true
   }
 ];
