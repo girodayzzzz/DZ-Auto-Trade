@@ -3367,6 +3367,34 @@ window.products = [
     "imageAlt": "Stenski nosilec Poka Premium za tri polirne stroje"
   },
   {
+    "category": "orodja",
+    "categoryLabel": "Orodja",
+    "availability": "Na zalogi",
+    "delivery": "Po potrditvi dobavitelja",
+    "shippingNote": "Poštnina 5,90 €; nad 60 € brezplačna poštnina",
+    "checkoutEnabled": true,
+    "cartEnabled": true,
+    "featured": false,
+    "theme": "linear-gradient(135deg, #f59e0b, #111827)",
+    "name": "Hexagon LED razsvetljava 6500K 220V 243 × 166 cm",
+    "price": "132,89 €",
+    "sku": "DZ-T022",
+    "checkoutAmount": 13289,
+    "badge": "LED razsvetljava",
+    "description": "EPHCL07 modularna LED svetilka v obliki petih šesterokotnikov z močjo 192 W in hladno belo svetlobo 6500 K je zasnovana za profesionalne prostore, kjer ima osvetlitev funkcionalno in predstavitveno vlogo. Prepoznavna šesterokotna zasnova ustvarja učinek satovja ter prostoru daje tehničen, urejen in prestižen videz.\n\nModularni sistem razsvetljave:\nSistem medsebojno povezanih LED panelov omogoča postavitev razsvetljave po priloženi montažni shemi ali izdelavo lastne kompozicije, prilagojene prostoru. Zasnovan je za izrazit videz, močno osvetlitev delovne površine in povezano svetlobno celoto v garaži, delavnici, detailing studiu, razstavnem salonu ali predstavitvenem prostoru.\n\nEnakomerna svetloba brez utripanja olajša pregled laka, stekla, karoserije in podrobnosti notranjosti vozila. Razsvetljava je primerna tudi za snemanje videoposnetkov in fotografiranje vozil s telefonom ali fotoaparatom. Lahka konstrukcija poenostavi namestitev in omogoča atraktivno postavitev brez prekomerne obremenitve montažne površine.\n\nTehnične specifikacije:\n- Svetlobni izkoristek: 110 lm/W\n- Indeks barvne reprodukcije: CRI ≥ 80\n- Delovna napetost: 220 V\n- Frekvenca: 50 Hz\n- Barva svetlobe: 6500 K (hladno bela)\n- Stopnja zaščite: IP42\n- Skupne dimenzije konstrukcije: 243 × 166 cm\n- Širina LED panelov: 21 mm\n- Višina LED panelov: 36 mm\n- Barva senčila: mlečna\n- Moč: 192 W\n- Svetlobni tok: 21.120 lm\n- Dolžina napajalnega kabla: 40 cm\n- Možnost individualne postavitve: da\n\nVsebina kompleta:\n- 24 × šesterokotni LED panel\n- 21 × montažni konektor\n- 1 × napajalni kabel dolžine 40 cm brez vtiča\n- 25 × kabelska vezica\n- 1 × navodila za namestitev\n\nKomplet vsebuje 21 konektorjev: 11 ravnih konektorjev 120°, 9 konektorjev V in 1 konektor T.",
+    "searchTerms": "EPHCL07 Hexagon LED razsvetljava svetilka 6500K 220V 192W 21120 lm 243 x 166 cm garaža delavnica detailing studio satovje",
+    "images": [
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (5).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (3).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (4).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (2).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (1).jpg",
+      "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm.jpg"
+    ],
+    "image": "images/products/ephcl07-hexagon-led-lighting-6500k-220v-243-x-166-cm (5).jpg",
+    "imageAlt": "Modularna Hexagon LED razsvetljava EPHCL07 s petimi šesterokotniki"
+  },
+  {
     "name": "MOTORNO OLJE MERCEDES 5W-30 MB229.52 5L",
     "category": "vse-za-servis-vozila",
     "categoryLabel": "Vse za servis vozila",
