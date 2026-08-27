@@ -3443,6 +3443,37 @@
       "checkoutEnabled": true,
       "cartEnabled": true,
       "featured": true
+    },
+    {
+      "name": "Senzor tlaka klimatske naprave",
+      "category": "novi-avto-deli",
+      "categoryLabel": "Novi avto deli",
+      "description": "Senzor tlaka klimatske naprave je ključni sestavni del klimatskega sistema vozila, saj nadzoruje tlak hladilnega sredstva. S tem omogoča optimalno delovanje kompresorja, učinkovito hlajenje in prijetno temperaturo v potniški kabini. Ustrezen nadzor tlaka pomaga preprečevati poškodbe sistema.\n\nSenzor klimatske naprave EinParts Automotive je kakovosten izdelek, zasnovan za natančno in zanesljivo delovanje klimatskega sistema.\n\nTehnični podatki:\n- Stanje: nov izdelek\n- Delovna napetost: 12 V\n- Število priključkov: 3\n- Vrsta senzorja: senzor absolutnega tlaka\n- Funkcija: nadzor tlaka hladilnega sredstva\n\nNamenjeno za:\n- AUDI A2 (8Z0)\n- AUDI A4 B6 (8E2)\n- AUDI A4 B6 Avant (8E5)\n- AUDI A4 B7 (8EC)\n- AUDI A4 B7 Avant (8ED)\n- AUDI A6 C5 (4B2)\n- AUDI A6 C5 Avant (4B5)\n- AUDI A8 D3 (4E2, 4E8)\n- SEAT EXEO (3R2)\n- SEAT EXEO ST (3R5)\n- VW PASSAT B5.5 (3B3)\n- VW PASSAT B5.5 Variant (3B6)\n\nOE številke:\n- AUDI: 3R0 959 126, 8E0 959 126, 8E0 959 126A, 8E0 959 126B, 8E0 959 126C, 8Z0 959 126\n- SEAT: 3R0 959 126, 8E0 959 126, 8E0 959 126A, 8E0 959 126B, 8E0 959 126C, 8Z0 959 126\n- VAG: 3R0 959 126, 8E0 959 126, 8E0 959 126A, 8E0 959 126B, 8E0 959 126C, 8Z0 959 126\n- VW: 3R0 959 126, 8E0 959 126, 8E0 959 126A, 8E0 959 126B, 8E0 959 126C, 8Z0 959 126\n\nNadomestne številke:\n- BEHR HELLA SERVICE: 6ZL 351 028-401\n- CTR: 1205170\n- DELPHI: AK10031, TSP0435064\n- DENSO: DPS02003, DPS32002\n- ECOCLIM: 264A45\n- ERA: 330976\n- FISPA: 5.2089, 69154\n- FRIGAIR: 29.31000\n- HELLA: 6ZL 351 028-401\n- INTERMOTOR: F4-36518, F4-AC7011\n- JP GROUP: 1127500200\n- KLITECH: DS1205170\n- KRIOS: 5.2089, 69154\n- KUHLER SCHNEIDER: 8300661\n- MAXGEAR: AC156489\n- NRF: 38954\n- NTY: EAC-AU-001\n- OSSCA: 17227\n- SIDAT: 5.2089, 69154\n- THERMOTEC: KTT130000, KTT130044\n- TOPRAN: 638502\n- TRUCKTEC AUTOMOTIVE: 07.42.065\n- VEMO: V10-73-0002, V10-73-0238\n- WE PARTS: K52089\n- ZZVF: ZV1K0123E",
+      "price": "26,99 €",
+      "badge": "Senzor klimatske naprave",
+      "sku": "DZ-N011",
+      "brand": "EinParts Automotive",
+      "partNumber": "EPS3126",
+      "compatibility": "Audi A2, A4 B6/B7, A6 C5 in A8 D3; SEAT Exeo; VW Passat B5.5",
+      "checkoutAmount": 2699,
+      "searchTerms": "senzor tlaka klimatske naprave klima hladilno sredstvo EPS3126 Audi Seat VW VAG 3R0959126 8E0959126 8Z0959126",
+      "images": [
+        "images/products/eps3126-a-c-sensor.jpg",
+        "images/products/eps3126-a-c-sensor (1).jpg",
+        "images/products/eps3126-a-c-sensor (2).jpg",
+        "images/products/eps3126-a-c-sensor (3).jpg",
+        "images/products/eps3126-a-c-sensor (4).jpg"
+      ],
+      "image": "images/products/eps3126-a-c-sensor.jpg",
+      "imageAlt": "Senzor tlaka klimatske naprave EinParts Automotive EPS3126 s tremi priključki",
+      "theme": "linear-gradient(135deg, #111827, #0ea5e9)",
+      "availability": "Na zalogi",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 10,00 €",
+      "shippingAmount": 1000,
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true
     }
   ]
 }
