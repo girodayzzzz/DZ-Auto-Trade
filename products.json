@@ -3474,6 +3474,28 @@
       "checkoutEnabled": true,
       "cartEnabled": true,
       "featured": true
+    },
+    {
+      "name": "Cev zraka OE 1K0145828T",
+      "category": "novi-avto-deli",
+      "categoryLabel": "Novi avto deli",
+      "description": "OE 1K0145828T",
+      "price": "26,99 €",
+      "badge": "Cev zraka",
+      "sku": "DZ-N012",
+      "partNumber": "1K0145828T",
+      "checkoutAmount": 2699,
+      "searchTerms": "cev zraka OE 1K0145828T avto del",
+      "image": "images/products/81702.jpg",
+      "imageAlt": "Cev zraka OE 1K0145828T",
+      "theme": "linear-gradient(135deg, #1f2937, #64748b)",
+      "availability": "Na zalogi",
+      "delivery": "Po potrditvi dobavitelja",
+      "shippingNote": "Poštnina 7,95 €",
+      "shippingAmount": 795,
+      "checkoutEnabled": true,
+      "cartEnabled": true,
+      "featured": true
     }
   ]
 }
