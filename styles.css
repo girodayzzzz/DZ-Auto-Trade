@@ -11288,3 +11288,38 @@ body.about-page .about-cta-card .btn-primary {
     flex-direction: column;
   }
 }
+
+.partner-inquiry-card {
+  border-color: rgba(229, 9, 20, 0.24);
+  background: linear-gradient(145deg, var(--card), rgba(229, 9, 20, 0.045));
+}
+
+.partner-inquiry-hero {
+  background: radial-gradient(circle at 82% 20%, rgba(229, 9, 20, 0.12), transparent 32%);
+}
+
+.partner-booking-panel {
+  align-items: start;
+}
+
+.partner-form-intro {
+  position: sticky;
+  top: 7rem;
+}
+
+.partner-inquiry-form .field-help {
+  display: block;
+  margin-top: -0.65rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.partner-inquiry-form input:invalid:not(:placeholder-shown) {
+  border-color: rgba(229, 9, 20, 0.6);
+}
+
+@media (max-width: 800px) {
+  .partner-form-intro {
+    position: static;
+  }
+}
