@@ -5,4 +5,5 @@ window.FORMSPREE_ENDPOINTS = {
   parts: 'https://formspree.io/f/xojglvjj',
   'vehicle-sale': 'https://formspree.io/f/mgoglogj',
   transport: 'https://formspree.io/f/xlgqwjro',
+  partner: 'https://formspree.io/f/xrpgenne',
 };
