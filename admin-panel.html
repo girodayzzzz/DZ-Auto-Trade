@@ -20,6 +20,7 @@
     <meta property="og:image" content="https://dzautotrade.si/assets/Logodzautotrade.si.png" />
     <meta name="twitter:card" content="summary" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.css?v=2026-08-31-1" />
   </head>
   <body class="admin-body">
     <a class="skip-link" href="#main-content">Preskoči na glavno vsebino</a>
@@ -30,7 +31,7 @@
         </a>
         <button class="menu-toggle" aria-label="Odpri meni" aria-expanded="false"><span></span><span></span><span></span></button>
         <nav class="main-nav admin-top-nav" aria-label="Admin navigacija">
-          <a href="#quick-links" class="nav-link">Hitre povezave</a>
+          <a href="#product-editor" class="nav-link">Nov izdelek</a>
           <a href="#catalog-manager" class="nav-link">Katalog</a>
           <a href="#orders-manager" class="nav-link">Naročila</a>
           <a href="index.html" class="admin-view-site">Odpri stran <span aria-hidden="true">↗</span></a>
@@ -40,17 +41,18 @@
     <main id="main-content">
       <section class="admin-hero">
         <div class="container admin-hero-grid">
-          <div>
+          <div class="admin-welcome">
+            <div class="admin-date" data-admin-date>ADMINISTRACIJA</div>
             <p class="eyebrow">Nadzorna plošča</p>
-            <h1>Dobrodošli nazaj.</h1>
-            <p class="hero-copy">Hiter pregled trgovine, naročil in povpraševanj.</p>
-            <p class="admin-status" data-admin-status>Nalaganje kataloga...</p>
+            <h1>Dobrodošli v <span>DZ upravljalniku.</span></h1>
+            <p class="hero-copy">Vse za urejanje spletne trgovine na enem preglednem mestu.</p>
+            <p class="admin-status" data-admin-status role="status" aria-live="polite">Nalaganje kataloga...</p>
           </div>
           <div class="admin-stat-panel" aria-label="Pregled kataloga">
-            <div><strong data-stat-products>0</strong><span>izdelkov</span></div>
-            <div><strong data-stat-categories>0</strong><span>kategorij</span></div>
-            <div><strong data-stat-available>0</strong><span>dobavljivih</span></div>
-            <div><strong data-stat-featured>0</strong><span>priporočenih</span></div>
+            <div><span class="stat-icon stat-blue" aria-hidden="true">▦</span><strong data-stat-products>0</strong><span>Vsi izdelki</span><small>v katalogu</small></div>
+            <div><span class="stat-icon stat-violet" aria-hidden="true">◇</span><strong data-stat-categories>0</strong><span>Kategorije</span><small>aktivnih skupin</small></div>
+            <div><span class="stat-icon stat-green" aria-hidden="true">✓</span><strong data-stat-available>0</strong><span>Na zalogi</span><small>dobavljivih</small></div>
+            <div><span class="stat-icon stat-orange" aria-hidden="true">★</span><strong data-stat-featured>0</strong><span>Izpostavljeno</span><small>priporočenih</small></div>
           </div>
         </div>
       </section>
@@ -58,7 +60,7 @@
         <div id="quick-links" class="container admin-quick-section">
           <div class="admin-section-heading">
             <div><p class="eyebrow">Bližnjice</p><h2>Pomembne strani</h2></div>
-            <span>Odprejo se v novem zavihku</span>
+            <span class="admin-heading-note">Odprejo se v novem zavihku ↗</span>
           </div>
           <nav class="admin-quick-links" aria-label="Hitre povezave do pomembnih strani">
             <a href="kontakt.html" target="_blank" rel="noopener"><span class="admin-link-icon" aria-hidden="true">✉</span><span><strong>Splošno povpraševanje</strong><small>Kontaktni obrazec</small></span><b aria-hidden="true">↗</b></a>
@@ -71,11 +73,12 @@
         </div>
         <div class="container admin-dashboard">
           <aside class="admin-sidebar card">
-            <p class="eyebrow">Upravljanje</p>
-            <a href="#product-editor"><span aria-hidden="true">＋</span> Izdelek</a>
-            <a href="#category-manager"><span aria-hidden="true">▦</span> Kategorije</a>
-            <a href="#catalog-manager"><span aria-hidden="true">≡</span> Katalog</a>
-            <a href="#orders-manager"><span aria-hidden="true">▣</span> Naročila</a>
+            <p class="admin-sidebar-label">UPRAVLJANJE TRGOVINE</p>
+            <a class="is-active" href="#product-editor"><span aria-hidden="true">＋</span><b>Izdelek</b><small>Dodaj ali uredi</small></a>
+            <a href="#category-manager"><span aria-hidden="true">▦</span><b>Kategorije</b><small>Uredi strukturo</small></a>
+            <a href="#catalog-manager"><span aria-hidden="true">≡</span><b>Katalog</b><small>Preglej ponudbo</small></a>
+            <a href="#orders-manager"><span aria-hidden="true">▣</span><b>Naročila</b><small>Stripe plačila</small></a>
+            <div class="admin-sidebar-divider"></div>
             <button class="btn-secondary" type="button" data-refresh-products>Osveži podatke</button>
           </aside>
 
@@ -84,15 +87,15 @@
               <input type="hidden" name="originalSku" data-original-sku />
               <div class="section-head split-head admin-editor-toolbar">
                 <div>
-                  <p class="eyebrow">Shopify-style urejanje</p>
+                  <p class="eyebrow">Urejevalnik kataloga</p>
                   <h2 data-form-title>Dodaj nov izdelek</h2>
                 </div>
-                <span class="admin-pill">Produktni studio</span>
+                <span class="admin-pill"><i aria-hidden="true"></i> Osnutek pripravljen</span>
               </div>
               <div class="shopify-editor-grid">
                 <div class="shopify-editor-main">
                   <section class="shopify-card">
-                    <div class="shopify-card-head"><h3>Osnovni podatki</h3><span>Title & description</span></div>
+                    <div class="shopify-card-head"><div class="shopify-section-number">01</div><h3>Osnovni podatki</h3><span>Naziv, opis in identifikacija</span></div>
               <label for="admin-name">Naziv izdelka</label>
               <input id="admin-name" name="name" type="text" required />
               <div class="form-grid">
@@ -125,7 +128,7 @@
                   </section>
 
                   <section class="shopify-card">
-                    <div class="shopify-card-head"><h3>Mediji</h3><span>Slike in SEO opis</span></div>
+                    <div class="shopify-card-head"><div class="shopify-section-number">02</div><h3>Mediji</h3><span>Slika in SEO opis</span></div>
               <label for="admin-image">Slika URL ali prilepljena slika</label>
               <input id="admin-image" name="image" type="text" placeholder="images/products/sku-ime-izdelka.jpg ali https://..." data-image-input />
               <p class="form-note">Lahko prilepiš URL slike. Če prilepiš dejansko sliko iz odložišča, jo admin pretvori v data URL. Za profesionalno uporabo shrani slike v images/products/ ali na svoj CDN/hosting in uporabljaj slike z dovoljenjem dobavitelja.</p>
@@ -137,7 +140,7 @@
                   </section>
 
                   <section class="shopify-card">
-                    <div class="shopify-card-head"><h3>Cene in nakup</h3><span>Stripe, marža in dobavitelj</span></div>
+                    <div class="shopify-card-head"><div class="shopify-section-number">03</div><h3>Cene in nakup</h3><span>Stripe, marža in dobavitelj</span></div>
               <div class="form-grid">
                 <label for="admin-brand">Znamka / proizvajalec
                   <input id="admin-brand" name="brand" type="text" placeholder="npr. Bosch, Sonax, Turtle Wax" />
