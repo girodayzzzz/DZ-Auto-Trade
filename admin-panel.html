@@ -29,10 +29,11 @@
           <img class="brand-logo" src="assets/Logodzautotrade.si.png" alt="DZ Auto Trade" width="150" height="52" />
         </a>
         <button class="menu-toggle" aria-label="Odpri meni" aria-expanded="false"><span></span><span></span><span></span></button>
-        <nav class="main-nav" aria-label="Admin navigacija">
-          <a href="trgovina.html" class="nav-link">Trgovina</a>
-          <a href="storitve.html" class="nav-link">Storitve</a>
-          <a href="kontakt.html" class="nav-link">Kontakt</a>
+        <nav class="main-nav admin-top-nav" aria-label="Admin navigacija">
+          <a href="#quick-links" class="nav-link">Hitre povezave</a>
+          <a href="#catalog-manager" class="nav-link">Katalog</a>
+          <a href="#orders-manager" class="nav-link">Naročila</a>
+          <a href="index.html" class="admin-view-site">Odpri stran <span aria-hidden="true">↗</span></a>
         </nav>
       </div>
     </header>
@@ -40,9 +41,9 @@
       <section class="admin-hero">
         <div class="container admin-hero-grid">
           <div>
-            <p class="eyebrow">Admin panel</p>
-            <h1>Upravljajte katalog kot profesionalna spletna trgovina.</h1>
-            <p class="hero-copy">Dodajajte kategorije, urejajte izdelke, označite priporočene artikle in hitro brišite zastarele ponudbe. Podatki se varno shranjujejo prek Cloudflare Workerja na zaščitenem <code>/api/admin/products</code>.</p>
+            <p class="eyebrow">Nadzorna plošča</p>
+            <h1>Dobrodošli nazaj.</h1>
+            <p class="hero-copy">Hiter pregled trgovine, naročil in povpraševanj.</p>
             <p class="admin-status" data-admin-status>Nalaganje kataloga...</p>
           </div>
           <div class="admin-stat-panel" aria-label="Pregled kataloga">
@@ -54,13 +55,27 @@
         </div>
       </section>
       <section class="section admin-workspace">
+        <div id="quick-links" class="container admin-quick-section">
+          <div class="admin-section-heading">
+            <div><p class="eyebrow">Bližnjice</p><h2>Pomembne strani</h2></div>
+            <span>Odprejo se v novem zavihku</span>
+          </div>
+          <nav class="admin-quick-links" aria-label="Hitre povezave do pomembnih strani">
+            <a href="kontakt.html" target="_blank" rel="noopener"><span class="admin-link-icon" aria-hidden="true">✉</span><span><strong>Splošno povpraševanje</strong><small>Kontaktni obrazec</small></span><b aria-hidden="true">↗</b></a>
+            <a href="partnersko-povprasevanje.html" target="_blank" rel="noopener"><span class="admin-link-icon" aria-hidden="true">◎</span><span><strong>Partnersko povpraševanje</strong><small>Za poslovne partnerje</small></span><b aria-hidden="true">↗</b></a>
+            <a href="transport-povprasevanje.html" target="_blank" rel="noopener"><span class="admin-link-icon" aria-hidden="true">▰</span><span><strong>Transport</strong><small>Povpraševanje za prevoz</small></span><b aria-hidden="true">↗</b></a>
+            <a href="avto-deli-povprasevanje.html" target="_blank" rel="noopener"><span class="admin-link-icon" aria-hidden="true">◆</span><span><strong>Avto deli</strong><small>Iskanje delov</small></span><b aria-hidden="true">↗</b></a>
+            <a href="prodaja-avta.html" target="_blank" rel="noopener"><span class="admin-link-icon" aria-hidden="true">€</span><span><strong>Prodaja vozila</strong><small>Odkup vozila</small></span><b aria-hidden="true">↗</b></a>
+            <a href="iscem-vozilo.html" target="_blank" rel="noopener"><span class="admin-link-icon" aria-hidden="true">⌕</span><span><strong>Iščem vozilo</strong><small>Želje kupcev</small></span><b aria-hidden="true">↗</b></a>
+          </nav>
+        </div>
         <div class="container admin-dashboard">
           <aside class="admin-sidebar card">
-            <p class="eyebrow">Navigacija</p>
-            <a href="#product-editor">Izdelek</a>
-            <a href="#category-manager">Kategorije</a>
-            <a href="#catalog-manager">Katalog</a>
-            <a href="#orders-manager">Naročila</a>
+            <p class="eyebrow">Upravljanje</p>
+            <a href="#product-editor"><span aria-hidden="true">＋</span> Izdelek</a>
+            <a href="#category-manager"><span aria-hidden="true">▦</span> Kategorije</a>
+            <a href="#catalog-manager"><span aria-hidden="true">≡</span> Katalog</a>
+            <a href="#orders-manager"><span aria-hidden="true">▣</span> Naročila</a>
             <button class="btn-secondary" type="button" data-refresh-products>Osveži podatke</button>
           </aside>
 
