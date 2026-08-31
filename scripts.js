@@ -3,6 +3,26 @@ const nav = document.querySelector('.main-nav');
 const navLinks = document.querySelectorAll('.main-nav a.nav-link');
 const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 
+const partnerRequestType = document.querySelector('#request-type');
+const partnerRequestFieldsets = document.querySelectorAll('[data-request-fields]');
+const partnerRequestPrompt = document.querySelector('[data-request-prompt]');
+
+const updatePartnerRequestFields = () => {
+  if (!partnerRequestType) return;
+  const selectedType = partnerRequestType.value;
+  partnerRequestFieldsets.forEach((fieldset) => {
+    const isActive = fieldset.dataset.requestFields === selectedType;
+    fieldset.hidden = !isActive;
+    fieldset.querySelectorAll('input, select, textarea').forEach((field) => {
+      field.disabled = !isActive;
+    });
+  });
+  if (partnerRequestPrompt) partnerRequestPrompt.hidden = Boolean(selectedType);
+};
+
+partnerRequestType?.addEventListener('change', updatePartnerRequestFields);
+updatePartnerRequestFields();
+
 const setMobileMenuState = (isOpen) => {
   if (!menuToggle || !nav) return;
   nav.classList.toggle('open', isOpen);
