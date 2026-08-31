@@ -20,6 +20,7 @@ const imageInput = document.querySelector('[data-image-input]');
 const imagePreview = document.querySelector('[data-image-preview]');
 const orderList = document.querySelector('[data-admin-order-list]');
 const refreshOrdersButton = document.querySelector('[data-refresh-orders]');
+const adminDate = document.querySelector('[data-admin-date]');
 
 const defaultCategories = [
   { id: 'vse-za-servis-vozila', label: 'Vse za servis vozila', description: 'Motorna olja in potrošni material za redno vzdrževanje' },
@@ -35,6 +36,12 @@ let products = [];
 let searchTerm = '';
 let selectedStockStatus = 'all';
 let orders = [];
+
+if (adminDate) {
+  adminDate.textContent = new Intl.DateTimeFormat('sl-SI', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  }).format(new Date()).toLocaleUpperCase('sl-SI');
+}
 
 const STOCK_STATUS = Object.freeze({
   supplier: { label: 'Na zalogi', availability: 'Na zalogi', delivery: 'Po potrditvi dobavitelja' },
