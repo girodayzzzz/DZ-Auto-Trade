@@ -11197,7 +11197,7 @@ body.about-page .about-hero .trust-card h2 {
 
 body.about-page .about-offer-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -11211,28 +11211,55 @@ body.about-page .about-offer-grid .card > * {
   margin-block: 0;
 }
 
-body.about-page .about-checklist {
+body.about-page .hero-lead {
+  max-width: 46rem;
+  color: var(--text);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  font-weight: 700;
+}
+
+body.about-page .about-benefit-grid {
   display: grid;
-  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+body.about-page .about-benefit-grid .card h3,
+body.about-page .about-benefit-grid .card p {
+  margin-block: 0;
+}
+
+body.about-page .about-benefit-grid .card {
+  display: grid;
+  gap: 0.5rem;
+}
+
+body.about-page .partner-panel {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+
+body.about-page .partner-panel .btn-primary {
+  display: inline-flex;
+  margin-top: 0.5rem;
+}
+
+body.about-page .partner-tags {
+  display: grid;
+  gap: 0.7rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-body.about-page .about-checklist li {
-  position: relative;
-  padding: 1rem 1rem 1rem 3rem;
+body.about-page .partner-tags li {
+  padding: 0.85rem 1rem;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--card);
-}
-
-body.about-page .about-checklist li::before {
-  content: "✓";
-  position: absolute;
-  left: 1rem;
-  color: var(--success);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 body.about-page .location-layout {
@@ -11278,8 +11305,23 @@ body.about-page .about-cta-card .btn-primary {
   flex: 0 0 auto;
 }
 
-@media (max-width: 800px) {
+body.about-page .about-cta-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1100px) {
   body.about-page .about-offer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  body.about-page .about-offer-grid,
+  body.about-page .about-benefit-grid,
+  body.about-page .partner-panel {
     grid-template-columns: minmax(0, 1fr);
   }
 
