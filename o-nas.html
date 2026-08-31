@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Spoznajte DZ Auto Trade, slovensko trgovino za avto dele, čistila, orodja, vozila in podporo pri izbiri." />
-    <title>O nas | DZ Auto Trade</title>
+    <meta name="description" content="Spoznajte DZ Auto Trade: avto deli, nega vozil, pomoč po VIN, čiščenje, prodaja vozil in transport po dogovoru." />
+    <title>DZ Auto Trade – avto deli in storitve za vozila | O nas</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -13,19 +13,19 @@
     <link rel="apple-touch-icon" href="assets/Logodzautotrade.si.png" />
     <link rel="canonical" href="https://dzautotrade.si/o-nas.html" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="O nas | DZ Auto Trade" />
-    <meta property="og:description" content="Spoznajte DZ Auto Trade, slovensko trgovino za avto dele, čistila, orodja, vozila in podporo pri izbiri." />
+    <meta property="og:title" content="DZ Auto Trade – avto deli in storitve za vozila | O nas" />
+    <meta property="og:description" content="Spoznajte DZ Auto Trade: avto deli, nega vozil, pomoč po VIN, čiščenje, prodaja vozil in transport po dogovoru." />
     <meta property="og:url" content="https://dzautotrade.si/o-nas.html" />
     <meta property="og:image" content="https://dzautotrade.si/assets/Logodzautotrade.si.png" />
     <meta name="twitter:card" content="summary" />
     <meta property="og:site_name" content="DZ Auto Trade" />
-    <meta name="twitter:title" content="O nas | DZ Auto Trade" />
-    <meta name="twitter:description" content="Spoznajte DZ Auto Trade, slovensko trgovino za avto dele, čistila, orodja, vozila in podporo pri izbiri." />
+    <meta name="twitter:title" content="DZ Auto Trade – avto deli in storitve za vozila | O nas" />
+    <meta name="twitter:description" content="Spoznajte DZ Auto Trade: avto deli, nega vozil, pomoč po VIN, čiščenje, prodaja vozil in transport po dogovoru." />
     <meta name="twitter:image" content="https://dzautotrade.si/assets/Logodzautotrade.si.png" />
     <script src="seo.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="about-page">
     <a class="skip-link" href="#main-content">Preskoči na glavno vsebino</a>
     <header class="site-header">
       <div class="container nav-wrap">
@@ -51,39 +51,66 @@
         <div class="container hero-grid">
           <div class="hero-content">
             <p class="eyebrow">O nas</p>
-            <h1>DZ Auto Trade povezuje spletno trgovino, storitve za vozila in hitro podporo pri nakupu.</h1>
-            <p class="hero-copy">Za DZ Auto Trade stoji Tibi Topolinjak Munda. Podjetje razvijamo z namenom, da voznikom ponudimo osebno pomoč pri iskanju ustreznih delov, izdelkov za nego ter prodaji in prevozu vozil. Delamo po celotni Sloveniji, zato lahko izdelke, povpraševanja in dogovore prilagodimo lokaciji stranke.</p>
-            <div class="hero-actions"><a class="btn-primary" href="kontakt.html">Kontaktirajte nas</a><a class="btn-secondary" href="avto-deli-povprasevanje.html">Povpraševanje za dele</a></div>
+            <h1>DZ Auto Trade – deli, nega in storitve za vaše vozilo.</h1>
+            <p class="hero-copy">Na enem mestu združujemo avto dele, avtokozmetiko in osebno pomoč pri izbiri. Po podatkih vozila oziroma VIN preverimo ustreznost delov, po dogovoru pa poskrbimo tudi za čiščenje, prodajo ali posredniško prodajo vozila ter transport.</p>
+            <div class="hero-actions"><a class="btn-primary" href="trgovina.html">Poglejte ponudbo</a><a class="btn-secondary" href="kontakt.html">Kontaktirajte nas</a></div>
           </div>
-          <aside class="hero-card trust-card">
+          <aside class="hero-card trust-card" aria-labelledby="about-approach-title">
             <p class="eyebrow">Naš pristop</p>
-            <h3>Manj ugibanja, več preverjanja.</h3>
-            <p>Pri delih priporočamo VIN, pri transportu relacijo in mere, pri vozilih pa jasne podatke o stanju. Tako je ponudba hitrejša in natančnejša.</p>
+            <h2 id="about-approach-title">Manj ugibanja, več preverjanja.</h2>
+            <p>Za natančnejšo ponudbo nam posredujete ključne podatke: pri delih podatke vozila ali VIN, pri transportu relacijo in mere, pri storitvah pa stanje vozila in želeni rezultat.</p>
           </aside>
         </div>
       </section>
-      <section class="section">
-        <div class="container about-grid expanded-about">
-          <div>
-            <p class="eyebrow">Kaj delamo</p>
-            <h2>Profesionalna podpora za vzdrževanje, nakup in prodajo vozil.</h2>
+
+      <section class="section about-offer" aria-labelledby="about-offer-title">
+        <div class="container">
+          <header class="section-head">
+            <p class="eyebrow">Kaj ponujamo</p>
+            <h2 id="about-offer-title">Ponudba za vzdrževanje, nego in prodajo vozila.</h2>
+          </header>
+          <div class="about-offer-grid">
+            <article class="card"><span class="card-icon" aria-hidden="true">⚙️</span><h3>Avto deli</h3><p>Pomagamo poiskati ustrezen del in pred naročilom preveriti njegovo združljivost s podatki vozila oziroma VIN.</p></article>
+            <article class="card"><span class="card-icon" aria-hidden="true">✨</span><h3>Avtokozmetika in nega</h3><p>Ponujamo izdelke za čiščenje, vzdrževanje in zaščito vozila ter storitve čiščenja in nege.</p></article>
+            <article class="card"><span class="card-icon" aria-hidden="true">🤝</span><h3>Vozila in transport</h3><p>Pomagamo pri prodaji oziroma posredniški prodaji vozila in se po dogovoru dogovorimo za transport.</p></article>
           </div>
-          <p>DZ Auto Trade je namenjen voznikom, ki želijo oseben pristop namesto anonimnega nakupa. Prednost pred večjimi trgovinami je v tem, da povpraševanje pregledamo konkretno: pri delih preverimo podatke vozila, pri negi svetujemo glede na stanje, pri prodaji ali iskanju vozila pa zberemo informacije, ki skrajšajo pot do dobrega dogovora.</p>
         </div>
       </section>
-      <section class="section alt">
-        <div class="container card-grid value-grid">
-          <article class="card"><span class="card-icon">🔎</span><h3>Preverjanje kompatibilnosti</h3><p>Za avto dele najprej preverimo znamko, model, motor, letnik in po možnosti VIN številko, da zmanjšamo tveganje napačnega naročila.</p><a href="avto-deli-povprasevanje.html">Oddaj povpraševanje →</a></article>
-          <article class="card"><span class="card-icon">🚚</span><h3>Dogovor za transport</h3><p>Prevoz vozil, delov ali blaga pripravimo po relaciji, terminu, teži, dimenzijah in načinu nakladanja.</p><a href="transport-povprasevanje.html">Pridobi ponudbo →</a></article>
-          <article class="card"><span class="card-icon">🤝</span><h3>Prodaja in nakup vozil</h3><p>Za prodajo ali iskanje vozila zbiramo ključne podatke, fotografije in pričakovanja, nato predlagamo najbolj smiseln dogovor.</p><a href="prodaja-avta.html">Oddaj vozilo →</a></article>
-          <article class="card"><span class="card-icon">✨</span><h3>Nega in priprava</h3><p>Storitve čiščenja in zaščite prilagodimo stanju vozila, cilju ter terminu, zato je predhodno povpraševanje najboljši začetek.</p><a href="storitve.html">Poglej storitve →</a></article>
-        </div>
-      </section>
-      <section class="section">
+
+      <section class="section alt" aria-labelledby="about-process-title">
         <div class="container process-grid">
-          <div><p class="eyebrow">Kako sodelujemo</p><h2>Jasen postopek od povpraševanja do potrditve.</h2><p>Na ločenih straneh lahko izberete pravilen obrazec. Tako prejmemo podatke v pravi obliki in hitreje pripravimo odgovor.</p></div>
-          <ol class="steps"><li><strong>Oddate podatke</strong><span>Izberete obrazec za dele, transport, storitev ali vozilo.</span></li><li><strong>Preverimo izvedljivost</strong><span>Pregledamo kompatibilnost, razpoložljivost, relacijo ali stanje vozila.</span></li><li><strong>Potrdimo dogovor</strong><span>Pošljemo ponudbo, dodatna vprašanja ali termin izvedbe.</span></li></ol>
+          <div><p class="eyebrow">Kako vam pomagamo</p><h2 id="about-process-title">Od podatkov do jasnega dogovora.</h2><p>Izberete ponudbo ali nam pošljete povpraševanje. Več uporabnih podatkov pomeni natančnejši in hitrejši odgovor.</p></div>
+          <ol class="steps"><li><strong>Opišete, kaj potrebujete</strong><span>Pošljete podatke vozila, VIN, želeno storitev ali podatke za transport.</span></li><li><strong>Preverimo možnosti</strong><span>Pregledamo ustreznost delov, ponudbo oziroma izvedljivost storitve.</span></li><li><strong>Potrdimo naslednji korak</strong><span>Prejmete odgovor s ponudbo, dodatnimi vprašanji ali predlogom dogovora.</span></li></ol>
         </div>
+      </section>
+
+      <section class="section about-reasons" aria-labelledby="about-reasons-title">
+        <div class="container about-grid expanded-about">
+          <div><p class="eyebrow">Zakaj DZ Auto Trade</p><h2 id="about-reasons-title">Osebna pomoč pri različnih potrebah vašega vozila.</h2></div>
+          <ul class="about-checklist"><li>Preverjanje delov na podlagi konkretnih podatkov vozila.</li><li>Povezana ponudba izdelkov, nege in storitev.</li><li>Jasen dogovor glede prodaje vozila ali transporta.</li></ul>
+        </div>
+      </section>
+
+      <section class="section alt about-location" aria-labelledby="about-location-title">
+        <div class="container">
+          <div class="location-layout">
+            <div class="location-details">
+              <p class="eyebrow">Kje nas najdete</p>
+              <h2 id="about-location-title">Obiščite DZ Auto Trade.</h2>
+              <address><strong>DZ Auto Trade</strong><br />DAYZZZZ SPLETNA TRGOVINA,<br />TIBI TOPOLINJAK MUNDA S.P.<br /><br />Spodnji Ključarovci 15A<br />2274 Velika Nedelja<br />Slovenija</address>
+              <p><strong>ID za DDV:</strong> SI23492783<br /><strong>E-pošta:</strong> <a href="mailto:dzautotrade@gmail.com">dzautotrade@gmail.com</a><br /><strong>Spletna stran:</strong> <a href="https://dzautotrade.si/">dzautotrade.si</a></p>
+              <a class="btn-primary location-directions" href="https://www.google.com/maps/dir/?api=1&amp;destination=Spodnji+Klju%C4%8Darovci+15A%2C+2274+Velika+Nedelja%2C+Slovenija" target="_blank" rel="noopener noreferrer">Odpri pot v Google Maps <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="location-map">
+              <iframe src="https://www.google.com/maps?q=Spodnji+Klju%C4%8Darovci+15A%2C+2274+Velika+Nedelja%2C+Slovenija&amp;output=embed" title="Lokacija DZ Auto Trade, Spodnji Ključarovci 15A" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+              <p class="map-notice">Ob nalaganju zemljevida se vsebina pridobi od ponudnika Google. Več informacij je v <a href="politika-piskotkov.html">politiki piškotkov</a>.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section about-cta" aria-labelledby="about-cta-title">
+        <div class="container about-cta-card"><div><p class="eyebrow">Potrebujete pomoč?</p><h2 id="about-cta-title">Povejte nam, kaj iščete.</h2><p>Pošljite podatke o vozilu ali opišite želeno storitev in preverili bomo možnosti.</p></div><a class="btn-primary" href="kontakt.html">Kontaktirajte nas</a></div>
       </section>
     </main>
     <footer class="site-footer">
