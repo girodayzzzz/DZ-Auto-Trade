@@ -46,7 +46,8 @@ def test_partner_form_collects_attribution_and_request_details():
         "Partner",
         "E-pošta partnerja",
         "Stranka",
-        "Podrobnosti zahteve",
+        "Kontakt stranke",
+        "Način nadaljnje komunikacije",
         "Soglasje partnerja",
     ):
         assert required_field in parser.fields
@@ -69,3 +70,51 @@ def test_partner_page_is_listed_in_sitemap():
     sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
 
     assert "https://dzautotrade.si/partnersko-povprasevanje.html" in sitemap
+
+
+def test_partner_dropdown_options_have_explicit_contrast():
+    styles = (ROOT / "styles.css").read_text(encoding="utf-8")
+
+    assert ".partner-inquiry-form select option" in styles
+    assert 'select option[value=""]' in styles
+    assert "color-scheme: dark" in styles
+    assert "background: #0f172a" in styles
+
+
+def test_partner_form_has_request_specific_required_fields():
+    parser = parse_page()
+
+    expected_fields = {
+        "Znamka vozila",
+        "Model vozila",
+        "Letnik vozila",
+        "Motor vozila",
+        "VIN",
+        "Iskani rezervni del",
+        "Kraj prevzema",
+        "Kraj dostave",
+        "Predmet prevoza",
+        "Termin transporta",
+        "Vozilo za prodajo",
+        "Prevoženi kilometri",
+        "Stanje vozila",
+        "Želena prodajna cena",
+        "Iskana znamka in model",
+        "Želeni letnik",
+        "Želeni motor",
+        "Proračun za vozilo",
+        "Izdelek ali povezava",
+        "Količina izdelka",
+        "Podrobnosti zahteve",
+    }
+    assert expected_fields <= parser.fields.keys()
+    for field_name in expected_fields:
+        assert "required" in parser.fields[field_name]
+        assert "disabled" in parser.fields[field_name]
+
+
+def test_partner_request_script_only_enables_selected_field_group():
+    script = (ROOT / "scripts.js").read_text(encoding="utf-8")
+
+    assert "fieldset.dataset.requestFields === selectedType" in script
+    assert "field.disabled = !isActive" in script

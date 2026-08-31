@@ -11360,6 +11360,68 @@ body.about-page .about-cta-actions {
   border-color: rgba(229, 9, 20, 0.6);
 }
 
+/* Keep native partner-form dropdowns legible when the operating system opens
+   their option menu (Chromium otherwise renders white text on a white popup). */
+.partner-inquiry-form select {
+  color-scheme: dark;
+  color: #f8fafc;
+  background-color: #0f172a;
+}
+
+.partner-inquiry-form select option {
+  color: #f8fafc;
+  background: #0f172a;
+}
+
+.partner-inquiry-form select option[value=""] {
+  color: #cbd5e1;
+}
+
+.partner-inquiry-form select option:checked {
+  color: #ffffff;
+  background: #b91c1c;
+}
+
+.request-specific-fields {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.request-specific-fields fieldset {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid rgba(229, 9, 20, 0.28);
+  border-radius: 14px;
+}
+
+.request-specific-fields fieldset[hidden],
+.request-fields-prompt[hidden] {
+  display: none;
+}
+
+.request-specific-fields legend {
+  padding: 0 0.35rem;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.request-fields-prompt {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  color: var(--muted);
+}
+
+.field-required,
+.field-hint {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
 @media (max-width: 800px) {
   .partner-form-intro {
     position: static;
