@@ -11291,14 +11291,23 @@ body.about-page .about-cta-card {
   align-items: center;
   gap: 2rem;
   padding: clamp(1.5rem, 4vw, 2.5rem);
-  border: 1px solid rgba(229, 9, 20, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
-  background: linear-gradient(135deg, #fff, #f7f8fb);
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(229, 9, 20, 0.2), transparent 18rem),
+    linear-gradient(135deg, #0f172a, #090e19);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
 }
 
 body.about-page .about-cta-card p:last-child {
   margin-bottom: 0;
-  color: var(--muted);
+  color: #cbd5e1;
+}
+
+body.about-page .about-cta-card .btn-secondary {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
 }
 
 body.about-page .about-cta-card .btn-primary {
