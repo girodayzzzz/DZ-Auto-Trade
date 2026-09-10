@@ -250,6 +250,18 @@ try {
   assert.equal(stripeBody.get('line_items[3][price_data][unit_amount]'), '790', 'a product-specific shipping rate remains applicable above 60 €');
   assert.ok([...saved.keys()].some((key) => key.startsWith('orders:')));
 
+  const saleServiceResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'sale-service-test' },
+    body: JSON.stringify({ sku: 'SERVICE-PRODAJNO-SVETOVANJE', quantity: 1 }),
+  }), { PRODUCTS: kv, STRIPE_SECRET_KEY: 'sk_test_mock' });
+  assert.equal(saleServiceResponse.status, 200);
+  const saleServiceStripeBody = new URLSearchParams(stripeRequest.init.body);
+  assert.equal(saleServiceStripeBody.get('line_items[0][price_data][unit_amount]'), '1900');
+  assert.equal(saleServiceStripeBody.get('custom_fields[0][key]'), 'vozilo');
+  assert.equal(saleServiceStripeBody.get('custom_fields[0][label][custom]'), 'Vozilo (znamka, model in letnik)');
+  assert.equal(saleServiceStripeBody.get('shipping_address_collection[allowed_countries][0]'), null, 'services do not request a shipping address');
+
   const outOfStockResponse = await worker.fetch(new Request('https://dzautotrade.si/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://dzautotrade.si', 'CF-Connecting-IP': 'out-of-stock-test' },

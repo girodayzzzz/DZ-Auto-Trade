@@ -1,4 +1,4 @@
-const findCheckoutStatus = (trigger) => trigger?.closest('.checkout-card, .product-detail-info, .cart-drawer')?.querySelector('[data-checkout-status]') || document.querySelector('[data-checkout-status]');
+const findCheckoutStatus = (trigger) => trigger?.closest('.checkout-card, .service-purchase-card, .product-detail-info, .cart-drawer')?.querySelector('[data-checkout-status]') || document.querySelector('[data-checkout-status]');
 
 const setCheckoutStatus = (message, type = 'info', trigger = null) => {
   const checkoutStatus = findCheckoutStatus(trigger);
