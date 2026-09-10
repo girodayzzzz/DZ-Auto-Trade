@@ -3541,6 +3541,8 @@ const SERVICE_CHECKOUT_PRODUCTS = [
   { sku: 'SERVICE-NOTRANJE-CISCENJE', name: 'Notranje čiščenje vozila', priceCents: 3500, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
   { sku: 'SERVICE-ZUNANJE-CISCENJE', name: 'Zunanje čiščenje po paketih', priceCents: 2500, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
   { sku: 'SERVICE-GLOBINSKO-CISCENJE', name: 'Globinsko čiščenje vozila', priceCents: 6000, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
+  { sku: 'SERVICE-PRIPRAVA-PRODAJA', name: 'Priprava vozila na prodajo', priceCents: 14900, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
+  { sku: 'SERVICE-PRODAJNO-SVETOVANJE', name: 'Prodajno svetovanje za vozilo', priceCents: 1900, currency: 'eur', active: true, maxQuantity: 1, metadata: { type: 'service' } },
 ];
 
 const buildCheckoutCatalog = (catalogProducts = DEFAULT_PRODUCTS.products) => {
@@ -3998,7 +4000,16 @@ const createStripeCheckoutSession = async (request, env) => {
   params.append('metadata[skus]', lineItems.map((item) => `${item.quantity}x${item.sku}`).join(','));
   params.append('billing_address_collection', 'required');
   params.append('phone_number_collection[enabled]', 'true');
-  ['SI', 'HR', 'AT', 'HU', 'IT'].forEach((country, index) => params.append(`shipping_address_collection[allowed_countries][${index}]`, country));
+  if (productItems.length) ['SI', 'HR', 'AT', 'HU', 'IT'].forEach((country, index) => params.append(`shipping_address_collection[allowed_countries][${index}]`, country));
+  const needsSaleVehicle = lineItems.some((item) => ['SERVICE-PRIPRAVA-PRODAJA', 'SERVICE-PRODAJNO-SVETOVANJE'].includes(item.sku));
+  if (needsSaleVehicle) {
+    params.append('custom_fields[0][key]', 'vozilo');
+    params.append('custom_fields[0][label][type]', 'custom');
+    params.append('custom_fields[0][label][custom]', 'Vozilo (znamka, model in letnik)');
+    params.append('custom_fields[0][type]', 'text');
+    params.append('custom_fields[0][text][minimum_length]', '3');
+    params.append('custom_fields[0][text][maximum_length]', '120');
+  }
 
   try {
     await saveOrderWithoutBlockingCheckout(env, {
@@ -4114,6 +4125,9 @@ const handleStripeWebhook = async (request, env) => {
     customerPhone: session.customer_details?.phone || previousOrder.customerPhone || '',
     customerAddress: session.customer_details?.address || previousOrder.customerAddress || null,
     shippingDetails: session.shipping_details || previousOrder.shippingDetails || null,
+    customFields: Array.isArray(session.custom_fields)
+      ? Object.fromEntries(session.custom_fields.map((field) => [field.key, field.text?.value || field.numeric?.value || field.dropdown?.value || '']))
+      : (previousOrder.customFields || {}),
     totalCents: session.amount_total ?? previousOrder.totalCents,
     currency: session.currency || previousOrder.currency || 'eur',
     ...(event.type === 'checkout.session.async_payment_failed' ? { failedAt: new Date().toISOString() } : { paidAt: new Date().toISOString() }),
