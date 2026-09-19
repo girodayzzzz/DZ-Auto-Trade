@@ -23,8 +23,6 @@ def load_products():
 
 
 class ProductImagesTest(unittest.TestCase):
-    PLACEHOLDER = "assets/dzautotrade-placeholder.png"
-
     def test_catalog_skus_are_unique(self):
         skus = [product.get("sku") for product in load_products()]
         self.assertEqual(len(skus), len(set(skus)))
@@ -107,9 +105,20 @@ class ProductImagesTest(unittest.TestCase):
     def test_product_image_audit_has_no_missing_or_untracked_images(self):
         from tools.audit_product_images import audit
 
-        _products, _configured, missing, untracked, _unused = audit()
+        (
+            _products, _configured, missing, untracked, invalid_references,
+            invalid_files, unused, _shared,
+        ) = audit()
         self.assertEqual(missing, [])
         self.assertEqual(untracked, [])
+        self.assertEqual(invalid_references, [])
+        self.assertEqual(invalid_files, [])
+        self.assertEqual(unused, [])
+
+    def test_catalog_and_checkout_product_sources_are_identical(self):
+        catalog = load_products()
+        checkout = json.loads((ROOT / "products.json").read_text(encoding="utf-8"))["products"]
+        self.assertEqual(catalog, checkout)
 
     def test_generated_product_pages_render_all_gallery_images(self):
         for product in load_products():
@@ -127,35 +136,35 @@ class ProductImagesTest(unittest.TestCase):
         self.assertIn('data-product-gallery-image="', script)
         self.assertIn("button.classList.toggle('active'", script)
 
-    def test_shared_placeholder_is_used_for_missing_and_failed_images(self):
+    def test_missing_and_failed_images_do_not_use_artificial_image(self):
         script = (ROOT / "scripts.js").read_text(encoding="utf-8")
-        self.assertTrue((ROOT / self.PLACEHOLDER).is_file())
-        self.assertIn(f"const PRODUCT_PLACEHOLDER_IMAGE = '{self.PLACEHOLDER}'", script)
+        worker = (ROOT / "cloudflare-worker.js").read_text(encoding="utf-8")
         self.assertIn("const getItemImage =", script)
-        self.assertIn("resolveSiteImageUrl(image) || createProductPlaceholder()", script)
+        self.assertNotIn("createProductPlaceholder", script)
+        self.assertNotIn("dzautotrade-placeholder", script)
+        self.assertIn("PRODUCT_IMAGE_PATH_PATTERN", script)
+        self.assertNotIn("isAbsoluteImageUrl", script)
         self.assertIn("image.dataset.productFallbackApplied = 'true'", script)
         self.assertIn("image.onerror = null", script)
-        self.assertIn("image.alt = PRODUCT_PLACEHOLDER_ALT", script)
+        self.assertIn("image.hidden = true", script)
+        self.assertNotIn("createProductPlaceholder", worker)
+        self.assertNotIn("data:image/svg+xml", worker)
+        self.assertIn("image: trustedImage || imageOverride || ''", worker)
 
-    def test_generated_product_pages_use_shared_placeholder(self):
+    def test_generated_product_pages_only_reference_catalog_images(self):
         generator = (ROOT / "tools" / "generate_product_pages.py").read_text(encoding="utf-8")
-        self.assertIn(f'fallback = "{self.PLACEHOLDER}"', generator)
+        self.assertNotIn("dzautotrade-placeholder", generator)
         for page in (ROOT / "izdelki").glob("izdelek-*.html"):
             with self.subTest(page=page.name):
-                self.assertIn(f'data-product-fallback="{self.PLACEHOLDER}"', page.read_text(encoding="utf-8"))
+                self.assertNotIn("dzautotrade-placeholder", page.read_text(encoding="utf-8"))
 
-    def test_stripe_services_without_images_show_shared_placeholder(self):
+    def test_stripe_services_without_images_show_text_only(self):
         for page_name in ("notranje-ciscenje.html", "zunanje-ciscenje.html", "globinsko-ciscenje.html"):
             page = (ROOT / page_name).read_text(encoding="utf-8")
             with self.subTest(page=page_name):
                 self.assertIn("data-checkout", page)
-                self.assertIn(f'src="{self.PLACEHOLDER}"', page)
-                self.assertIn('alt="Slika izdelka trenutno ni na voljo – DZ Auto Trade"', page)
-
-    def test_placeholder_images_keep_their_aspect_ratio(self):
-        styles = (ROOT / "styles.css").read_text(encoding="utf-8")
-        service_rule = styles.rsplit(".service-checkout-image img", 1)[1].split("}", 1)[0]
-        self.assertIn("object-fit: contain", service_rule)
+                self.assertNotIn("dzautotrade-placeholder", page)
+                self.assertIn("Slika storitve ni dodana.", page)
 
 
     def test_shop_products_prefer_bundled_catalog_photos(self):

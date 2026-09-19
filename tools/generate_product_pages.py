@@ -214,11 +214,10 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
         if product.get("partNumber") and product.get("compatibility") else ""
     )
     lead, full_description = description_markup(product["description"])
-    fallback = "assets/dzautotrade-placeholder.png"
     main_image = (
         f'<img src="{html.escape(product_images[0], quote=True)}" alt="{html.escape(image_alt, quote=True)}"'
         f'{f" width=\"{image_width}\" height=\"{image_height}\"" if image_width and image_height else ""}'
-        f' data-product-fallback="{fallback}" fetchpriority="high" />'
+        f' data-product-image fetchpriority="high" />'
     )
     gallery = ""
     if len(product_images) > 1:
@@ -227,7 +226,7 @@ def generate_page(template: str, product: dict) -> tuple[str, str]:
             f'data-product-gallery-image="{html.escape(value, quote=True)}" '
             f'aria-label="Prikaži sliko {index + 1} od {len(product_images)} za {html.escape(product["name"], quote=True)}" '
             f'aria-pressed="{"true" if index == 0 else "false"}">'
-            f'<img src="{html.escape(value, quote=True)}" alt="" loading="lazy" data-product-fallback="{fallback}" />'
+            f'<img src="{html.escape(value, quote=True)}" alt="" loading="lazy" data-product-image />'
             f'</button>'
             for index, value in enumerate(product_images)
         )
