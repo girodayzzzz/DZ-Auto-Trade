@@ -1443,3 +1443,48 @@ if (revealTargets.length) {
     image.decoding = image.decoding || 'async';
   });
 })();
+
+// Transport enquiry: reveal only fields relevant to the selected customer and cargo type.
+document.querySelectorAll('[data-transport-form]').forEach((form) => {
+  const transportType = form.querySelector('#transport-type');
+  const companyField = form.querySelector('[data-company-field]');
+  const companyRadios = form.querySelectorAll('input[name="Vrsta naročnika"]');
+  const conditionalSections = form.querySelectorAll('[data-conditional-section]');
+
+  const setSectionState = (section, isActive) => {
+    section.hidden = !isActive;
+    section.setAttribute('aria-hidden', String(!isActive));
+    section.querySelectorAll('input, select, textarea').forEach((field) => {
+      field.disabled = !isActive;
+      if (field.dataset.requiredWhenVisible !== undefined) field.required = isActive;
+    });
+  };
+
+  const updateTransportFields = () => {
+    const type = transportType?.value || '';
+    const vehicleTypes = ['vehicle', 'non-driving-vehicle', 'motorcycle'];
+    const cargoTypes = ['parts', 'goods', 'other'];
+    conditionalSections.forEach((section) => {
+      const isActive = section.dataset.conditionalSection === 'vehicle'
+        ? vehicleTypes.includes(type)
+        : cargoTypes.includes(type);
+      setSectionState(section, isActive);
+    });
+  };
+
+  const updateCompanyField = () => {
+    const isCompany = form.querySelector('input[name="Vrsta naročnika"]:checked')?.value === 'Podjetje';
+    if (!companyField) return;
+    companyField.hidden = !isCompany;
+    companyField.querySelectorAll('input').forEach((field) => { field.disabled = !isCompany; });
+  };
+
+  transportType?.addEventListener('change', updateTransportFields);
+  companyRadios.forEach((radio) => radio.addEventListener('change', updateCompanyField));
+  form.addEventListener('reset', () => window.setTimeout(() => {
+    updateTransportFields();
+    updateCompanyField();
+  }, 0));
+  updateTransportFields();
+  updateCompanyField();
+});
