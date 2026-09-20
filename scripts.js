@@ -105,6 +105,7 @@ const facetFilters = document.querySelector('[data-facet-filters]');
 const filterPanel = document.querySelector('[data-filter-panel]');
 const filterToggle = document.querySelector('[data-filter-toggle]');
 const filterTotal = document.querySelector('[data-filter-total]');
+const filterPanelTotal = document.querySelector('[data-filter-panel-total]');
 const filterResults = document.querySelector('[data-filter-results]');
 const clearFiltersButton = document.querySelector('[data-clear-filters]');
 const activeFilters = document.querySelector('[data-active-filters]');
@@ -150,8 +151,8 @@ const selectedFacets = { brand: new Set(), purpose: new Set(), surface: new Set(
 const facetDefinitions = [
   { key: 'brand', label: 'Blagovna znamka' },
   { key: 'purpose', label: 'Namen uporabe' },
-  { key: 'surface', label: 'Površina' },
   { key: 'price', label: 'Cena' },
+  { key: 'surface', label: 'Površina' },
   { key: 'volume', label: 'Količina' },
   { key: 'feature', label: 'Lastnosti' },
 ];
@@ -182,6 +183,20 @@ const getDiscountPercentage = (product) => {
 };
 const priceToCents = (price) => Math.round(parsePrice(price) * 100);
 const uniqueSorted = (items) => [...new Set(items.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'sl'));
+const normalizeBrandKey = (brand = '') => String(brand).trim().toLocaleLowerCase('sl-SI');
+let canonicalBrandNames = new Map();
+const buildCanonicalBrandNames = (products = []) => {
+  canonicalBrandNames = new Map();
+  products.forEach((product) => {
+    const brand = String(product.brand || '').trim();
+    const key = normalizeBrandKey(brand);
+    if (!key) return;
+    const current = canonicalBrandNames.get(key);
+    const emphasis = (brand.match(/[A-ZČŠŽ]/g) || []).length;
+    const currentEmphasis = (current?.match(/[A-ZČŠŽ]/g) || []).length;
+    if (!current || emphasis > currentEmphasis) canonicalBrandNames.set(key, brand);
+  });
+};
 const slugifyFacet = (value = '') => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const getProductVolume = (product = {}) => {
   const match = `${product.name || ''} ${product.description || ''}`.match(/\b(\d+(?:[.,]\d+)?)\s*(ml|l)\b/i);
@@ -394,9 +409,11 @@ const loadProducts = async () => {
     console.error('Kataloga izdelkov iz Products KV ni bilo mogoče naložiti; uporabljen bo lokalni katalog.', error);
   }
 
+  buildCanonicalBrandNames(products);
   currentProducts = products.map(normalizeProduct).filter((product) => product.sku && product.name);
   if (!currentProducts.length && bundledProducts.length) {
     console.error('Prejeti katalog nima veljavnih izdelkov; uporabljen bo lokalni katalog.');
+    buildCanonicalBrandNames(bundledProducts);
     currentProducts = bundledProducts.map(normalizeProduct);
   }
   currentCategories = categories.length ? categories : deriveCategoriesFromProducts(currentProducts);
@@ -419,7 +436,7 @@ const updateTotalProductCountLink = () => {
 
 const getCategoryLabel = (id) => currentCategories.find((category) => category.id === id)?.label || id;
 
-const getFacetValues = (product, key) => key === 'surface' ? product.surfaces : key === 'feature' ? product.features : [key === 'volume' ? product.volumeRange : key === 'price' ? product.priceRange : product[key]];
+const getFacetValues = (product, key) => key === 'surface' ? product.surfaces : key === 'feature' ? product.features : [key === 'volume' ? product.volumeRange : key === 'price' ? product.priceRange : key === 'brand' ? (canonicalBrandNames.get(normalizeBrandKey(product.brand)) || product.brand) : product[key]];
 const facetLabel = (key, value) => key === 'price' ? priceLabels[value] : key === 'volume' ? volumeLabels[value] : value;
 const productMatchesFacets = (product, ignoredKey = '') => facetDefinitions.every(({ key }) => {
   if (key === ignoredKey || !selectedFacets[key].size) return true;
@@ -695,7 +712,10 @@ const renderActiveFilters = (visibleCount) => {
 
   activeFilters.hidden = chips.length === 0;
   activeFilters.innerHTML = chips.map((chip) => typeof chip === 'string' ? `<span>${escapeHtml(chip)}</span>` : `<button type="button" data-remove-filter="${escapeHtml(chip.key)}" data-remove-value="${escapeHtml(chip.value)}">${escapeHtml(chip.label)} <b aria-hidden="true">×</b></button>`).join('');
-  if (filterTotal) filterTotal.textContent = String((activeFilter === 'all' ? 0 : 1) + facetDefinitions.reduce((total, { key }) => total + selectedFacets[key].size, 0));
+  const totalSelectedFilters = (activeFilter === 'all' ? 0 : 1) + (query ? 1 : 0) + facetDefinitions.reduce((total, { key }) => total + selectedFacets[key].size, 0);
+  if (filterTotal) filterTotal.textContent = String(totalSelectedFilters);
+  if (filterPanelTotal) filterPanelTotal.textContent = String(totalSelectedFilters);
+  if (clearFiltersButton) clearFiltersButton.hidden = chips.length === 0;
 
   if (catalogSummary) {
     catalogSummary.textContent = chips.length
@@ -1008,8 +1028,12 @@ const bindFilterButtons = () => {
   filterButtons = document.querySelectorAll('[data-filter]');
   filterButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      filterButtons.forEach((item) => item.classList.remove('active'));
+      filterButtons.forEach((item) => {
+        item.classList.remove('active');
+        item.setAttribute('aria-pressed', 'false');
+      });
       button.classList.add('active');
+      button.setAttribute('aria-pressed', 'true');
       activeFilter = button.dataset.filter;
       if (activeFilter !== 'all') {
         history.replaceState(null, '', `#${activeFilter}`);
@@ -1028,9 +1052,9 @@ const renderFilters = () => {
     counts[product.category] = (counts[product.category] || 0) + 1;
     return counts;
   }, {});
-  filterList.innerHTML = `<button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-filter="all"><span>Vsi izdelki</span><strong>${purchasableProducts.length}</strong></button>${currentCategories
+  filterList.innerHTML = `<button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-filter="all" aria-pressed="${activeFilter === 'all'}"><span>Vsi izdelki</span><strong>${purchasableProducts.length}</strong></button>${currentCategories
     .filter((category) => countByCategory[category.id])
-    .map((category) => `<button class="filter-btn ${activeFilter === category.id ? 'active' : ''}" data-filter="${escapeHtml(category.id)}"><span>${escapeHtml(category.label)}</span><strong>${countByCategory[category.id] || 0}</strong></button>`)
+    .map((category) => `<button class="filter-btn ${activeFilter === category.id ? 'active' : ''}" data-filter="${escapeHtml(category.id)}" aria-pressed="${activeFilter === category.id}"><span>${escapeHtml(category.label)}</span><strong>${countByCategory[category.id] || 0}</strong></button>`)
     .join('')}`;
   document.querySelectorAll('[data-shop-shortcut]').forEach((shortcut) => {
     const count = countByCategory[shortcut.dataset.shopShortcut] || 0;

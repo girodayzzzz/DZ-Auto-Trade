@@ -11901,3 +11901,47 @@ body.about-page .about-cta-actions {
   .transport-form { padding: 1rem; }
   .choice-row { display: grid; grid-template-columns: 1fr 1fr; }
 }
+
+/* Focused UX refinements for homepage paths, shop controls and transport CTA. */
+body.home-page .hero-path-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  color: #f8fafc;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+body.home-page .hero-path-icon svg { width: 27px; height: 27px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+body.home-page .hero-path-icon .icon-accent { stroke: #f87171; }
+body.home-page .hero-paths > a:hover .hero-path-icon,
+body.home-page .hero-paths > a:focus-visible .hero-path-icon { color: #fff; border-color: #f87171; background: rgba(229, 9, 20, 0.28); box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.12); }
+
+.shop-page .catalog-search-wrap { grid-template-columns: minmax(260px, 1.6fr) minmax(170px, 0.75fr) auto; }
+.shop-page .catalog-filter-rail { flex-wrap: wrap; overflow-x: visible; scrollbar-width: none; }
+.shop-page .catalog-filter-count { display: inline-grid; min-width: 1.65rem; min-height: 1.65rem; margin-left: 0.3rem; place-items: center; color: #fff; font-size: 0.78rem; border-radius: 999px; background: var(--primary); vertical-align: middle; }
+.shop-page .catalog-clear-filters[hidden] { display: none; }
+.shop-page .facet-option:focus-within { color: #fff; outline: 2px solid #f87171; outline-offset: 1px; background: rgba(248, 113, 113, 0.12); }
+.shop-page .facet-option:has(input:checked) { color: #fff; background: rgba(229, 9, 20, 0.18); }
+.shop-page .facet-group summary:focus-visible,
+.shop-page .catalog-filter-rail .filter-btn:focus-visible,
+.shop-page .active-filters button:focus-visible { outline: 3px solid #f87171; outline-offset: 2px; }
+
+.transport-cta-section { padding-top: clamp(2.5rem, 5vw, 4.5rem); }
+.transport-cta-card { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: center; padding: clamp(1.5rem, 4vw, 3rem); overflow: hidden; border: 1px solid #263244; border-radius: 24px; background: radial-gradient(circle at 100% 0, rgba(229, 9, 20, 0.2), transparent 20rem), #0f172a; box-shadow: 0 22px 55px rgba(0, 0, 0, 0.3); }
+.transport-cta-card h2 { margin: 0 0 0.75rem; color: #fff; }
+.transport-cta-copy > p:not(.eyebrow) { max-width: 700px; color: #cbd5e1; }
+.transport-cta-benefits { display: flex; flex-wrap: wrap; gap: 0.65rem 1.2rem; margin: 1.2rem 0 0; padding: 0; list-style: none; }
+.transport-cta-benefits li { color: #f8fafc; font-size: 0.9rem; font-weight: 700; }
+.transport-cta-benefits li::before { content: '✓'; margin-right: 0.45rem; color: #f87171; }
+.transport-cta-actions { display: grid; gap: 0.75rem; }
+.transport-cta-actions a { width: 100%; justify-content: center; text-align: center; }
+@media (max-width: 900px) {
+  .shop-page .catalog-filter-rail { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.35rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-inline: contain; }
+  .shop-page .catalog-filter-rail::-webkit-scrollbar { display: none; }
+  .transport-cta-card { grid-template-columns: 1fr; }
+}
+@media (max-width: 680px) {
+  .shop-page .catalog-filter-rail { display: flex; }
+  .shop-page .catalog-filter-rail .filter-btn { width: auto; min-width: max-content; white-space: nowrap; }
+  .transport-cta-benefits { display: grid; }
+  .transport-cta-actions a { min-height: 50px; }
+}
