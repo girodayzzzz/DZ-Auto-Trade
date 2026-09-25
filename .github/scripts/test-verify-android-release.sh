@@ -48,6 +48,14 @@ verify "$colon_hex" "Signer #1 certificate SHA-256 digest: ${hex,,}"
 verify "${hex,,}" "Signer #1 certificate SHA-256 digest: $colon_hex"
 verify $' \tSHA256:'"$colon_hex"$'\r\n ' $'  Signer #1 certificate SHA256 digest: \t'"$hex"$'\r'
 
+# apksigner labels certificates by SDK range when v3.1 signing is present.
+verify "$hex" "Signer (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: ${hex,,}"
+verify "$hex" "Signer (minSdkVersion=33 (dev release=true), maxSdkVersion=2147483647) certificate SHA-256 digest: ${hex,,}"
+verify "$hex" "Source Stamp Signer certificate SHA-256 digest: deadbeef\nSigner #1 public key SHA-256 digest: deadbeef\nSigner #1 certificate SHA-256 digest: $hex"
+expect_failure \
+  'APK signing certificate does not match ANDROID_SIGNING_CERT_SHA256.' \
+  verify "$hex" "Signer (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: $hex\nSigner (minSdkVersion=21, maxSdkVersion=32) certificate SHA-256 digest: 0000000000000000000000000000000000000000000000000000000000000000"
+
 expect_failure \
   'Could not extract the signer certificate SHA-256 digest from apksigner output.' \
   verify "$hex" 'Signer certificate digest unavailable'
