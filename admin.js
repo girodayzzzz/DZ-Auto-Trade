@@ -69,7 +69,7 @@ async function verifyPublishedApk() {
     if (!response.ok) return;
     const release = await response.json();
     const publishedAsset = !release.draft && !release.prerelease && release.assets?.some((asset) => (
-      asset.name === 'DZ-Auto-Trade.apk' && asset.browser_download_url === APK_DOWNLOAD_URL && asset.size > 0
+      asset.name === 'DZ-Auto-Trade.apk' && asset.state === 'uploaded' && asset.size > 0
     ));
     if (!publishedAsset) return;
     apkDownloadButton.removeAttribute('aria-disabled');
