@@ -15,7 +15,13 @@ android {
     }
 
     signingConfigs {
-        if (System.getenv('DZ_RELEASE_STORE_FILE')) {
+        def signingVariables = [
+            System.getenv('DZ_RELEASE_STORE_FILE'),
+            System.getenv('DZ_RELEASE_STORE_PASSWORD'),
+            System.getenv('DZ_RELEASE_KEY_ALIAS'),
+            System.getenv('DZ_RELEASE_KEY_PASSWORD')
+        ]
+        if (signingVariables.every { it }) {
             release {
                 storeFile file(System.getenv('DZ_RELEASE_STORE_FILE'))
                 storePassword System.getenv('DZ_RELEASE_STORE_PASSWORD')
@@ -30,6 +36,13 @@ android {
             minifyEnabled false
             if (signingConfigs.findByName('release')) signingConfig signingConfigs.release
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.name == 'assembleRelease' || it.name == 'bundleRelease' } &&
+        !android.signingConfigs.findByName('release')) {
+        throw new GradleException('Release signing configuration is required; refusing to build an unsigned release.')
     }
 }
 
