@@ -27,7 +27,7 @@ const configureRoleView = (role) => {
   select('#page-title').textContent = isAdmin ? 'Ekipa in posli.' : 'Moje naloge.';
   select('#inquiries-title').textContent = isAdmin ? 'Vsa povpraševanja' : 'Moja povpraševanja';
   select('#deals-title').textContent = isAdmin ? 'Posli, provizije in stroški' : 'Moji posli in provizije';
-  ['#admin-links', '#contractor-admin', '#task-admin', '#deal-admin'].forEach((selector) => select(selector).classList.toggle('hidden', !isAdmin));
+  ['#admin-links', '#contractor-admin', '#task-admin', '#deal-admin', '#vehicle-admin'].forEach((selector) => select(selector).classList.toggle('hidden', !isAdmin));
   select('#inquiry-submit').classList.toggle('hidden', isAdmin);
 };
 
@@ -68,6 +68,7 @@ const loadTeamWorkspace = async () => {
     state = await apiRequest('/bootstrap');
     if (!['admin', 'contractor'].includes(state.me?.role)) throw new Error('Vaša vloga ni veljavna.');
     render();
+    if (state.me?.role === 'admin') window.dispatchEvent(new Event('dz:admin-ready'));
   } catch (error) {
     select('#status').innerHTML = `${escapeHtml(error.message)} <a class="text-link" href="/api/team/login">Ponovna prijava</a>`;
     select('#status').className = 'error';

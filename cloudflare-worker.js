@@ -4224,6 +4224,118 @@ const handleTeamApi = async (request, env, url, auth) => {
   return json({ ok: true, data: teamView(data, auth) });
 };
 
+const VEHICLE_STATUSES = new Set(['draft', 'preparing', 'published', 'reserved', 'sold', 'withdrawn']);
+const OWNERSHIP_TYPES = new Set(['own', 'commission', 'brokerage']);
+const IMAGE_TYPES = { 'image/jpeg': [0xff, 0xd8, 0xff], 'image/png': [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 'image/webp': [0x52, 0x49, 0x46, 0x46] };
+const publicVehicle = (row, images = []) => ({
+  id: row.id, make: row.make, model: row.model, variant: row.variant, modelYear: row.model_year,
+  firstRegistration: row.first_registration, mileage: row.mileage, fuel: row.fuel, powerKw: row.power_kw,
+  transmission: row.transmission, equipment: row.equipment, description: row.description,
+  priceCents: row.price_cents, location: row.location, updatedAt: row.updated_at,
+  images: images.map((image) => ({ id: image.id, url: `/api/vehicles/${row.id}/images/${image.id}`, isPrimary: Boolean(image.is_primary), sortOrder: image.sort_order })),
+});
+const vehicleInput = (body, previous = {}) => {
+  const status = VEHICLE_STATUSES.has(body.status) ? body.status : (previous.status || 'draft');
+  const ownership = OWNERSHIP_TYPES.has(body.ownershipType) ? body.ownershipType : (previous.ownership_type || 'own');
+  return {
+    make: cleanText(body.make, 80), model: cleanText(body.model, 80), variant: cleanText(body.variant, 120),
+    modelYear: Math.min(2100, Math.max(1900, Number(body.modelYear) || 0)) || null,
+    firstRegistration: cleanText(body.firstRegistration, 20), mileage: Math.max(0, Number(body.mileage) || 0),
+    fuel: cleanText(body.fuel, 40), powerKw: Math.max(0, Number(body.powerKw) || 0) || null,
+    transmission: cleanText(body.transmission, 60), equipment: cleanText(body.equipment, 4000),
+    description: cleanText(body.description, 8000), priceCents: Math.max(0, Number(body.priceCents) || 0) || null,
+    location: cleanText(body.location, 120), ownershipType: ownership, status,
+    isPublic: status === 'published' && Boolean(body.isPublic), sellerName: cleanText(body.sellerName, 160),
+    sellerContact: cleanText(body.sellerContact, 240), acquisitionCostCents: Math.max(0, Number(body.acquisitionCostCents) || 0) || null,
+    internalNotes: cleanText(body.internalNotes, 4000), checklist: JSON.stringify(body.checklist && typeof body.checklist === 'object' ? body.checklist : {}),
+  };
+};
+const imageType = (bytes) => {
+  for (const [type, signature] of Object.entries(IMAGE_TYPES)) if (signature.every((byte, index) => bytes[index] === byte)) {
+    if (type !== 'image/webp' || new TextDecoder().decode(bytes.slice(8, 12)) === 'WEBP') return type;
+  }
+  return '';
+};
+const vehicleImages = async (env, vehicleId) => (await env.VEHICLES_DB.prepare('SELECT id, content_type, byte_size, sort_order, is_primary FROM vehicle_images WHERE vehicle_id = ? ORDER BY sort_order, created_at').bind(vehicleId).all()).results || [];
+const handlePublicVehicles = async (request, env, url) => {
+  if (!env.VEHICLES_DB || !env.VEHICLE_IMAGES) return json({ error: 'Zaloga vozil še ni nastavljena.' }, { status: 503 });
+  const imageMatch = url.pathname.match(/^\/api\/vehicles\/([^/]+)\/images\/([^/]+)$/);
+  if (request.method === 'GET' && imageMatch) {
+    const row = await env.VEHICLES_DB.prepare("SELECT i.object_key, i.content_type FROM vehicle_images i JOIN vehicles v ON v.id=i.vehicle_id WHERE i.id=? AND i.vehicle_id=? AND v.status='published' AND v.is_public=1").bind(imageMatch[2], imageMatch[1]).first();
+    if (!row) return json({ error: 'Not found.' }, { status: 404 });
+    const object = await env.VEHICLE_IMAGES.get(row.object_key);
+    return object ? new Response(object.body, { headers: { 'Content-Type': row.content_type, 'Cache-Control': 'public, max-age=3600', 'X-Content-Type-Options': 'nosniff' } }) : json({ error: 'Not found.' }, { status: 404 });
+  }
+  const id = url.pathname.match(/^\/api\/vehicles\/([^/]+)$/)?.[1];
+  if (request.method !== 'GET') return json({ error: 'Not found.' }, { status: 404 });
+  const query = id ? "SELECT * FROM vehicles WHERE id=? AND status='published' AND is_public=1" : "SELECT * FROM vehicles WHERE status='published' AND is_public=1 ORDER BY updated_at DESC";
+  const rows = id ? [await env.VEHICLES_DB.prepare(query).bind(id).first()].filter(Boolean) : ((await env.VEHICLES_DB.prepare(query).all()).results || []);
+  const output = await Promise.all(rows.map(async (row) => publicVehicle(row, await vehicleImages(env, row.id))));
+  return id ? (output[0] ? json({ vehicle: output[0] }) : json({ error: 'Not found.' }, { status: 404 })) : json({ vehicles: output });
+};
+const handleVehicleAdmin = async (request, env, url) => {
+  if (!env.VEHICLES_DB || !env.VEHICLE_IMAGES) return json({ error: 'D1/R2 binding manjka.' }, { status: 503 });
+  if (request.method === 'GET' && url.pathname === '/api/team/admin/vehicles') {
+    const rows = (await env.VEHICLES_DB.prepare('SELECT * FROM vehicles ORDER BY updated_at DESC').all()).results || [];
+    return json({ vehicles: await Promise.all(rows.map(async (row) => ({ ...row, checklist: JSON.parse(row.checklist_json || '{}'), images: await vehicleImages(env, row.id) }))) });
+  }
+  const imagePath = url.pathname.match(/^\/api\/team\/admin\/vehicles\/([^/]+)\/images(?:\/([^/]+))?$/);
+  if (imagePath) {
+    const [vehicleId, imageId] = imagePath.slice(1); const vehicle = await env.VEHICLES_DB.prepare('SELECT id FROM vehicles WHERE id=?').bind(vehicleId).first();
+    if (!vehicle) return json({ error: 'Vozilo ne obstaja.' }, { status: 404 });
+    if (request.method === 'GET' && imageId) {
+      const row = await env.VEHICLES_DB.prepare('SELECT object_key, content_type FROM vehicle_images WHERE id=? AND vehicle_id=?').bind(imageId, vehicleId).first();
+      const object = row && await env.VEHICLE_IMAGES.get(row.object_key);
+      return object ? new Response(object.body, { headers: { 'Content-Type': row.content_type, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } }) : json({ error: 'Fotografija ne obstaja.' }, { status: 404 });
+    }
+    if (request.method === 'POST' && !imageId) {
+      const count = await env.VEHICLES_DB.prepare('SELECT COUNT(*) count FROM vehicle_images WHERE vehicle_id=?').bind(vehicleId).first();
+      if (Number(count.count) >= 12) return json({ error: 'Največ 12 fotografij.' }, { status: 400 });
+      const form = await request.formData(); const file = form.get('image');
+      if (!(file instanceof File) || file.size < 1 || file.size > 8 * 1024 * 1024) return json({ error: 'Fotografija mora biti velika največ 8 MB.' }, { status: 400 });
+      const bytes = new Uint8Array(await file.arrayBuffer()); const type = imageType(bytes);
+      if (!type || type !== file.type) return json({ error: 'Dovoljene so dejanske JPEG, PNG ali WebP fotografije.' }, { status: 400 });
+      const id = crypto.randomUUID(); const key = `vehicles/${vehicleId}/${id}`; const now = new Date().toISOString();
+      await env.VEHICLE_IMAGES.put(key, bytes, { httpMetadata: { contentType: type } });
+      try { await env.VEHICLES_DB.prepare('INSERT INTO vehicle_images (id,vehicle_id,object_key,content_type,byte_size,sort_order,is_primary,created_at) VALUES (?,?,?,?,?,?,?,?)').bind(id, vehicleId, key, type, file.size, Number(count.count), Number(count.count) === 0 ? 1 : 0, now).run(); }
+      catch (error) { await env.VEHICLE_IMAGES.delete(key); throw error; }
+      return json({ ok: true, images: await vehicleImages(env, vehicleId) });
+    }
+    if (request.method === 'DELETE' && imageId) {
+      const row = await env.VEHICLES_DB.prepare('SELECT object_key, is_primary FROM vehicle_images WHERE id=? AND vehicle_id=?').bind(imageId, vehicleId).first();
+      if (!row) return json({ error: 'Fotografija ne obstaja.' }, { status: 404 });
+      await env.VEHICLES_DB.prepare('DELETE FROM vehicle_images WHERE id=? AND vehicle_id=?').bind(imageId, vehicleId).run();
+      if (row.is_primary) await env.VEHICLES_DB.prepare('UPDATE vehicle_images SET is_primary=1 WHERE id=(SELECT id FROM vehicle_images WHERE vehicle_id=? ORDER BY sort_order, created_at LIMIT 1)').bind(vehicleId).run();
+      // A failed R2 delete can only leave an unreachable orphan; it cannot
+      // leave a database record pointing at a missing object.
+      await env.VEHICLE_IMAGES.delete(row.object_key);
+      return json({ ok: true });
+    }
+    if (request.method === 'PATCH' && !imageId) {
+      const body = await request.json().catch(() => ({}));
+      const order = Array.isArray(body.imageOrder) ? [...new Set(body.imageOrder.map(String))] : [];
+      const current = await vehicleImages(env, vehicleId);
+      if (order.length !== current.length || current.some(({ id }) => !order.includes(id))) return json({ error: 'Vrstni red fotografij ni veljaven.' }, { status: 400 });
+      await env.VEHICLES_DB.batch(order.map((id, index) => env.VEHICLES_DB.prepare('UPDATE vehicle_images SET sort_order=? WHERE id=? AND vehicle_id=?').bind(index, id, vehicleId)));
+      return json({ ok: true, images: await vehicleImages(env, vehicleId) });
+    }
+    if (request.method === 'PATCH' && imageId) {
+      const body = await request.json().catch(() => ({}));
+      if (body.isPrimary) { await env.VEHICLES_DB.prepare('UPDATE vehicle_images SET is_primary=0 WHERE vehicle_id=?').bind(vehicleId).run(); await env.VEHICLES_DB.prepare('UPDATE vehicle_images SET is_primary=1 WHERE id=? AND vehicle_id=?').bind(imageId, vehicleId).run(); }
+      if (Number.isInteger(body.sortOrder)) await env.VEHICLES_DB.prepare('UPDATE vehicle_images SET sort_order=? WHERE id=? AND vehicle_id=?').bind(Math.max(0, body.sortOrder), imageId, vehicleId).run();
+      return json({ ok: true, images: await vehicleImages(env, vehicleId) });
+    }
+  }
+  const id = url.pathname.match(/^\/api\/team\/admin\/vehicles\/([^/]+)$/)?.[1];
+  if (!['POST', 'PATCH'].includes(request.method) || (request.method === 'PATCH' && !id)) return json({ error: 'Not found.' }, { status: 404 });
+  const body = await request.json().catch(() => ({})); const previous = id ? await env.VEHICLES_DB.prepare('SELECT * FROM vehicles WHERE id=?').bind(id).first() : {};
+  if (id && !previous) return json({ error: 'Vozilo ne obstaja.' }, { status: 404 });
+  const value = vehicleInput(body, previous); if (!value.make || !value.model) return json({ error: 'Znamka in model sta obvezna.' }, { status: 400 });
+  const vehicleId = id || crypto.randomUUID(); const now = new Date().toISOString();
+  await env.VEHICLES_DB.prepare(`INSERT INTO vehicles (id,make,model,variant,model_year,first_registration,mileage,fuel,power_kw,transmission,equipment,description,price_cents,location,ownership_type,status,is_public,seller_name,seller_contact,acquisition_cost_cents,internal_notes,checklist_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET make=excluded.make,model=excluded.model,variant=excluded.variant,model_year=excluded.model_year,first_registration=excluded.first_registration,mileage=excluded.mileage,fuel=excluded.fuel,power_kw=excluded.power_kw,transmission=excluded.transmission,equipment=excluded.equipment,description=excluded.description,price_cents=excluded.price_cents,location=excluded.location,ownership_type=excluded.ownership_type,status=excluded.status,is_public=excluded.is_public,seller_name=excluded.seller_name,seller_contact=excluded.seller_contact,acquisition_cost_cents=excluded.acquisition_cost_cents,internal_notes=excluded.internal_notes,checklist_json=excluded.checklist_json,updated_at=excluded.updated_at`).bind(vehicleId,value.make,value.model,value.variant,value.modelYear,value.firstRegistration,value.mileage,value.fuel,value.powerKw,value.transmission,value.equipment,value.description,value.priceCents,value.location,value.ownershipType,value.status,value.isPublic?1:0,value.sellerName,value.sellerContact,value.acquisitionCostCents,value.internalNotes,value.checklist,previous.created_at||now,now).run();
+  return json({ ok: true, id: vehicleId });
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -4301,6 +4413,8 @@ export default {
       return handleStripeWebhook(request, env);
     }
 
+    if (url.pathname.startsWith('/api/vehicles')) return handlePublicVehicles(request, env, url);
+
     if (url.pathname.startsWith('/api/team/')) {
       const origin = request.headers.get('Origin');
       if (origin && !ALLOWED_CHECKOUT_ORIGINS.has(origin)) return json({ error: 'Ta izvor ni dovoljen.' }, { status: 403 });
@@ -4312,6 +4426,7 @@ export default {
         return Response.redirect(`https://${teamDomain}/cdn-cgi/access/logout`, 302);
       }
       if (url.pathname.startsWith('/api/team/admin/') && auth.role !== 'admin') return json({ error: 'Samo administrator.' }, { status: 403 });
+      if (url.pathname.startsWith('/api/team/admin/vehicles')) return handleVehicleAdmin(request, env, url);
       return handleTeamApi(request, env, url, auth);
     }
 

@@ -32,3 +32,10 @@ keep_bindings = ["kv_namespace", "plain_text", "secret_text"]
 [[kv_namespaces]]
 binding = "PRODUCTS_KV"
 id = "f3b4234150054881b5d6eb22e9a73fed"
+
+# Vehicle D1/R2 bindings are deliberately not hard-coded here: the resources
+# have not yet been created in the production account. CI generates a temporary
+# config with tools/configure_vehicle_bindings.py only after a real D1 id is
+# supplied in the VEHICLES_D1_DATABASE_ID repository variable. Until then the
+# deployed Worker returns 503 from vehicle endpoints instead of using KV or an
+# unintended account resource.

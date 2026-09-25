@@ -82,6 +82,7 @@ try {
   const binesTask = adminData.tasks.find(({ contractorEmail }) => contractorEmail === 'bine@example.si');
   assert.equal((await call('ana@example.si', `/tasks/${binesTask.id}`, 'PATCH', { status: 'zaključeno' })).status, 403);
   assert.equal((await call('ana@example.si', '/admin/tasks', 'POST', {})).status, 403);
+  assert.equal((await call('ana@example.si', '/admin/vehicles')).status, 403);
   assert.equal((await worker.fetch(new Request('https://dzautotrade.si/api/team/bootstrap', {
     headers: { 'Cf-Access-Authenticated-User-Email': 'boss@dz.si' },
   }), env)).status, 401);
