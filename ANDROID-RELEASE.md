@@ -52,8 +52,8 @@ girodayzzzz/DZ-Auto-Trade` prek standardnega vhoda.
 
 Šele po prenosu varnostne kopije odstranite ključ iz Codespaces. Prva izdaja
 `android-v1.0.0` je že objavljena. Za naslednjo izdajo ohranite isti podpisni
-ključ in alias ter povečajte `versionCode` (zdaj 2), nato v zavihku **Actions**
-ročno zaženite workflow **Build Android APK** z novim tagom `android-v1.0.1`.
+ključ in alias ter povečajte `versionCode` (v pripravljeni različici 3), nato v zavihku **Actions**
+ročno zaženite workflow **Build Android APK** z novim tagom `android-v1.0.2`.
 Workflow zavrne manjkajoče
 secrets, nepodpisan APK, napačen certifikat, neveljaven ali že obstoječ tag ter
 nepovečan `versionCode`. Uspešen tek objavi `DZ-Auto-Trade.apk` v GitHub Release
@@ -62,3 +62,8 @@ in preveri anonimni prenos.
 Uporabnikom po objavi pošljite `https://dzautotrade.si/android-app.html`.
 Na strani so neposredni prenos z GitHuba, rezervna pot prek strani izdaj in
 navodila za dodajanje spletne aplikacije na začetni zaslon. Spletna pot ni APK.
+
+Različica 1.0.2 prikaže `dzautotrade.si` v Android WebView, zato navigacija po
+spletni strani ostane v aplikaciji. Zunanja spletna mesta, vključno s Stripe
+Checkout, se odprejo v privzetem brskalniku. WebView uporablja svojo shrambo
+piškotkov; prijavo v aplikaciji bo morda treba ponoviti.
