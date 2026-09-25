@@ -18,6 +18,7 @@ EOF
 cat >"$tmpdir/bin/apksigner" <<'EOF'
 #!/usr/bin/env bash
 printf '%s\n' 'Verified using v2 scheme (APK Signature Scheme v2): true'
+printf '%s\n' "Number of signers: ${MOCK_SIGNER_COUNT:-1}"
 printf '%b\n' "${MOCK_CERT_LINE:-}"
 EOF
 chmod +x "$tmpdir/bin/aapt" "$tmpdir/bin/apksigner"
@@ -65,6 +66,8 @@ diagnostic="$(MOCK_CERT_LINE='Signer unknown certificate SHA-256 digest: 01:23:4
   "$tmpdir/app.apk" "$tmpdir/bin/aapt" "$tmpdir/bin/apksigner" "$hex" 2>&1 || true)"
 grep -Fq 'Signer unknown certificate SHA-256 digest: [redacted]' <<<"$diagnostic"
 ! grep -Fq '01:23:45:67' <<<"$diagnostic"
+grep -Fq 'Number of signers: 1' <<<"$diagnostic"
+grep -Fq 'Certificate digest lines: 1' <<<"$diagnostic"
 expect_failure \
   'ANDROID_SIGNING_CERT_SHA256 must contain exactly 64 hexadecimal characters' \
   verify 'not-a-fingerprint' "Signer #1 certificate SHA-256 digest: $hex"
