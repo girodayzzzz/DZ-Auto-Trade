@@ -9,6 +9,14 @@
 
 Aplikacija se brez prijave odpre na javni domači pogled. Od tam so dostopni obstoječa trgovina, Stripe košarica in plačilo, storitve ter obstoječi javni obrazci. Povezava namenoma ni dodana v javni meni, domačo stran ali sitemap.
 
+Android projekt v `android-app/` je tanek zaganjalnik iste produkcijske aplikacije, ne nova kopija spletnega mesta. URL odpre v Chrome Custom Tabu oziroma uporabnikovem združljivem sistemskem brskalniku. S tem Cloudflare Access (vključno z OTP ali zunanjim ponudnikom identitete) in Stripe Checkout uporabljata brskalnikov varen prijavni kontekst in piškotke; APK ne vsebuje WebViewa, skrivnosti ali lastne shrambe spletnih odgovorov. Omrežna konfiguracija APK-ja prepoveduje cleartext HTTP.
+
+### Izdelava Android APK-ja
+
+Gradnja debug APK-ja se izvede ob vsakem pull requestu, ki spremeni Android projekt ali workflow. Pred objavo artifacta workflow preveri, da APK ni prazen, da je veljaven ZIP z manifestom in DEX kodo ter da vsebuje pričakovani paket in ime aplikacije. Za ročni zagon v GitHubu odprite **Actions → Build Android APK → Run workflow**. Po uspešni izvedbi v razdelku **Artifacts** prenesite `dz-auto-trade-debug-apk` in iz arhiva namestite `app-debug.apk`. To je razvojno podpisana različica za interni preizkus, ne produkcijska izdaja.
+
+Za podpisan release v GitHub Secrets nastavite `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` in `ANDROID_KEY_PASSWORD`. Workflow tedaj dodatno izdela artifact `dz-auto-trade-release-apk` z datoteko `app-release.apk`. Keystore in gesla ne sodijo v repozitorij. Lokalno lahko debug različico izdelate z `cd android-app && gradle --no-daemon assembleDebug`.
+
 Prijava je potrebna samo pri izbiri **Prijava za ekipo**. Po uspešni prijavi `/api/team/login` uporabnika vrne na `dz-app.html#ekipa`; aplikacija pokliče zaščiten `/api/team/bootstrap`, strežnik določi vlogo in prikaže administratorski ali izvajalski pogled.
 
 ## Kaj ostane javno
