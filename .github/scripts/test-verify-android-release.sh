@@ -53,7 +53,19 @@ verify $' \tSHA256:'"$colon_hex"$'\r\n ' $'  Signer #1 certificate SHA256 digest
 verify "$hex" "Signer (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: ${hex,,}"
 verify "$hex" "Signer (minSdkVersion=33 (dev release=true), maxSdkVersion=2147483647) certificate SHA-256 digest: ${hex,,}"
 verify "$hex" "Signer #1 certificate SHA-256 digest: ${hex,,} (verified)"
+# Some SDK versions print a different signer label; the certificate field is stable.
+verify "$hex" "Signing certificate SHA-256 digest: ${hex,,}"
+verify "$hex" "Certificate #1 certificate SHA-256 digest: $hex"
 verify "$hex" "Source Stamp Signer certificate SHA-256 digest: deadbeef\nSigner #1 public key SHA-256 digest: deadbeef\nSigner #1 certificate SHA-256 digest: $hex"
+expect_failure \
+  'APK signing certificate does not match ANDROID_SIGNING_CERT_SHA256.' \
+  verify "$hex" 'Signing certificate SHA-256 digest: 0000000000000000000000000000000000000000000000000000000000000000'
+expect_failure \
+  'Could not extract the signer certificate SHA-256 digest from apksigner output.' \
+  verify "$hex" "SourceStamp certificate SHA-256 digest: $hex"
+expect_failure \
+  'Could not extract the signer certificate SHA-256 digest from apksigner output.' \
+  verify "$hex" "Signer #1 public key SHA-256 digest: $hex"
 expect_failure \
   'APK signing certificate does not match ANDROID_SIGNING_CERT_SHA256.' \
   verify "$hex" "Signer (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: $hex\nSigner (minSdkVersion=21, maxSdkVersion=32) certificate SHA-256 digest: 0000000000000000000000000000000000000000000000000000000000000000"
@@ -61,10 +73,10 @@ expect_failure \
 expect_failure \
   'Could not extract the signer certificate SHA-256 digest from apksigner output.' \
   verify "$hex" 'Signer certificate digest unavailable'
-# Diagnostic labels must not print any part of a colon-separated digest.
-diagnostic="$(MOCK_CERT_LINE='Signer unknown certificate SHA-256 digest: 01:23:45:67' "$verifier" \
+# Source-stamp diagnostics must not print any part of a colon-separated digest.
+diagnostic="$(MOCK_CERT_LINE='Source Stamp Signer certificate SHA-256 digest: 01:23:45:67' "$verifier" \
   "$tmpdir/app.apk" "$tmpdir/bin/aapt" "$tmpdir/bin/apksigner" "$hex" 2>&1 || true)"
-grep -Fq 'Signer unknown certificate SHA-256 digest: [redacted]' <<<"$diagnostic"
+grep -Fq 'Could not extract the signer certificate SHA-256 digest' <<<"$diagnostic"
 ! grep -Fq '01:23:45:67' <<<"$diagnostic"
 grep -Fq 'Number of signers: 1' <<<"$diagnostic"
 grep -Fq 'Certificate digest lines: 1' <<<"$diagnostic"
