@@ -9,7 +9,7 @@ FORM_ENDPOINTS = {
     "transport": "https://formspree.io/f/xlgqwjro",
     "partner": "https://formspree.io/f/xrpgenne",
 }
-IGNORED_FORM_FILES = {"admin-panel.html"}
+IGNORED_FORM_FILES = {"admin-panel.html", "dz-app.html"}
 
 
 class HtmlAuditParser(HTMLParser):

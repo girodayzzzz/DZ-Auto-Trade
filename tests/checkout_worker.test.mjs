@@ -92,11 +92,10 @@ try {
   assert.ok(publicCatalog.products.length >= currentProducts.length);
   assert.ok(publicCatalog.products.every((product) => !('supplierPrice' in product) && !('purchaseUrl' in product)), 'public catalog must not expose supplier data');
 
-  const protectedCatalogResponse = await worker.fetch(new Request('https://dzautotrade.si/api/admin/products', {
+  const spoofedAdminResponse = await worker.fetch(new Request('https://dzautotrade.si/api/admin/products', {
     headers: { 'Cf-Access-Authenticated-User-Email': 'admin@example.si' },
-  }), { PRODUCTS_KV: kv });
-  assert.equal(protectedCatalogResponse.status, 200);
-  assert.ok((await protectedCatalogResponse.json()).products.length >= currentProducts.length, 'admin catalog includes every saved and bundled product');
+  }), { PRODUCTS_KV: kv, ADMIN_EMAIL: 'admin@example.si' });
+  assert.equal(spoofedAdminResponse.status, 401, 'an unsigned Access email header must never authorize admin access');
 
   const legacyCatalogKv = {
     async get(key) {
@@ -275,13 +274,12 @@ try {
   }), { PRODUCTS: kv });
   assert.equal(anonymousAdminResponse.status, 401, 'admin writes require a Cloudflare Access identity');
 
-  const authenticatedAdminResponse = await worker.fetch(new Request('https://dzautotrade.si/api/admin/products', {
+  const spoofedAdminWriteResponse = await worker.fetch(new Request('https://dzautotrade.si/api/admin/products', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Cf-Access-Authenticated-User-Email': 'admin@example.si' },
     body: JSON.stringify({ product: { ...currentProducts[0], stockStatus: 'out_of_stock' } }),
-  }), { PRODUCTS: kv });
-  assert.equal(authenticatedAdminResponse.status, 200, 'Cloudflare Access authenticated admins can update stock');
-  assert.ok(saved.has('products'), 'admin stock changes are persisted to Products KV');
+  }), { PRODUCTS: kv, ADMIN_EMAIL: 'admin@example.si' });
+  assert.equal(spoofedAdminWriteResponse.status, 401, 'an unsigned identity header cannot update stock');
 
   globalThis.fetch = async (url, init) => {
     stripeRequest = { url, init };

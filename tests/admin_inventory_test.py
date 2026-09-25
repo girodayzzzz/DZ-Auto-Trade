@@ -27,7 +27,7 @@ class AdminInventoryTest(unittest.TestCase):
         self.assertIn("stockStatus", worker)
         self.assertIn("product.stockStatus !== 'out_of_stock'", worker)
         self.assertIn("await runtimeBindings(env).productsKv.put(PRODUCTS_KEY", worker)
-        self.assertIn("Cf-Access-Authenticated-User-Email", worker)
+        self.assertIn("Cf-Access-Jwt-Assertion", worker)
         self.assertIn("url.pathname === '/api/admin/products'", worker)
         self.assertIn("const { supplierPrice, purchaseUrl, ...safeProduct }", worker)
 
