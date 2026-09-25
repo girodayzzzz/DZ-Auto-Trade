@@ -26,6 +26,9 @@ jobs:
         working-directory: android-app
     steps:
       - uses: actions/checkout@v4
+      - name: Test release verifier
+        working-directory: .
+        run: .github/scripts/test-verify-android-release.sh
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -61,6 +64,8 @@ jobs:
       APK_NAME: DZ-Auto-Trade.apk
     steps:
       - uses: actions/checkout@v4
+      - name: Test release verifier
+        run: .github/scripts/test-verify-android-release.sh
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
