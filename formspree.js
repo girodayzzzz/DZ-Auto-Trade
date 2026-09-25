@@ -45,7 +45,7 @@ formspreeForms.forEach((form) => {
     const submitButton = form.querySelector('[type="submit"]');
     const submitLabel = submitButton?.textContent;
     submitButton?.setAttribute('disabled', 'true');
-    if (submitButton) submitButton.textContent = 'Pošiljanje ...';
+    if (submitButton) submitButton.textContent = 'Pošiljamo...';
     setFormspreeStatus(form, 'Pošiljamo obrazec...', 'info');
 
     try {

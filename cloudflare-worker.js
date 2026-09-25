@@ -4138,11 +4138,90 @@ const handleStripeWebhook = async (request, env) => {
   return json({ received: true, orderId });
 };
 
-const requireAccess = (request) => {
-  // Cloudflare Access adds this header after a successful OTP login.
-  // Protect /admin-panel.html and /api/admin/* with an Access application in Cloudflare Zero Trust.
-  const email = request.headers.get('Cf-Access-Authenticated-User-Email');
-  return Boolean(email);
+const TEAM_DATA_KEY = 'team:v1';
+const accessKeyCache = new Map();
+const base64UrlJson = (value) => JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=')), (character) => character.charCodeAt(0))));
+const verifyAccessIdentity = async (request, env) => {
+  const assertion = request.headers.get('Cf-Access-Jwt-Assertion') || '';
+  const teamDomain = String(env.CF_ACCESS_TEAM_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const audience = String(env.CF_ACCESS_AUD || '').trim();
+  if (!assertion || !teamDomain || !audience) return null;
+  try {
+    const [encodedHeader, encodedPayload, signature] = assertion.split('.');
+    if (!encodedHeader || !encodedPayload || !signature) return null;
+    const header = base64UrlJson(encodedHeader);
+    const payload = base64UrlJson(encodedPayload);
+    const now = Math.floor(Date.now() / 1000);
+    const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+    if (header.alg !== 'RS256' || !header.kid || !audiences.includes(audience) || payload.exp <= now || payload.nbf > now + 30 || payload.iss !== `https://${teamDomain}`) return null;
+    let key = accessKeyCache.get(`${teamDomain}:${header.kid}`);
+    if (!key) {
+      const response = await fetch(`https://${teamDomain}/cdn-cgi/access/certs`);
+      if (!response.ok) return null;
+      const jwk = (await response.json()).keys?.find((candidate) => candidate.kid === header.kid);
+      if (!jwk) return null;
+      key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+      accessKeyCache.set(`${teamDomain}:${header.kid}`, key);
+    }
+    const bytes = Uint8Array.from(atob(signature.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(signature.length / 4) * 4, '=')), (character) => character.charCodeAt(0));
+    const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, bytes, new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`));
+    const email = String(payload.email || '').trim().toLowerCase();
+    return valid && email ? { email } : null;
+  } catch { return null; }
+};
+const teamStore = (env) => runtimeBindings(env).productsKv;
+const readTeamData = async (env) => ({ contractors: [], tasks: [], inquiries: [], deals: [], ...((await teamStore(env)?.get(TEAM_DATA_KEY, 'json')) || {}) });
+const writeTeamData = async (env, data) => {
+  if (!teamStore(env)) throw new Error('PRODUCTS_KV binding is required.');
+  await teamStore(env).put(TEAM_DATA_KEY, JSON.stringify(data));
+};
+const cleanText = (value, max = 2000) => String(value || '').trim().slice(0, max);
+const withoutInternal = (item) => { const { internalCostCents, ...safe } = item; return safe; };
+const teamAuth = async (request, env) => {
+  const identity = await verifyAccessIdentity(request, env);
+  if (!identity) return null;
+  const adminEmail = String(env.ADMIN_EMAIL || '').trim().toLowerCase();
+  if (identity.email === adminEmail && adminEmail) return { ...identity, role: 'admin' };
+  const data = await readTeamData(env);
+  const contractor = data.contractors.find((entry) => entry.email === identity.email && entry.enabled);
+  return contractor ? { ...identity, role: 'contractor', name: contractor.name, contractorId: contractor.id } : null;
+};
+const teamView = (data, auth) => auth.role === 'admin' ? data : ({
+  tasks: data.tasks.filter((item) => item.contractorEmail === auth.email).map(withoutInternal),
+  inquiries: data.inquiries.filter((item) => item.contractorEmail === auth.email).map(withoutInternal),
+  deals: data.deals.filter((item) => item.contractorEmail === auth.email).map(withoutInternal),
+});
+const handleTeamApi = async (request, env, url, auth) => {
+  const data = await readTeamData(env);
+  if (request.method === 'GET' && url.pathname === '/api/team/bootstrap') return json({ me: auth, data: teamView(data, auth) });
+  const body = await request.json().catch(() => ({}));
+  const now = new Date().toISOString();
+  if (auth.role === 'admin' && request.method === 'POST' && url.pathname === '/api/team/admin/contractors') {
+    const email = cleanText(body.email, 254).toLowerCase();
+    if (!email || !email.includes('@')) return json({ error: 'Veljaven e-poštni naslov je obvezen.' }, { status: 400 });
+    const existing = data.contractors.find((item) => item.email === email);
+    if (existing) Object.assign(existing, { name: cleanText(body.name, 120), enabled: body.enabled !== false, updatedAt: now });
+    else data.contractors.push({ id: crypto.randomUUID(), email, name: cleanText(body.name, 120), enabled: true, createdAt: now });
+  } else if (auth.role === 'admin' && request.method === 'POST' && url.pathname === '/api/team/admin/tasks') {
+    const contractor = data.contractors.find((item) => item.email === cleanText(body.contractorEmail, 254).toLowerCase() && item.enabled);
+    if (!contractor) return json({ error: 'Izberite aktivnega izvajalca.' }, { status: 400 });
+    data.tasks.push({ id: crypto.randomUUID(), contractorEmail: contractor.email, title: cleanText(body.title, 160), instructions: cleanText(body.instructions), dueDate: cleanText(body.dueDate, 20), status: 'novo', progress: 0, notes: '', createdAt: now, updatedAt: now });
+  } else if (request.method === 'POST' && url.pathname === '/api/team/inquiries') {
+    data.inquiries.push({ id: crypto.randomUUID(), contractorEmail: auth.role === 'admin' ? cleanText(body.contractorEmail, 254).toLowerCase() : auth.email, type: cleanText(body.type, 40), customer: cleanText(body.customer, 160), contact: cleanText(body.contact, 240), details: cleanText(body.details), status: 'novo', createdAt: now, updatedAt: now });
+  } else if (auth.role === 'admin' && request.method === 'POST' && url.pathname === '/api/team/admin/deals') {
+    data.deals.push({ id: crypto.randomUUID(), contractorEmail: cleanText(body.contractorEmail, 254).toLowerCase(), title: cleanText(body.title, 160), status: 'novo', estimatedCommissionCents: Math.max(0, Number(body.estimatedCommissionCents) || 0), confirmedCommissionCents: 0, internalCostCents: Math.max(0, Number(body.internalCostCents) || 0), createdAt: now, updatedAt: now });
+  } else {
+    const match = url.pathname.match(/^\/api\/team\/(tasks|deals|contractors)\/([^/]+)$/);
+    if (!match || request.method !== 'PATCH') return json({ error: 'Not found.' }, { status: 404 });
+    const [, collection, id] = match;
+    const item = data[collection].find((entry) => entry.id === id);
+    if (!item || (auth.role !== 'admin' && item.contractorEmail !== auth.email) || (collection !== 'tasks' && auth.role !== 'admin')) return json({ error: 'Dostop ni dovoljen.' }, { status: 403 });
+    if (collection === 'contractors') Object.assign(item, { enabled: Boolean(body.enabled), updatedAt: now });
+    if (collection === 'tasks') Object.assign(item, { status: cleanText(body.status, 30) || item.status, progress: Math.min(100, Math.max(0, Number(body.progress) || 0)), notes: cleanText(body.notes), updatedAt: now });
+    if (collection === 'deals') Object.assign(item, { status: cleanText(body.status, 30) || item.status, estimatedCommissionCents: Math.max(0, Number(body.estimatedCommissionCents) || 0), confirmedCommissionCents: Math.max(0, Number(body.confirmedCommissionCents) || 0), internalCostCents: Math.max(0, Number(body.internalCostCents) || 0), updatedAt: now });
+  }
+  await writeTeamData(env, data);
+  return json({ ok: true, data: teamView(data, auth) });
 };
 
 export default {
@@ -4222,8 +4301,23 @@ export default {
       return handleStripeWebhook(request, env);
     }
 
-    if (url.pathname.startsWith('/api/admin/') && !requireAccess(request)) {
-      return json({ error: 'Admin access required. Protect this route with Cloudflare Access OTP.' }, { status: 401 });
+    if (url.pathname.startsWith('/api/team/')) {
+      const origin = request.headers.get('Origin');
+      if (origin && !ALLOWED_CHECKOUT_ORIGINS.has(origin)) return json({ error: 'Ta izvor ni dovoljen.' }, { status: 403 });
+      const auth = await teamAuth(request, env);
+      if (!auth) return json({ error: 'Veljavna prijava ali odobritev manjka.' }, { status: 401 });
+      if (url.pathname === '/api/team/login') return Response.redirect(`${PRODUCTION_ORIGIN}/dz-app.html#ekipa`, 302);
+      if (url.pathname === '/api/team/logout') {
+        const teamDomain = String(env.CF_ACCESS_TEAM_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+        return Response.redirect(`https://${teamDomain}/cdn-cgi/access/logout`, 302);
+      }
+      if (url.pathname.startsWith('/api/team/admin/') && auth.role !== 'admin') return json({ error: 'Samo administrator.' }, { status: 403 });
+      return handleTeamApi(request, env, url, auth);
+    }
+
+    if (url.pathname.startsWith('/api/admin/')) {
+      const auth = await teamAuth(request, env);
+      if (!auth || auth.role !== 'admin') return json({ error: 'Admin access required.' }, { status: auth ? 403 : 401 });
     }
 
     if (request.method === 'GET' && url.pathname === '/api/admin/products') {
