@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'si.dzautotrade.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'si.dzautotrade.app'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    signingConfigs {
+        if (System.getenv('DZ_RELEASE_STORE_FILE')) {
+            release {
+                storeFile file(System.getenv('DZ_RELEASE_STORE_FILE'))
+                storePassword System.getenv('DZ_RELEASE_STORE_PASSWORD')
+                keyAlias System.getenv('DZ_RELEASE_KEY_ALIAS')
+                keyPassword System.getenv('DZ_RELEASE_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (signingConfigs.findByName('release')) signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.browser:browser:1.8.0'
+}
