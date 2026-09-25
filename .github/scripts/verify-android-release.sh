@@ -45,6 +45,9 @@ grep -Fq 'Verified using v2 scheme (APK Signature Scheme v2): true' <<<"$verific
 mapfile -t signer_certs < <(sed -nE 's/^[[:space:]]*Signer (#[0-9]+|\(minSdkVersion=.*\)) certificate SHA-?256 digest:[[:space:]]*([0-9A-Fa-f:]+).*/\2/p' <<<"$verification")
 if ((${#signer_certs[@]} == 0)); then
   echo 'Could not extract the signer certificate SHA-256 digest from apksigner output.' >&2
+  # These verification flags and counts contain no certificate or signing material.
+  printf '%s\n' "$verification" | grep -E '^(Verifies|Verified using .*: (true|false)|Number of signers: [0-9]+)$' >&2 || true
+  printf 'Certificate digest lines: %s\n' "$(printf '%s\n' "$verification" | grep -Ec 'certificate.*digest:' || true)" >&2
   # Show only labels, with everything after the colon redacted, to diagnose SDK changes.
   printf '%s\n' "$verification" | sed -nE '/^[[:space:]]*Signer .*certificate.*digest:/ {s/(digest:).*/\1 [redacted]/; p;}' >&2
   exit 1
