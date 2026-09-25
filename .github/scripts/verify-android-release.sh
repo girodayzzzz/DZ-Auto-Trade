@@ -40,9 +40,11 @@ version_code="$(sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" <<<"$badging" | hea
 
 verification="$($apksigner verify --verbose --print-certs "$apk")"
 grep -Fq 'Verified using v2 scheme (APK Signature Scheme v2): true' <<<"$verification"
-# Accept version-specific signer labels, but never source-stamp or public-key digests.
-# Extract only the fingerprint; the complete apksigner output can contain private metadata.
-mapfile -t signer_certs < <(sed -nE 's/^[[:space:]]*Signer (#[0-9]+|\(minSdkVersion=.*\)) certificate SHA-?256 digest:[[:space:]]*([0-9A-Fa-f:]+).*/\2/p' <<<"$verification")
+grep -Eq '^Number of signers: [1-9][0-9]*$' <<<"$verification"
+# SDK versions use different labels for the signer. Select certificate SHA-256
+# digest fields, excluding source stamps; never use public-key, SHA-1 or MD5 digests.
+# Compare every selected certificate to the expected release signing certificate.
+mapfile -t signer_certs < <(sed -nE '/[Ss]ource[[:space:]]*[Ss]tamp/! s/^.*certificate SHA-?256 digest:[[:space:]]*([0-9A-Fa-f:]+).*/\1/p' <<<"$verification")
 if ((${#signer_certs[@]} == 0)); then
   echo 'Could not extract the signer certificate SHA-256 digest from apksigner output.' >&2
   # These verification flags and counts contain no certificate or signing material.
