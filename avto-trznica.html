@@ -72,7 +72,8 @@
 
       <section class="section" id="vozila">
         <div class="container">
-          <div class="section-head split-head"><div><p class="eyebrow">Ponudba vozil</p><h2>Trenutno ni vozil v ponudbi.</h2><p class="catalog-summary">Nova vozila bomo objavili, ko bodo na voljo in bodo pripravljena z vsemi dejanskimi podatki. Do takrat nam lahko zaupate svoje vozilo v posredniško prodajo.</p></div><a class="text-link" href="prodaja-avta.html">Oddaj vozilo →</a></div>
+          <div class="section-head split-head"><div><p class="eyebrow">Ponudba vozil</p><h2 data-market-title>Trenutno ni vozil v ponudbi.</h2><p class="catalog-summary" data-market-summary>Nova vozila bomo objavili, ko bodo na voljo in bodo pripravljena z vsemi dejanskimi podatki.</p></div><a class="text-link" href="prodaja-avta.html">Oddaj vozilo →</a></div>
+          <div class="vehicle-tools"><input type="search" data-market-search placeholder="Išči znamko ali model"><select data-market-fuel><option value="">Vsa goriva</option></select><select data-market-sort><option value="newest">Najnovejše</option><option value="priceAsc">Cena naraščajoče</option><option value="priceDesc">Cena padajoče</option></select></div><div data-market-list class="vehicle-service-grid"></div>
           <div class="card contact-card"><h3>Želite prodati ali najti vozilo?</h3><p>Pošljite nam podatke za prodajo obstoječega vozila ali zahteve za vozilo, ki ga iščete.</p><div class="hero-actions"><a class="btn-primary" href="prodaja-avta.html">Oddaj vozilo v prodajo</a><a class="btn-secondary" href="iscem-vozilo.html">Iščem določeno vozilo</a></div></div>
         </div>
       </section>
@@ -154,5 +155,6 @@
       <div class="container footer-bottom"><span>© 2026 DZ Auto Trade / DAYZZZZ S.P. Vse pravice pridržane.</span><a href="#main-content">Na vrh ↑</a></div>
     </footer>
     <script src="scripts.js?v=2026-08-25-1"></script>
+    <script src="vehicle-market.js" defer></script>
   </body>
 </html>

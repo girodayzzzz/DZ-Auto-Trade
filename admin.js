@@ -68,9 +68,19 @@ async function verifyPublishedApk() {
     });
     if (!response.ok) return;
     const release = await response.json();
-    const publishedAsset = !release.draft && !release.prerelease && release.assets?.some((asset) => (
-      asset.name === 'DZ-Auto-Trade.apk' && asset.browser_download_url === APK_DOWNLOAD_URL && asset.size > 0
-    ));
+    // GitHub reports an asset URL containing the concrete release tag, while
+    // APK_DOWNLOAD_URL intentionally uses the stable `releases/latest` alias.
+    const expectedAssetPath = `/girodayzzzz/DZ-Auto-Trade/releases/download/${release.tag_name}/DZ-Auto-Trade.apk`;
+    const publishedAsset = !release.draft && !release.prerelease && release.assets?.some((asset) => {
+      let assetUrl;
+      try { assetUrl = new URL(asset.browser_download_url); } catch { return false; }
+      return asset.name === 'DZ-Auto-Trade.apk'
+        && Number(asset.size) > 0
+        && asset.state === 'uploaded'
+        && assetUrl.protocol === 'https:'
+        && assetUrl.hostname === 'github.com'
+        && decodeURIComponent(assetUrl.pathname) === expectedAssetPath;
+    });
     if (!publishedAsset) return;
     apkDownloadButton.removeAttribute('aria-disabled');
     apkDownloadButton.classList.remove('is-unverified');

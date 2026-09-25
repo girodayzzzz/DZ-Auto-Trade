@@ -92,3 +92,40 @@ Za obstoječi `admin-panel.html` in `/api/admin/*` ohranite admin-only Access. `
 ## Predpomnilnik in podatki
 
 Service worker predpomni samo `team.css` in `team-app.js`. Ne predpomni HTML, `/api/` odgovorov, izdelkov, obrazcev ali osebnih podatkov. Evidenca ekipe v KV je primerna za manjšo ekipo; pri več sočasnih uporabnikih je za transakcijske zapise primernejši D1 ali Durable Object.
+
+## Zaloga vozil (D1 in R2) – obvezna nastavitev pred uporabo
+
+Koda zaloge je pripravljena, vendar **ni potrjeno objavljena ali produkcijsko delujoča**, dokler niso ustvarjeni viri, izvedena migracija in preverjen Access. Zapisi niso v `team:v1`: strukturirani podatki so v D1, izvirne fotografije pa zasebno v R2. Javni API vrne le izrecno dovoljena polja vozil s statusom `published` in vključenim `is_public`; slike streže Worker samo za taka vozila.
+
+Namestite Wrangler (`npm install --global wrangler`), se prijavite in nato iz korena repozitorija izvedite:
+
+```bash
+wrangler login
+wrangler d1 create dz-auto-trade-vehicles
+wrangler r2 bucket create dz-auto-trade-vehicle-images
+```
+
+Vrnjeni D1 `database_id` shranite kot GitHub Actions repository variable
+`VEHICLES_D1_DATABASE_ID` (**Settings → Secrets and variables → Actions →
+Variables**). ID ni skrivnost, vendar mora pripadati pravemu produkcijskemu
+računu. Osnovni `wrangler.toml` namenoma nima nedelujočega placeholder bindinga;
+workflow iz tega ID-ja ustvari prezrti `wrangler.generated.toml`. Če ID manjka,
+obstoječi Worker varno objavi brez D1/R2 bindingov (trgovina in Stripe zato
+nista blokirana), vozilni API pa vrne `503`. Če je ID nastavljen, vendar ni
+veljaven UUID, se workflow pred deployem ustavi. Za ročni deploy nato:
+
+```bash
+python tools/configure_vehicle_bindings.py --d1-id '<vrnjeni-d1-uuid>'
+wrangler d1 migrations apply dz-auto-trade-vehicles --remote --config wrangler.generated.toml
+wrangler deploy --keep-vars --config wrangler.generated.toml
+```
+
+V **Workers & Pages → dz-auto-trade-products → Settings → Bindings** preverite bindinga `VEHICLES_DB` (D1 `dz-auto-trade-vehicles`) in `VEHICLE_IMAGES` (R2 `dz-auto-trade-vehicle-images`). R2 bucket ne sme biti javno izpostavljen. Ohranite `PRODUCTS_KV` in vse Stripe nastavitve. Nastavite skrivnosti/variable `ADMIN_EMAIL`, `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` in v Access aplikaciji zaščitite `dzautotrade.si/api/team/*`; izvajalci nimajo pravic na `/api/team/admin/vehicles*`.
+
+GitHub Actions za objavo Workerja zahteva repository secrets `CLOUDFLARE_API_TOKEN` (token z Workers Scripts:Edit, D1:Edit in R2:Edit) in `CLOUDFLARE_ACCOUNT_ID`. Njune prisotnosti iz kode ni mogoče potrditi. Po objavi anonimno preverite, da `/api/vehicles` vrne samo javna polja, neprijavljen klic `/api/team/admin/vehicles` pa `401`; z izvajalcem mora vrniti `403`.
+
+Fotografije so omejene na 12 na vozilo in 8 MB na datoteko. Worker preveri deklarirani MIME in magične bajte JPEG/PNG/WebP, doda `nosniff` ter ob napaki D1 izbriše že naložen R2 objekt. Brskalniški service worker ne prestreza ali hrani nobene poti `/api/`.
+
+## Pomembna omejitev stalne APK povezave
+
+GitHubova pot `releases/latest/download/DZ-Auto-Trade.apk` vedno kaže na izdajo, ki jo GitHub trenutno označi kot latest. Workflow **Build Android APK** vsako svojo javno izdajo ustvari z assetom tega imena in nato anonimno primerja prenesene bajte. GitHub pa ne more na ravni repozitorija prepovedati, da skrbnik ročno ali drug workflow pozneje objavi drugo izdajo brez APK-ja in jo označi kot latest. Zato drugih javnih izdaj ne označujte kot latest; oziroma jim vedno dodajte `DZ-Auto-Trade.apk`. Po vsaki izdaji ponovno anonimno preverite stalni URL. Spletne spremembe ne zahtevajo novega APK-ja in nameščeni APK se sam ne posodobi.
