@@ -1,4 +1,4 @@
-# Prva podpisana Android izdaja
+# Podpisane Android izdaje
 
 Ta postopek je namenjen skrbniku repozitorija. Podpisni ključ in gesla morajo
 ostati zunaj Gita; lokalna mapa `signing-private/` mora biti v
@@ -50,9 +50,15 @@ girodayzzzz/DZ-Auto-Trade` prek standardnega vhoda.
 
 ## 3. Objava
 
-Šele po prenosu varnostne kopije odstranite ključ iz Codespaces. Nato v zavihku
-**Actions** ročno zaženite workflow **Build Android APK** z vrednostjo
-`release_tag` nastavljeno na `android-v1.0.0`. Workflow zavrne manjkajoče
+Šele po prenosu varnostne kopije odstranite ključ iz Codespaces. Prva izdaja
+`android-v1.0.0` je že objavljena. Za naslednjo izdajo ohranite isti podpisni
+ključ in alias ter povečajte `versionCode` (zdaj 2), nato v zavihku **Actions**
+ročno zaženite workflow **Build Android APK** z novim tagom `android-v1.0.1`.
+Workflow zavrne manjkajoče
 secrets, nepodpisan APK, napačen certifikat, neveljaven ali že obstoječ tag ter
 nepovečan `versionCode`. Uspešen tek objavi `DZ-Auto-Trade.apk` v GitHub Release
 in preveri anonimni prenos.
+
+Uporabnikom po objavi pošljite `https://dzautotrade.si/android-app.html`.
+Na strani so neposredni prenos z GitHuba, rezervna pot prek strani izdaj in
+navodila za dodajanje spletne aplikacije na začetni zaslon. Spletna pot ni APK.

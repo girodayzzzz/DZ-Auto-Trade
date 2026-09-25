@@ -121,7 +121,6 @@
 .admin-apk-download p { margin: 0; max-width: 680px; color: #9ba8ba; }
 .admin-apk-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
 .admin-copy-status { flex-basis: 100%; color: #93a1b4; font-size: .82rem; text-align: right; }
-.admin-apk-actions .is-unverified { opacity: .5; cursor: not-allowed; filter: saturate(.35); }
 @media (max-width: 760px) {
   .admin-apk-download { align-items: stretch; flex-direction: column; }
   .admin-apk-actions { justify-content: flex-start; }

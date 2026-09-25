@@ -33,7 +33,13 @@ Po objavi je stalna povezava, ki ne zahteva GitHub prijave:
 
 `https://github.com/girodayzzzz/DZ-Auto-Trade/releases/latest/download/DZ-Auto-Trade.apk`
 
-Ime asseta se pri prihodnjih izdajah ne sme spremeniti. Gumb v admin panelu namenoma pove, da stanje ni potrjeno; za delujočega ga štejte šele po uspešnem koraku **Verify anonymous permanent download**. GitHub Release je javna distribucija: admin-only postavitev gumba omejuje odkrivanje povezave, ne pa dostopa do samega APK-ja.
+Uporabnikom delite `https://dzautotrade.si/android-app.html`, kjer so navodila
+za Samsung, neposredna povezava, stran izdaj in spletna namestitev, če GitHubov
+strežnik za datoteke v njihovem brskalniku ali omrežju ni dosegljiv. Gumb v
+admin panelu vedno odpre ta navodila; nedosegljiv GitHub API ga ne blokira.
+APK se še vedno prenese z GitHuba, spletna namestitev pa ne namesti APK-ja.
+
+Ime asseta se pri prihodnjih izdajah ne sme spremeniti. Za delujočo izdajo štejte šele uspešen korak **Verify anonymous permanent download**. GitHub Release je javna distribucija: admin-only postavitev gumba ne omejuje dostopa do APK-ja.
 
 ### Spletne posodobitve in posodobitve APK-ja
 
