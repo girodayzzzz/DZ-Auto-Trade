@@ -13,16 +13,34 @@ Android projekt v `android-app/` je tanek zaganjalnik iste produkcijske aplikaci
 
 ### Izdelava Android APK-ja
 
-Gradnja debug APK-ja se izvede ob vsakem pull requestu, ki spremeni Android projekt ali workflow. Pred objavo artifacta workflow preveri, da APK ni prazen, da je veljaven ZIP z manifestom in DEX kodo ter da vsebuje pričakovani paket in ime aplikacije. Za ročni zagon v GitHubu odprite **Actions → Build Android APK → Run workflow**. Po uspešni izvedbi v razdelku **Artifacts** prenesite `dz-auto-trade-debug-apk` in iz arhiva namestite `app-debug.apk`. To je razvojno podpisana različica za interni preizkus, ne produkcijska izdaja.
+Gradnja debug APK-ja se izvede ob vsakem pull requestu, ki spremeni Android projekt ali workflow. Ta artifact je samo za razvojni preizkus in se nikoli ne objavi kot produkcijska GitHub Release izdaja.
 
-Za podpisan release v GitHub Secrets nastavite `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` in `ANDROID_KEY_PASSWORD`. Workflow tedaj dodatno izdela artifact `dz-auto-trade-release-apk` z datoteko `app-release.apk`. Keystore in gesla ne sodijo v repozitorij. Lokalno lahko debug različico izdelate z `cd android-app && gradle --no-daemon assembleDebug`.
+Produkcijsko izdajo objavi izključno ročni zagon **Actions → Build Android APK → Run workflow** z novim enoličnim `release_tag` (na primer `android-v1.0.0`). Workflow zavrne manjkajoče skrivnosti ali nepodpisano izdajo, preveri ZIP/APK, DEX in manifest, paket `si.dzautotrade.app`, pozitiven `versionCode`, podpis v2 in pričakovani SHA-256 prstni odtis certifikata. Če prejšnja izdaja obstaja, preveri tudi njen podpis in zahteva višji `versionCode`. Šele nato ustvari javno, nepredogledno GitHub Release izdajo z assetom **`DZ-Auto-Trade.apk`** in anonimno preveri preneseno datoteko.
+
+### Prva nastavitev podpisovanja (skrivnosti)
+
+Keystore ustvarite na zaupanja vrednem lokalnem računalniku in ga varnostno kopirajte v šifriran trezor zunaj repozitorija. V **GitHub → Settings → Secrets and variables → Actions → New repository secret** ustvarite vseh pet skrivnosti:
+
+1. `ANDROID_KEYSTORE_BASE64`: enovrstični izpis `base64 -w 0 dz-auto-trade-release.jks` (macOS: `base64 < dz-auto-trade-release.jks | tr -d '\n'`).
+2. `ANDROID_KEYSTORE_PASSWORD`: močno geslo keystora.
+3. `ANDROID_KEY_ALIAS`: alias produkcijskega ključa.
+4. `ANDROID_KEY_PASSWORD`: močno geslo zasebnega ključa.
+5. `ANDROID_SIGNING_CERT_SHA256`: SHA-256 prstni odtis iz `keytool -list -v -keystore dz-auto-trade-release.jks -alias '<alias>'`, brez oznake `SHA256:` (dvopičja in velike/male črke so dovoljene).
+
+Ukazov z gesli ne dodajajte v shell history, vrednosti nikoli ne zapisujte v issue, PR, artifact ali dnevnik. Isti keystore in alias morate uporabiti za vse prihodnje izdaje. Če katera od teh skrivnosti manjka, **produkcijske izdaje ni mogoče objaviti**; workflow se varno ustavi pred gradnjo release APK-ja. Lokalno lahko še vedno izdelate samo debug različico z `cd android-app && gradle --no-daemon assembleDebug`.
+
+Po objavi je stalna povezava, ki ne zahteva GitHub prijave:
+
+`https://github.com/girodayzzzz/DZ-Auto-Trade/releases/latest/download/DZ-Auto-Trade.apk`
+
+Ime asseta se pri prihodnjih izdajah ne sme spremeniti. Gumb v admin panelu namenoma pove, da stanje ni potrjeno; za delujočega ga štejte šele po uspešnem koraku **Verify anonymous permanent download**. GitHub Release je javna distribucija: admin-only postavitev gumba omejuje odkrivanje povezave, ne pa dostopa do samega APK-ja.
 
 ### Spletne posodobitve in posodobitve APK-ja
 
 - **Spletna vsebina:** APK samo odpre `https://dzautotrade.si/dz-app.html`, zato so spremembe strani, trgovine in Stripe integracije po uspešni spletni objavi vidne brez nove namestitve APK-ja.
 - **APK:** nov APK je potreben samo ob spremembi Android zaganjalnika, manifesta, ikone, dovoljenj ali Android odvisnosti. Pred vsako izdajo je treba v `android-app/app/build.gradle` povečati `versionCode` (in smiselno posodobiti `versionName`). Trenutni `versionCode` je statično nastavljen; zaporedne gradnje ga ne povečajo samodejno.
 
-GitHubovi gostovani runnerji ob gradnji ustvarijo začasen privzeti debug ključ. Zaporedna artifacta `dz-auto-trade-debug-apk` zato nista zagotovljeno podpisana z istim ključem in nista primerna za zanesljivo nadgradnjo že nameščene aplikacije. Za namestitev druge debug gradnje je lahko potrebna odstranitev stare aplikacije, s čimer se izbrišejo njeni lokalni podatki.
+GitHubovi gostovani runnerji ob gradnji ustvarijo začasen privzeti debug ključ. Debug APK zato ni primeren za nadgradnjo. Pred namestitvijo prve produkcijsko podpisane release različice bo morda treba trenutno debug aplikacijo odstraniti, ker ima drugačen podpis; odstranitev izbriše njene lokalne podatke.
 
 Za varno namestitev nove različice čez staro uporabite release APK z vedno istim, varno hranjenim keystorom, enakim `applicationId` in višjim `versionCode`; nato odprite novi `app-release.apk` na napravi in potrdite posodobitev. Keystore varnostno kopirajte zunaj repozitorija, omejite dostop in ga ne zamenjajte, sicer Android nadgradnjo zavrne. Samodejno posodabljanje APK-ja ni vključeno in se ga ne sme dodati, dokler ni zasnovano okoli tega stalnega podpisnega ključa in preverjenega varnega distribucijskega kanala.
 
@@ -56,7 +74,7 @@ V **Zero Trust → Access → Applications** ustvarite `Self-hosted` aplikacijo 
 
 Ne uporabljajte `Everyone`, `Bypass` ali javne registracije. AUD te aplikacije vnesite v `CF_ACCESS_AUD`. Izvajalca morate dodatno odobriti v administratorskem pogledu z istim normaliziranim e-poštnim naslovom. Access dovoljenje in aktiven zapis sta oba obvezna; onemogočen izvajalec dobi `401`.
 
-Za obstoječi `admin-panel.html` in `/api/admin/*` ohranite admin-only Access. `/api/admin/*` dodatno preverja isti podpisani JWT in `ADMIN_EMAIL`; pri ločeni Access aplikaciji uskladite njen AUD z vrednostjo, ki jo Worker sprejema.
+Za obstoječi `admin-panel.html` in `/api/admin/*` ohranite admin-only Access. `/api/admin/*` dodatno preverja isti podpisani JWT in `ADMIN_EMAIL`; pri ločeni Access aplikaciji uskladite njen AUD z vrednostjo, ki jo Worker sprejema. `noindex`, neobjavljena povezava in skrit meni niso nadomestilo za Access. Ker iz tega repozitorija ni mogoče potrditi produkcijske Cloudflare konfiguracije, morate brez prijave preveriti, da `https://dzautotrade.si/admin-panel.html` sproži Access prijavo, z neadministratorskim računom pa dostop zavrne. Do uspešnega preverjanja admin panel ni potrjeno omejen na administratorja.
 
 ## Preverjanje pred uporabo
 

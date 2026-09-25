@@ -21,6 +21,10 @@ const imagePreview = document.querySelector('[data-image-preview]');
 const orderList = document.querySelector('[data-admin-order-list]');
 const refreshOrdersButton = document.querySelector('[data-refresh-orders]');
 const adminDate = document.querySelector('[data-admin-date]');
+const copyApkUrlButton = document.querySelector('[data-copy-apk-url]');
+const copyApkStatus = document.querySelector('[data-copy-apk-status]');
+const apkDownloadButton = document.querySelector('[data-apk-download]');
+const APK_DOWNLOAD_URL = 'https://github.com/girodayzzzz/DZ-Auto-Trade/releases/latest/download/DZ-Auto-Trade.apk';
 
 const defaultCategories = [
   { id: 'vse-za-servis-vozila', label: 'Vse za servis vozila', description: 'Motorna olja in potrošni material za redno vzdrževanje' },
@@ -42,6 +46,41 @@ if (adminDate) {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   }).format(new Date()).toLocaleUpperCase('sl-SI');
 }
+
+copyApkUrlButton?.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(APK_DOWNLOAD_URL);
+    copyApkStatus.textContent = 'Povezava je kopirana.';
+  } catch {
+    copyApkStatus.textContent = `Kopiranje ni uspelo. Kopirajte ročno: ${APK_DOWNLOAD_URL}`;
+  }
+});
+
+apkDownloadButton?.addEventListener('click', (event) => {
+  if (apkDownloadButton.getAttribute('aria-disabled') === 'true') event.preventDefault();
+});
+
+async function verifyPublishedApk() {
+  if (!apkDownloadButton || !copyApkStatus) return;
+  try {
+    const response = await fetch('https://api.github.com/repos/girodayzzzz/DZ-Auto-Trade/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json' }
+    });
+    if (!response.ok) return;
+    const release = await response.json();
+    const publishedAsset = !release.draft && !release.prerelease && release.assets?.some((asset) => (
+      asset.name === 'DZ-Auto-Trade.apk' && asset.browser_download_url === APK_DOWNLOAD_URL && asset.size > 0
+    ));
+    if (!publishedAsset) return;
+    apkDownloadButton.removeAttribute('aria-disabled');
+    apkDownloadButton.classList.remove('is-unverified');
+    copyApkStatus.textContent = 'Podpisana izdaja je objavljena.';
+  } catch {
+    // Keep the download disabled and its unverified status visible.
+  }
+}
+
+verifyPublishedApk();
 
 const STOCK_STATUS = Object.freeze({
   supplier: { label: 'Na zalogi', availability: 'Na zalogi', delivery: 'Po potrditvi dobavitelja' },
