@@ -51,6 +51,7 @@ verify $' \tSHA256:'"$colon_hex"$'\r\n ' $'  Signer #1 certificate SHA256 digest
 # apksigner labels certificates by SDK range when v3.1 signing is present.
 verify "$hex" "Signer (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: ${hex,,}"
 verify "$hex" "Signer (minSdkVersion=33 (dev release=true), maxSdkVersion=2147483647) certificate SHA-256 digest: ${hex,,}"
+verify "$hex" "Signer #1 certificate SHA-256 digest: ${hex,,} (verified)"
 verify "$hex" "Source Stamp Signer certificate SHA-256 digest: deadbeef\nSigner #1 public key SHA-256 digest: deadbeef\nSigner #1 certificate SHA-256 digest: $hex"
 expect_failure \
   'APK signing certificate does not match ANDROID_SIGNING_CERT_SHA256.' \
@@ -59,6 +60,11 @@ expect_failure \
 expect_failure \
   'Could not extract the signer certificate SHA-256 digest from apksigner output.' \
   verify "$hex" 'Signer certificate digest unavailable'
+# Diagnostic labels must not print any part of a colon-separated digest.
+diagnostic="$(MOCK_CERT_LINE='Signer unknown certificate SHA-256 digest: 01:23:45:67' "$verifier" \
+  "$tmpdir/app.apk" "$tmpdir/bin/aapt" "$tmpdir/bin/apksigner" "$hex" 2>&1 || true)"
+grep -Fq 'Signer unknown certificate SHA-256 digest: [redacted]' <<<"$diagnostic"
+! grep -Fq '01:23:45:67' <<<"$diagnostic"
 expect_failure \
   'ANDROID_SIGNING_CERT_SHA256 must contain exactly 64 hexadecimal characters' \
   verify 'not-a-fingerprint' "Signer #1 certificate SHA-256 digest: $hex"
