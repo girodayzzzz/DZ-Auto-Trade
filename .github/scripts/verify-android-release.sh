@@ -40,11 +40,13 @@ version_code="$(sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" <<<"$badging" | hea
 
 verification="$($apksigner verify --verbose --print-certs "$apk")"
 grep -Fq 'Verified using v2 scheme (APK Signature Scheme v2): true' <<<"$verification"
-# apksigner may label a signer as "#1" or with SDK ranges for v3.1 signatures.
-# Inspect certificate digests only; public-key and source-stamp digests are different.
-mapfile -t signer_certs < <(sed -nE 's/^[[:space:]]*Signer (#[0-9]+|\(minSdkVersion=.*\)) certificate SHA-?256 digest:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\2/p' <<<"$verification")
+# Accept version-specific signer labels, but never source-stamp or public-key digests.
+# Extract only the fingerprint; the complete apksigner output can contain private metadata.
+mapfile -t signer_certs < <(sed -nE 's/^[[:space:]]*Signer (#[0-9]+|\(minSdkVersion=.*\)) certificate SHA-?256 digest:[[:space:]]*([0-9A-Fa-f:]+).*/\2/p' <<<"$verification")
 if ((${#signer_certs[@]} == 0)); then
   echo 'Could not extract the signer certificate SHA-256 digest from apksigner output.' >&2
+  # Show only labels, with everything after the colon redacted, to diagnose SDK changes.
+  printf '%s\n' "$verification" | sed -nE '/^[[:space:]]*Signer .*certificate.*digest:/ {s/(digest:).*/\1 [redacted]/; p;}' >&2
   exit 1
 fi
 for actual_cert in "${signer_certs[@]}"; do
