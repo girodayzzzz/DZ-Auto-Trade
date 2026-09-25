@@ -17,6 +17,15 @@ Gradnja debug APK-ja se izvede ob vsakem pull requestu, ki spremeni Android proj
 
 Za podpisan release v GitHub Secrets nastavite `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` in `ANDROID_KEY_PASSWORD`. Workflow tedaj dodatno izdela artifact `dz-auto-trade-release-apk` z datoteko `app-release.apk`. Keystore in gesla ne sodijo v repozitorij. Lokalno lahko debug različico izdelate z `cd android-app && gradle --no-daemon assembleDebug`.
 
+### Spletne posodobitve in posodobitve APK-ja
+
+- **Spletna vsebina:** APK samo odpre `https://dzautotrade.si/dz-app.html`, zato so spremembe strani, trgovine in Stripe integracije po uspešni spletni objavi vidne brez nove namestitve APK-ja.
+- **APK:** nov APK je potreben samo ob spremembi Android zaganjalnika, manifesta, ikone, dovoljenj ali Android odvisnosti. Pred vsako izdajo je treba v `android-app/app/build.gradle` povečati `versionCode` (in smiselno posodobiti `versionName`). Trenutni `versionCode` je statično nastavljen; zaporedne gradnje ga ne povečajo samodejno.
+
+GitHubovi gostovani runnerji ob gradnji ustvarijo začasen privzeti debug ključ. Zaporedna artifacta `dz-auto-trade-debug-apk` zato nista zagotovljeno podpisana z istim ključem in nista primerna za zanesljivo nadgradnjo že nameščene aplikacije. Za namestitev druge debug gradnje je lahko potrebna odstranitev stare aplikacije, s čimer se izbrišejo njeni lokalni podatki.
+
+Za varno namestitev nove različice čez staro uporabite release APK z vedno istim, varno hranjenim keystorom, enakim `applicationId` in višjim `versionCode`; nato odprite novi `app-release.apk` na napravi in potrdite posodobitev. Keystore varnostno kopirajte zunaj repozitorija, omejite dostop in ga ne zamenjajte, sicer Android nadgradnjo zavrne. Samodejno posodabljanje APK-ja ni vključeno in se ga ne sme dodati, dokler ni zasnovano okoli tega stalnega podpisnega ključa in preverjenega varnega distribucijskega kanala.
+
 Prijava je potrebna samo pri izbiri **Prijava za ekipo**. Po uspešni prijavi `/api/team/login` uporabnika vrne na `dz-app.html#ekipa`; aplikacija pokliče zaščiten `/api/team/bootstrap`, strežnik določi vlogo in prikaže administratorski ali izvajalski pogled.
 
 ## Kaj ostane javno
