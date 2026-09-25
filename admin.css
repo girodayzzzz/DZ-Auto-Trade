@@ -1,5 +1,5 @@
 /* DZ Auto Trade admin — isolated visual system */
-:root { --admin-ink:#172033; --admin-muted:#697386; --admin-blue:#1768e5; --admin-bg:#f4f6fa; --admin-line:#e4e8f0; }
+:root { --admin-ink:#f4f7fb; --admin-muted:#9ba8bb; --admin-blue:#4f8cff; --admin-bg:#080c12; --admin-surface:#101722; --admin-surface-soft:#151e2b; --admin-line:#263244; }
 .admin-body { margin:0; background:var(--admin-bg); color:var(--admin-ink); font-family:Inter,system-ui,sans-serif; }
 .admin-body * { box-sizing:border-box; }
 .admin-body .container { width:min(1440px,calc(100% - 48px)); }
@@ -58,3 +58,116 @@
 @media(max-width:1180px){.admin-hero-grid{grid-template-columns:1fr}.admin-stat-panel{max-width:850px}.admin-quick-links{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){.admin-body .container{width:min(100% - 28px,1440px)}.admin-dashboard{grid-template-columns:1fr;grid-template-areas:'side' 'main' 'catalog' 'orders'}.admin-sidebar{position:static;grid-template-columns:repeat(4,1fr)}.admin-sidebar-label,.admin-sidebar-divider,.admin-sidebar button{grid-column:1/-1}.shopify-editor-grid{grid-template-columns:1fr}.shopify-editor-side{padding:0 22px 22px}.admin-stat-panel{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.admin-header{height:64px}.admin-header .nav-wrap{height:64px}.admin-hero{padding:32px 0 24px}.admin-welcome h1{font-size:2.35rem}.admin-stat-panel{grid-template-columns:repeat(2,1fr);gap:9px}.admin-stat-panel div{min-height:145px;padding:17px}.admin-quick-links{grid-template-columns:1fr 1fr}.admin-heading-note{display:none}.admin-sidebar{grid-template-columns:1fr 1fr}.shopify-editor-main{padding:12px}.shopify-editor-side{padding:0 12px 12px}.shopify-card{padding:17px!important}.category-form{grid-template-columns:1fr}.category-form label,.category-form .admin-actions{grid-column:1}.admin-editor-toolbar{padding:20px}.admin-pill{display:none}.admin-product-item,.admin-category-item{align-items:stretch}.admin-item-actions button{flex:1}}
+
+/* Dark admin theme — kept after the base rules so shared storefront styles cannot
+   reduce contrast inside the private dashboard. */
+.admin-body {
+  color-scheme: dark;
+  background:
+    radial-gradient(circle at 78% -8%, rgba(45, 105, 210, .22), transparent 34rem),
+    radial-gradient(circle at 8% 30%, rgba(229, 9, 20, .08), transparent 28rem),
+    var(--admin-bg);
+  color: var(--admin-ink);
+}
+.admin-header {
+  border-color: rgba(119, 144, 180, .2);
+  background: rgba(8, 12, 18, .9)!important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .3);
+}
+.admin-top-nav .nav-link { color: #b6c1d1; }
+.admin-top-nav .nav-link:hover { color: #fff; background: rgba(79, 140, 255, .14); }
+.admin-view-site { border-color: #344158; color: #eaf0f8; background: #151e2b; }
+.admin-view-site:hover { border-color: #4f8cff; background: #1a2636; }
+
+.admin-hero {
+  border-color: var(--admin-line);
+  background: linear-gradient(180deg, rgba(17, 24, 35, .78), rgba(8, 12, 18, .2));
+}
+.admin-date, .admin-heading-note { color: #8390a3; }
+.admin-welcome h1, .admin-stat-panel strong { color: #f7f9fc; }
+.admin-welcome h1 span, .admin-welcome .eyebrow { color: #72a4ff; }
+.admin-welcome .hero-copy { color: #a8b3c4; }
+.admin-status { background: #151e2b!important; color: #aab5c6!important; }
+.admin-stat-panel div {
+  border-color: var(--admin-line);
+  background: linear-gradient(145deg, #151e2b, #0e141e);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, .22);
+}
+.admin-stat-panel div>span:not(.stat-icon) { color: #cbd4e1; }
+.admin-stat-panel small, .admin-quick-links small { color: #8491a4; }
+
+.admin-section-heading h2, .admin-quick-links strong { color: #eef3fa; }
+.admin-quick-links a {
+  border-color: var(--admin-line);
+  background: linear-gradient(145deg, #141c28, #0e151f);
+  color: var(--admin-ink);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .16);
+}
+.admin-quick-links a:hover { border-color: #4f78b8; background: #172233; box-shadow: 0 12px 30px rgba(0, 0, 0, .28); }
+.admin-link-icon { background: rgba(79, 140, 255, .14); color: #76a7ff; }
+
+.admin-body .card, .shopify-product-form, .shopify-card {
+  border-color: var(--admin-line);
+  background: var(--admin-surface);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .2);
+}
+.admin-sidebar { border-color: var(--admin-line)!important; background: rgba(16, 23, 34, .96)!important; box-shadow: 0 14px 36px rgba(0, 0, 0, .24)!important; }
+.admin-sidebar-label { color: #77869b; }
+.admin-sidebar a { color: #aeb9c9!important; }
+.admin-sidebar a span { background: #1a2432; color: #9aa9bc; }
+.admin-sidebar a small { color: #718096; }
+.admin-sidebar a:hover, .admin-sidebar a.is-active { background: rgba(79, 140, 255, .13)!important; color: #82afff!important; }
+.admin-sidebar-divider { background: var(--admin-line); }
+
+.admin-editor-toolbar { border-color: var(--admin-line); background: #101722; }
+.admin-editor-toolbar h2, .shopify-card-head h3, .section-head h2 { color: #f1f5fa; }
+.admin-pill { color: #7ee0b4; background: rgba(22, 166, 106, .13); border: 1px solid rgba(58, 202, 139, .2); }
+.shopify-editor-main, .shopify-editor-side { background: #0b1119; }
+.shopify-card-head { border-color: #253143; }
+.shopify-section-number, .admin-product-group h3 span { background: rgba(79, 140, 255, .14); color: #75a6ff!important; }
+.shopify-card label, .category-form label { color: #c4cedb; }
+.form-note { color: #8f9caf!important; }
+.admin-image-preview { border-color: #35445b!important; background: #0b1119!important; color: #8290a4; }
+.shopify-sticky-actions { border-color: var(--admin-line); background: rgba(16, 23, 34, .96); }
+
+/* Native dropdowns need an explicit dark palette: browsers otherwise render
+   white option lists with inherited light text. */
+.admin-body input,
+.admin-body textarea,
+.admin-body select {
+  border-color: #344258!important;
+  background-color: #0b1119!important;
+  color: #edf3fa!important;
+  caret-color: #edf3fa;
+}
+.admin-body input::placeholder, .admin-body textarea::placeholder { color: #66758a; opacity: 1; }
+.admin-body select {
+  color-scheme: dark;
+  accent-color: var(--admin-blue);
+  background-image:
+    linear-gradient(45deg, transparent 50%, #9eb0c7 50%),
+    linear-gradient(135deg, #9eb0c7 50%, transparent 50%);
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 34px!important;
+}
+.admin-body select option, .admin-body select optgroup { background: #101722; color: #f1f5fa; }
+.admin-body input:hover, .admin-body textarea:hover, .admin-body select:hover { border-color: #4a5c77!important; }
+.admin-body input:focus, .admin-body textarea:focus, .admin-body select:focus {
+  border-color: #5c94f7!important;
+  box-shadow: 0 0 0 3px rgba(79, 140, 255, .2)!important;
+  outline: 0;
+}
+.admin-body input:disabled, .admin-body textarea:disabled, .admin-body select:disabled { background: #141b25!important; color: #758296!important; opacity: 1; }
+.admin-body input[type='checkbox'] { accent-color: var(--admin-blue); }
+
+.admin-body .btn-secondary { border-color: #3a485e; background: #161f2c; color: #d6deea; }
+.admin-body .btn-secondary:hover { border-color: #58749c; background: #1d2939; color: #fff; }
+.admin-body .danger-btn { color: #ff8ca0!important; border-color: rgba(255, 92, 119, .35)!important; background: rgba(184, 35, 63, .1)!important; }
+.category-manager, .admin-products-card { background: #101722!important; }
+.admin-category-item, .admin-product-item, .admin-order-item { border-color: #29364a!important; background: #0c131d!important; }
+.admin-product-item:hover, .admin-category-item:hover { border-color: #46658e!important; box-shadow: 0 7px 20px rgba(0, 0, 0, .24); }
+.admin-product-item strong, .admin-category-item strong, .admin-order-item strong { color: #e9eef5; }
+.admin-product-item span, .admin-category-item span, .admin-order-item span, .admin-product-group h3 { color: #96a4b7!important; }
+.admin-stock-badge { color: #83dfb7!important; background: rgba(22, 166, 106, .12)!important; }
