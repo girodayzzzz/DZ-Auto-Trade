@@ -23,8 +23,7 @@ const refreshOrdersButton = document.querySelector('[data-refresh-orders]');
 const adminDate = document.querySelector('[data-admin-date]');
 const copyApkUrlButton = document.querySelector('[data-copy-apk-url]');
 const copyApkStatus = document.querySelector('[data-copy-apk-status]');
-const apkDownloadButton = document.querySelector('[data-apk-download]');
-const APK_DOWNLOAD_URL = 'https://github.com/girodayzzzz/DZ-Auto-Trade/releases/latest/download/DZ-Auto-Trade.apk';
+const APK_DOWNLOAD_URL = 'https://dzautotrade.si/android-app.html';
 
 const defaultCategories = [
   { id: 'vse-za-servis-vozila', label: 'Vse za servis vozila', description: 'Motorna olja in potrošni material za redno vzdrževanje' },
@@ -56,12 +55,8 @@ copyApkUrlButton?.addEventListener('click', async () => {
   }
 });
 
-apkDownloadButton?.addEventListener('click', (event) => {
-  if (apkDownloadButton.getAttribute('aria-disabled') === 'true') event.preventDefault();
-});
-
 async function verifyPublishedApk() {
-  if (!apkDownloadButton || !copyApkStatus) return;
+  if (!copyApkStatus) return;
   try {
     const response = await fetch('https://api.github.com/repos/girodayzzzz/DZ-Auto-Trade/releases/latest', {
       headers: { Accept: 'application/vnd.github+json' }
@@ -69,7 +64,7 @@ async function verifyPublishedApk() {
     if (!response.ok) return;
     const release = await response.json();
     // GitHub reports an asset URL containing the concrete release tag, while
-    // APK_DOWNLOAD_URL intentionally uses the stable `releases/latest` alias.
+    // The install page links to the latest release and explains the fallback.
     const expectedAssetPath = `/girodayzzzz/DZ-Auto-Trade/releases/download/${release.tag_name}/DZ-Auto-Trade.apk`;
     const publishedAsset = !release.draft && !release.prerelease && release.assets?.some((asset) => {
       let assetUrl;
@@ -82,11 +77,9 @@ async function verifyPublishedApk() {
         && decodeURIComponent(assetUrl.pathname) === expectedAssetPath;
     });
     if (!publishedAsset) return;
-    apkDownloadButton.removeAttribute('aria-disabled');
-    apkDownloadButton.classList.remove('is-unverified');
     copyApkStatus.textContent = 'Podpisana izdaja je objavljena.';
   } catch {
-    // Keep the download disabled and its unverified status visible.
+    // GitHub API can be unavailable on mobile; the install page remains usable.
   }
 }
 

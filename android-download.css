@@ -1,0 +1,9 @@
+.top-link{color:#d7e3fb;text-decoration:none;font-weight:700}
+.download-hero{margin:22px 0 28px}.download-hero p{max-width:670px;color:#b9c6db;line-height:1.6}
+.card h2{margin-top:0}.card p,.card li{line-height:1.65}.card ol{padding-left:1.4rem}.card li+li{margin-top:10px}
+.download-actions{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+.download-primary,.download-secondary{display:inline-block;border-radius:12px;padding:13px 18px;font-weight:800;text-align:center;text-decoration:none}
+.download-primary{color:white;background:#d91622}.download-secondary{color:#e7efff;border:1px solid #586b89;background:#172238}
+.download-primary:hover,.download-secondary:hover{filter:brightness(1.15)}
+.hint{color:#afbed4;font-size:.95rem}.help{margin:28px 0;color:#becbe0}.help a{color:#f5b7bc}
+@media(max-width:600px){.download-hero{display:block}.download-actions{display:grid}.download-primary,.download-secondary{width:100%}}
