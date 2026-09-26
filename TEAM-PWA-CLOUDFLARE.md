@@ -58,6 +58,10 @@ Cloudflare Access ne dodajajte na `dz-app.html`, `/api/products`, `/api/checkout
 
 ## Workerjeve nastavitve
 
+### Zahtevki izvajalcev za artikle
+
+Izvajalec v zaščitenem delu izbere artikel iz javnega kataloga ali vpiše del ročno, doda šifro/OEM, količino, kontakt ter po potrebi vozilo in VIN. To je nezavezujoč zahtevek; cena, zaloga, plačilo in dobava se potrdijo ločeno. Skrbnik lahko nastavi stanje in napiše odgovor, izvajalec pa vidi le svoje zahtevke. Zahtevki se hranijo kot ločeni ključi `team:article-request:v1:<id>` v obstoječem `PRODUCTS_KV`, tako da vzporedni novi zahtevki ne prepisujejo skupnega zapisa `team:v1`. KV seznam je lahko po oddaji kratek čas zastarel; za strožje transakcijske garancije, večji obseg ali samodejna plačila prenesite ta potek v D1. Pred povabilom sodelavcev preverite konfiguracijo Cloudflare Access in naredite dejanski preizkus obeh vlog na telefonu.
+
 V **Workers & Pages → dz-auto-trade-products → Settings → Variables and Secrets** nastavite:
 
 ```text
