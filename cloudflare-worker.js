@@ -4192,6 +4192,36 @@ const teamView = (data, auth) => auth.role === 'admin' ? data : ({
   deals: data.deals.filter((item) => item.contractorEmail === auth.email).map(withoutInternal),
 });
 const TEAM_REQUEST_PREFIX = 'team:article-request:v1:';
+const TEAM_INQUIRY_PREFIX = 'team:inquiry:v2:';
+const TEAM_INQUIRY_STATUSES = new Set(['novo', 'v obdelavi', 'čaka na stranko', 'ponudba poslana', 'zaključeno', 'zavrnjeno']);
+const listTeamInquiries = async (env) => {
+  const storage = teamStore(env);
+  if (!storage) throw new Error('PRODUCTS_KV binding is required.');
+  const keys = [];
+  let cursor;
+  do {
+    const page = await storage.list({ prefix: TEAM_INQUIRY_PREFIX, limit: 1000, ...(cursor ? { cursor } : {}) });
+    keys.push(...page.keys.map(({ name }) => name));
+    if (keys.length > 5000) throw new Error('Preveč povpraševanj za prikaz.');
+    cursor = page.list_complete === false ? page.cursor : undefined;
+  } while (cursor);
+  return (await Promise.all(keys.map((key) => storage.get(key, 'json')))).filter(Boolean);
+};
+const createTeamInquiry = async (request, env, auth, data) => {
+  const body = await request.json().catch(() => ({}));
+  const customer = cleanText(body.customer, 160);
+  const contact = cleanText(body.contact, 240);
+  const details = cleanText(body.details);
+  const type = cleanText(body.type, 40);
+  const contractorEmail = auth.role === 'admin' ? cleanText(body.contractorEmail, 254).toLowerCase() : auth.email;
+  if (!customer || !contact || !details || !type) return json({ error: 'Izpolnite vrsto, stranko, kontakt in opis.' }, { status: 400 });
+  if (!data.contractors.some((entry) => entry.email === contractorEmail && entry.enabled)) return json({ error: 'Izberite aktivnega sodelavca.' }, { status: 400 });
+  const now = new Date().toISOString();
+  const entry = { id: crypto.randomUUID(), contractorEmail, type, customer, contact, details,
+    status: 'novo', response: '', createdAt: now, updatedAt: now };
+  await teamStore(env).put(`${TEAM_INQUIRY_PREFIX}${entry.id}`, JSON.stringify(entry));
+  return json({ ok: true, inquiry: entry }, { status: 201 });
+};
 const TEAM_REQUEST_STATUSES = new Set(['novo', 'v obdelavi', 'ponudba', 'potrjeno', 'zavrnjen', 'zaključeno']);
 const listArticleRequests = async (env, auth) => {
   const storage = teamStore(env);
@@ -4248,7 +4278,28 @@ const handleArticleRequests = async (request, env, url, auth) => {
 };
 const handleTeamApi = async (request, env, url, auth) => {
   const data = await readTeamData(env);
-  if (request.method === 'GET' && url.pathname === '/api/team/bootstrap') return json({ me: auth, data: teamView(data, auth) });
+  if (request.method === 'GET' && url.pathname === '/api/team/bootstrap') {
+    data.inquiries = [...data.inquiries, ...await listTeamInquiries(env)].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return json({ me: auth, data: teamView(data, auth) });
+  }
+  if (request.method === 'POST' && url.pathname === '/api/team/inquiries') return createTeamInquiry(request, env, auth, data);
+  const inquiryMatch = url.pathname.match(/^\/api\/team\/inquiries\/([0-9a-f-]{36})$/);
+  if (request.method === 'PATCH' && inquiryMatch) {
+    if (auth.role !== 'admin') return json({ error: 'Dostop ni dovoljen.' }, { status: 403 });
+    const body = await request.json().catch(() => ({}));
+    if (!TEAM_INQUIRY_STATUSES.has(body.status)) return json({ error: 'Neveljavno stanje povpraševanja.' }, { status: 400 });
+    const key = `${TEAM_INQUIRY_PREFIX}${inquiryMatch[1]}`;
+    const stored = await teamStore(env).get(key, 'json');
+    const legacy = data.inquiries.find((entry) => entry.id === inquiryMatch[1]);
+    if (!stored && !legacy) return json({ error: 'Povpraševanje ne obstaja.' }, { status: 404 });
+    const updated = { ...(stored || legacy), status: body.status, response: cleanText(body.response), updatedAt: new Date().toISOString() };
+    if (stored) await teamStore(env).put(key, JSON.stringify(updated));
+    else {
+      Object.assign(legacy, updated);
+      await writeTeamData(env, data);
+    }
+    return json({ ok: true, inquiry: updated });
+  }
   const body = await request.json().catch(() => ({}));
   const now = new Date().toISOString();
   if (auth.role === 'admin' && request.method === 'POST' && url.pathname === '/api/team/admin/contractors') {
@@ -4261,8 +4312,6 @@ const handleTeamApi = async (request, env, url, auth) => {
     const contractor = data.contractors.find((item) => item.email === cleanText(body.contractorEmail, 254).toLowerCase() && item.enabled);
     if (!contractor) return json({ error: 'Izberite aktivnega izvajalca.' }, { status: 400 });
     data.tasks.push({ id: crypto.randomUUID(), contractorEmail: contractor.email, title: cleanText(body.title, 160), instructions: cleanText(body.instructions), dueDate: cleanText(body.dueDate, 20), status: 'novo', progress: 0, notes: '', createdAt: now, updatedAt: now });
-  } else if (request.method === 'POST' && url.pathname === '/api/team/inquiries') {
-    data.inquiries.push({ id: crypto.randomUUID(), contractorEmail: auth.role === 'admin' ? cleanText(body.contractorEmail, 254).toLowerCase() : auth.email, type: cleanText(body.type, 40), customer: cleanText(body.customer, 160), contact: cleanText(body.contact, 240), details: cleanText(body.details), status: 'novo', createdAt: now, updatedAt: now });
   } else if (auth.role === 'admin' && request.method === 'POST' && url.pathname === '/api/team/admin/deals') {
     data.deals.push({ id: crypto.randomUUID(), contractorEmail: cleanText(body.contractorEmail, 254).toLowerCase(), title: cleanText(body.title, 160), status: 'novo', estimatedCommissionCents: Math.max(0, Number(body.estimatedCommissionCents) || 0), confirmedCommissionCents: 0, internalCostCents: Math.max(0, Number(body.internalCostCents) || 0), createdAt: now, updatedAt: now });
   } else {

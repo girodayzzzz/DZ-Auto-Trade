@@ -30,6 +30,7 @@ const apiRequest = async (path, options = {}) => {
 const item = (title, meta, content = '') => `<article class="item"><h3>${escapeHtml(title)}</h3><div class="meta">${escapeHtml(meta)}</div>${content}</article>`;
 const taskStatusOptions = (current) => ['novo', 'v teku', 'zaključeno'].map((status) => `<option${current === status ? ' selected' : ''}>${status}</option>`).join('');
 const articleStatuses = ['novo', 'v obdelavi', 'ponudba', 'potrjeno', 'zavrnjen', 'zaključeno'];
+const inquiryStatuses = ['novo', 'v obdelavi', 'čaka na stranko', 'ponudba poslana', 'zaključeno', 'zavrnjeno'];
 const renderArticleRequests = () => {
   const admin = state.me?.role === 'admin';
   select('#article-form').classList.toggle('hidden', admin);
@@ -56,7 +57,7 @@ const render = () => {
   const isAdmin = state.me?.role === 'admin';
   configureRoleView(state.me?.role);
   select('#identity').textContent = state.me?.email || '';
-  select('#team-summary').innerHTML = `<span><b>${(data.tasks || []).filter(({ status }) => status !== 'zaključeno').length}</b> aktivnih nalog</span><span><b>${(state.articleRequests || []).filter(({ status }) => !['zaključeno', 'zavrnjen'].includes(status)).length}</b> odprtih zahtevkov</span><span><b>${(data.inquiries || []).length}</b> povpraševanj</span>`;
+  select('#team-summary').innerHTML = `<span><b>${(data.tasks || []).filter(({ status }) => status !== 'zaključeno').length}</b> aktivnih nalog</span><span><b>${(state.articleRequests || []).filter(({ status }) => !['zaključeno', 'zavrnjen'].includes(status)).length}</b> odprtih zahtevkov</span><span><b>${(data.inquiries || []).filter(({ status }) => !['zaključeno', 'zavrnjeno'].includes(status)).length}</b> odprtih povpraševanj</span>`;
   renderArticleRequests();
   select('#tasks').innerHTML = (data.tasks || []).map((task) => item(
     task.title,
@@ -66,7 +67,7 @@ const render = () => {
   select('#inquiries').innerHTML = (data.inquiries || []).map((inquiry) => item(
     `${inquiry.type}: ${inquiry.customer}`,
     `${inquiry.status} · ${inquiry.contact}${isAdmin ? ` · ${inquiry.contractorEmail}` : ''}`,
-    `<p>${escapeHtml(inquiry.details)}</p>`,
+    `<p>${escapeHtml(inquiry.details)}</p>${inquiry.response ? `<p><strong>Odgovor:</strong> ${escapeHtml(inquiry.response)}</p>` : ''}${isAdmin ? `<form data-inquiry-id="${escapeHtml(inquiry.id)}"><label>Stanje<select name="status">${inquiryStatuses.map((status) => `<option value="${status}"${status === inquiry.status ? ' selected' : ''}>${status}</option>`).join('')}</select></label><label>Odgovor sodelavcu<textarea name="response" placeholder="Naslednji korak ali rezultat">${escapeHtml(inquiry.response || '')}</textarea></label><button>Shrani odgovor</button></form>` : ''}`,
   )).join('') || '<p>Ni povpraševanj.</p>';
   select('#deals').innerHTML = (data.deals || []).map((deal) => item(
     deal.title,
@@ -101,14 +102,14 @@ const loadTeamWorkspace = async () => {
 
 document.addEventListener('submit', async (event) => {
   const form = event.target;
-  if (!form.matches('[data-api-form],[data-task],[data-deal],[data-article-form],[data-article-id]')) return;
+  if (!form.matches('[data-api-form],[data-task],[data-deal],[data-article-form],[data-article-id],[data-inquiry-id]')) return;
   event.preventDefault();
   const body = Object.fromEntries(new FormData(form));
-  const path = form.dataset.task ? `/tasks/${form.dataset.task}` : form.dataset.deal ? `/deals/${form.dataset.deal}` : form.dataset.articleId ? `/article-requests/${form.dataset.articleId}` : form.dataset.articleForm !== undefined ? '/article-requests' : form.dataset.apiForm;
+  const path = form.dataset.task ? `/tasks/${form.dataset.task}` : form.dataset.deal ? `/deals/${form.dataset.deal}` : form.dataset.articleId ? `/article-requests/${form.dataset.articleId}` : form.dataset.inquiryId ? `/inquiries/${form.dataset.inquiryId}` : form.dataset.articleForm !== undefined ? '/article-requests' : form.dataset.apiForm;
   try {
     const button = form.querySelector('button[type="submit"],button:not([type])');
     if (button) button.disabled = true;
-    await apiRequest(path, { method: form.dataset.task || form.dataset.deal || form.dataset.articleId ? 'PATCH' : 'POST', body: JSON.stringify(body) });
+    await apiRequest(path, { method: form.dataset.task || form.dataset.deal || form.dataset.articleId || form.dataset.inquiryId ? 'PATCH' : 'POST', body: JSON.stringify(body) });
     if (form.dataset.apiForm || form.dataset.articleForm !== undefined) form.reset();
     await loadTeamWorkspace();
     select('#status').textContent = 'Shranjeno.';

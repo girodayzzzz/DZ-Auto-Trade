@@ -62,6 +62,10 @@ Cloudflare Access ne dodajajte na `dz-app.html`, `/api/products`, `/api/checkout
 
 Izvajalec v zaščitenem delu izbere artikel iz javnega kataloga ali vpiše del ročno, doda šifro/OEM, količino, kontakt ter po potrebi vozilo in VIN. To je nezavezujoč zahtevek; cena, zaloga, plačilo in dobava se potrdijo ločeno. Skrbnik lahko nastavi stanje in napiše odgovor, izvajalec pa vidi le svoje zahtevke. Zahtevki se hranijo kot ločeni ključi `team:article-request:v1:<id>` v obstoječem `PRODUCTS_KV`, tako da vzporedni novi zahtevki ne prepisujejo skupnega zapisa `team:v1`. KV seznam je lahko po oddaji kratek čas zastarel; za strožje transakcijske garancije, večji obseg ali samodejna plačila prenesite ta potek v D1. Pred povabilom sodelavcev preverite konfiguracijo Cloudflare Access in naredite dejanski preizkus obeh vlog na telefonu.
 
+### Spremljanje povpraševanj sodelavcev
+
+Skrbnik lahko povpraševanju določi stanje in napiše odgovor, ki ga vidi pripadajoči sodelavec. Novi vnosi so v ločenih ključih `team:inquiry:v2:<id>` v obstoječem `PRODUCTS_KV`; starejši vnosi v `team:v1` ostanejo vidni in jih je mogoče urejati. Za to funkcijo ni dodatnih skrivnosti, novih Cloudflare bindingov ali novega APK-ja. Potrebni so že navedeni `PRODUCTS_KV`, `ADMIN_EMAIL`, `CF_ACCESS_TEAM_DOMAIN` in `CF_ACCESS_AUD` ter pravilo Access za `/api/team/*`. Preverite dejansko objavo Workerja in pravice obeh vlog; GitHub združitev sama po sebi ne potrjuje produkcijske nastavitve.
+
 V **Workers & Pages → dz-auto-trade-products → Settings → Variables and Secrets** nastavite:
 
 ```text

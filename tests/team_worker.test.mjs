@@ -85,9 +85,22 @@ try {
   const taskId = ana.data.tasks[0].id;
   assert.equal((await call('ana@example.si', `/tasks/${taskId}`, 'PATCH', { status: 'zaključeno', progress: 100, notes: 'Končano' })).status, 200);
   await call('ana@example.si', '/inquiries', 'POST', { type: 'Transport', customer: 'Kupec', contact: 'x@y.si', details: 'Prevoz' });
+  assert.equal((await call('ana@example.si', '/inquiries', 'POST', { type: 'Transport', customer: '', contact: '', details: '' })).status, 400);
   const adminData = (await (await call('boss@dz.si', '/bootstrap')).json()).data;
   assert.equal(adminData.tasks.find(({ id }) => id === taskId).status, 'zaključeno');
   assert.equal(adminData.inquiries.length, 1);
+  const inquiryId = adminData.inquiries[0].id;
+  assert.equal((await call('bine@example.si', `/inquiries/${inquiryId}`, 'PATCH', { status: 'zaključeno' })).status, 403);
+  assert.equal((await call('boss@dz.si', `/inquiries/${inquiryId}`, 'PATCH', { status: 'neveljavno' })).status, 400);
+  assert.equal((await call('boss@dz.si', `/inquiries/${inquiryId}`, 'PATCH', { status: 'v obdelavi', response: 'Iščemo prevoznika' })).status, 200);
+  assert.equal((await (await call('ana@example.si', '/bootstrap')).json()).data.inquiries[0].response, 'Iščemo prevoznika');
+  assert.equal((await (await call('bine@example.si', '/bootstrap')).json()).data.inquiries.length, 0);
+  const legacyData = JSON.parse(saved.get('team:v1'));
+  legacyData.inquiries.push({ id: crypto.randomUUID(), contractorEmail: 'ana@example.si', type: 'Rezervni deli', customer: 'Stara stranka', contact: '041000000', details: 'Star zapis', status: 'novo', createdAt: '2026-01-01T00:00:00.000Z' });
+  saved.set('team:v1', JSON.stringify(legacyData));
+  const oldInquiry = (await (await call('boss@dz.si', '/bootstrap')).json()).data.inquiries.find(({ customer }) => customer === 'Stara stranka');
+  assert.equal((await call('boss@dz.si', `/inquiries/${oldInquiry.id}`, 'PATCH', { status: 'zaključeno', response: 'Zaključeno' })).status, 200);
+  assert.equal((await (await call('ana@example.si', '/bootstrap')).json()).data.inquiries.find(({ id }) => id === oldInquiry.id).response, 'Zaključeno');
   const dealId = adminData.deals[0].id;
   await call('boss@dz.si', `/deals/${dealId}`, 'PATCH', { status: 'potrjeno', estimatedCommissionCents: 12000, confirmedCommissionCents: 11000, internalCostCents: 4500 });
 
