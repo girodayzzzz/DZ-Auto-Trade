@@ -26,7 +26,7 @@ const kv = {
     return type === 'json' && value ? JSON.parse(value) : value || null;
   },
   async put(key, value) { saved.set(key, value); },
-  async list() { return { keys: [] }; },
+  async list({ prefix = '' } = {}) { return { keys: [...saved.keys()].filter((key) => key.startsWith(prefix)).map((name) => ({ name })), list_complete: true }; },
 };
 const env = {
   PRODUCTS_KV: kv,
@@ -69,6 +69,18 @@ try {
   assert.deepEqual(ana.data.tasks.map(({ title }) => title), ['Preveri vozilo']);
   assert.equal(ana.data.contractors, undefined);
   assert.equal(ana.data.deals[0].internalCostCents, undefined);
+
+  assert.equal((await call('ana@example.si', '/article-requests', 'POST', { article: 'Luč', contact: '041123456', quantity: 0 })).status, 400);
+  assert.equal((await call('ana@example.si', '/article-requests', 'POST', { article: 'Zadnja luč', sku: 'OEM-123', quantity: 2, contact: '041123456', vehicle: 'Golf 2012' })).status, 201);
+  assert.equal((await call('bine@example.si', '/article-requests', 'POST', { article: 'Filter', quantity: 1, contact: 'bine@example.si' })).status, 201);
+  const anaRequests = (await (await call('ana@example.si', '/article-requests')).json()).requests;
+  assert.equal(anaRequests.length, 1);
+  assert.equal(anaRequests[0].article, 'Zadnja luč');
+  assert.equal((await call('ana@example.si', `/article-requests/${anaRequests[0].id}`, 'PATCH', { status: 'potrjeno' })).status, 403);
+  assert.equal((await call('boss@dz.si', `/article-requests/${anaRequests[0].id}`, 'PATCH', { status: 'izbrisano' })).status, 400);
+  assert.equal((await call('boss@dz.si', `/article-requests/${anaRequests[0].id}`, 'PATCH', { status: 'ponudba', response: 'Dobavljivo jutri' })).status, 200);
+  assert.equal((await (await call('ana@example.si', '/article-requests')).json()).requests[0].response, 'Dobavljivo jutri');
+  assert.equal((await (await call('bine@example.si', '/article-requests')).json()).requests[0].response, '');
 
   const taskId = ana.data.tasks[0].id;
   assert.equal((await call('ana@example.si', `/tasks/${taskId}`, 'PATCH', { status: 'zaključeno', progress: 100, notes: 'Končano' })).status, 200);

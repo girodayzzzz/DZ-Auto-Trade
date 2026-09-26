@@ -4191,6 +4191,61 @@ const teamView = (data, auth) => auth.role === 'admin' ? data : ({
   inquiries: data.inquiries.filter((item) => item.contractorEmail === auth.email).map(withoutInternal),
   deals: data.deals.filter((item) => item.contractorEmail === auth.email).map(withoutInternal),
 });
+const TEAM_REQUEST_PREFIX = 'team:article-request:v1:';
+const TEAM_REQUEST_STATUSES = new Set(['novo', 'v obdelavi', 'ponudba', 'potrjeno', 'zavrnjen', 'zaključeno']);
+const listArticleRequests = async (env, auth) => {
+  const storage = teamStore(env);
+  if (!storage) throw new Error('PRODUCTS_KV binding is required.');
+  const keys = [];
+  let cursor;
+  do {
+    const page = await storage.list({ prefix: TEAM_REQUEST_PREFIX, limit: 1000, ...(cursor ? { cursor } : {}) });
+    keys.push(...page.keys.map(({ name }) => name));
+    if (keys.length > 5000) throw new Error('Preveč zahtevkov za prikaz.');
+    cursor = page.list_complete === false ? page.cursor : undefined;
+  } while (cursor);
+  const requests = (await Promise.all(keys.map((key) => storage.get(key, 'json'))))
+    .filter((entry) => entry && (auth.role === 'admin' || entry.contractorEmail === auth.email));
+  return requests.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+};
+const handleArticleRequests = async (request, env, url, auth) => {
+  const storage = teamStore(env);
+  if (!storage) return json({ error: 'Shramba zahtevkov ni na voljo.' }, { status: 503 });
+  if (request.method === 'GET' && url.pathname === '/api/team/article-requests') {
+    return json({ requests: await listArticleRequests(env, auth) });
+  }
+  if (request.method === 'POST' && url.pathname === '/api/team/article-requests') {
+    if (auth.role !== 'contractor') return json({ error: 'Zahtevek odda izvajalec.' }, { status: 403 });
+    const body = await request.json().catch(() => ({}));
+    const sku = cleanText(body.sku, 80);
+    const article = cleanText(body.article, 160);
+    const quantity = Number(body.quantity);
+    const contact = cleanText(body.contact, 240);
+    if (!article || !contact || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1000) {
+      return json({ error: 'Vnesite artikel, kontakt in količino od 1 do 1000.' }, { status: 400 });
+    }
+    const now = new Date().toISOString();
+    const entry = { id: crypto.randomUUID(), contractorEmail: auth.email, sku, article, quantity,
+      customer: cleanText(body.customer, 160), contact, vehicle: cleanText(body.vehicle, 160),
+      vin: cleanText(body.vin, 40), notes: cleanText(body.notes), status: 'novo', response: '',
+      createdAt: now, updatedAt: now };
+    await storage.put(`${TEAM_REQUEST_PREFIX}${entry.id}`, JSON.stringify(entry));
+    return json({ ok: true, request: entry }, { status: 201 });
+  }
+  const match = url.pathname.match(/^\/api\/team\/article-requests\/([0-9a-f-]{36})$/);
+  if (request.method === 'PATCH' && match) {
+    if (auth.role !== 'admin') return json({ error: 'Dostop ni dovoljen.' }, { status: 403 });
+    const key = `${TEAM_REQUEST_PREFIX}${match[1]}`;
+    const entry = await storage.get(key, 'json');
+    if (!entry) return json({ error: 'Zahtevek ne obstaja.' }, { status: 404 });
+    const body = await request.json().catch(() => ({}));
+    if (!TEAM_REQUEST_STATUSES.has(body.status)) return json({ error: 'Neveljavno stanje zahtevka.' }, { status: 400 });
+    const updated = { ...entry, status: body.status, response: cleanText(body.response), updatedAt: new Date().toISOString() };
+    await storage.put(key, JSON.stringify(updated));
+    return json({ ok: true, request: updated });
+  }
+  return json({ error: 'Not found.' }, { status: 404 });
+};
 const handleTeamApi = async (request, env, url, auth) => {
   const data = await readTeamData(env);
   if (request.method === 'GET' && url.pathname === '/api/team/bootstrap') return json({ me: auth, data: teamView(data, auth) });
@@ -4427,6 +4482,7 @@ export default {
       }
       if (url.pathname.startsWith('/api/team/admin/') && auth.role !== 'admin') return json({ error: 'Samo administrator.' }, { status: 403 });
       if (url.pathname.startsWith('/api/team/admin/vehicles')) return handleVehicleAdmin(request, env, url);
+      if (url.pathname.startsWith('/api/team/article-requests')) return handleArticleRequests(request, env, url, auth);
       return handleTeamApi(request, env, url, auth);
     }
 

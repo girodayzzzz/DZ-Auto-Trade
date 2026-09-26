@@ -5,6 +5,16 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (character)
 }[character]));
 const formatMoney = (cents) => new Intl.NumberFormat('sl-SI', { style: 'currency', currency: 'EUR' }).format((Number(cents) || 0) / 100);
 let state = {};
+let catalogProducts = [];
+const loadCatalog = async () => {
+  try {
+    const response = await fetch('/api/products', { cache: 'no-store' });
+    if (!response.ok) return;
+    const result = await response.json();
+    catalogProducts = (result.products || []).filter((product) => product.name && product.sku);
+    select('#catalog-products').innerHTML = catalogProducts.map(({ name, sku }) => `<option value="${escapeHtml(name)}" label="${escapeHtml(sku)}"></option>`).join('');
+  } catch { /* Vpis artikla deluje tudi brez kataloga. */ }
+};
 
 const apiRequest = async (path, options = {}) => {
   const response = await fetch(`${API_ROOT}${path}`, {
@@ -19,6 +29,16 @@ const apiRequest = async (path, options = {}) => {
 
 const item = (title, meta, content = '') => `<article class="item"><h3>${escapeHtml(title)}</h3><div class="meta">${escapeHtml(meta)}</div>${content}</article>`;
 const taskStatusOptions = (current) => ['novo', 'v teku', 'zaključeno'].map((status) => `<option${current === status ? ' selected' : ''}>${status}</option>`).join('');
+const articleStatuses = ['novo', 'v obdelavi', 'ponudba', 'potrjeno', 'zavrnjen', 'zaključeno'];
+const renderArticleRequests = () => {
+  const admin = state.me?.role === 'admin';
+  select('#article-form').classList.toggle('hidden', admin);
+  select('#article-requests').innerHTML = (state.articleRequests || []).map((request) => item(
+    `${request.article} × ${request.quantity}`,
+    `${request.status} · ${new Date(request.createdAt).toLocaleDateString('sl-SI')}${admin ? ` · ${request.contractorEmail}` : ''}`,
+    `<p>${request.sku ? `Šifra: ${escapeHtml(request.sku)} · ` : ''}${escapeHtml(request.customer || 'Za izvajalca')} · ${escapeHtml(request.contact)}</p><p>${escapeHtml([request.vehicle, request.vin, request.notes].filter(Boolean).join(' · '))}</p>${request.response ? `<p><strong>Odgovor:</strong> ${escapeHtml(request.response)}</p>` : ''}${admin ? `<form data-article-id="${escapeHtml(request.id)}"><label>Stanje<select name="status">${articleStatuses.map((status) => `<option value="${status}"${status === request.status ? ' selected' : ''}>${status}</option>`).join('')}</select></label><label>Odgovor izvajalcu<textarea name="response" placeholder="Cena, dobavljivost ali naslednji korak">${escapeHtml(request.response)}</textarea></label><button>Shrani odgovor</button></form>` : ''}`,
+  )).join('') || '<p>Še ni zahtevkov za artikle.</p>';
+};
 
 const configureRoleView = (role) => {
   const isAdmin = role === 'admin';
@@ -36,6 +56,8 @@ const render = () => {
   const isAdmin = state.me?.role === 'admin';
   configureRoleView(state.me?.role);
   select('#identity').textContent = state.me?.email || '';
+  select('#team-summary').innerHTML = `<span><b>${(data.tasks || []).filter(({ status }) => status !== 'zaključeno').length}</b> aktivnih nalog</span><span><b>${(state.articleRequests || []).filter(({ status }) => !['zaključeno', 'zavrnjen'].includes(status)).length}</b> odprtih zahtevkov</span><span><b>${(data.inquiries || []).length}</b> povpraševanj</span>`;
+  renderArticleRequests();
   select('#tasks').innerHTML = (data.tasks || []).map((task) => item(
     task.title,
     `${task.status} · rok ${task.dueDate || 'ni določen'}${isAdmin ? ` · ${task.contractorEmail}` : ''}`,
@@ -49,7 +71,7 @@ const render = () => {
   select('#deals').innerHTML = (data.deals || []).map((deal) => item(
     deal.title,
     `${deal.status}${isAdmin ? ` · ${deal.contractorEmail}` : ''}`,
-    `<p class="money">Provizija: ${formatMoney(deal.confirmedCommissionCents || deal.estimatedCommissionCents)}</p>${isAdmin ? `<p>Interni strošek: ${formatMoney(deal.internalCostCents)}</p><form data-deal="${deal.id}"><input name="status" value="${escapeHtml(deal.status)}"><input name="estimatedCommissionCents" type="number" min="0" value="${deal.estimatedCommissionCents || 0}" placeholder="Predvidena provizija (centi)"><input name="confirmedCommissionCents" type="number" min="0" value="${deal.confirmedCommissionCents || 0}" placeholder="Potrjena provizija (centi)"><input name="internalCostCents" type="number" min="0" value="${deal.internalCostCents || 0}" placeholder="Interni stroški (centi)"><button>Shrani posel</button></form>` : ''}`,
+    `<p class="money">${deal.confirmedCommissionCents ? 'Potrjena' : 'Predvidena'} provizija: ${formatMoney(deal.confirmedCommissionCents || deal.estimatedCommissionCents)}</p>${isAdmin ? `<p>Interni strošek: ${formatMoney(deal.internalCostCents)}</p><form data-deal="${deal.id}"><input name="status" value="${escapeHtml(deal.status)}"><input name="estimatedCommissionCents" type="number" min="0" value="${deal.estimatedCommissionCents || 0}" placeholder="Predvidena provizija (centi)"><input name="confirmedCommissionCents" type="number" min="0" value="${deal.confirmedCommissionCents || 0}" placeholder="Potrjena provizija (centi)"><input name="internalCostCents" type="number" min="0" value="${deal.internalCostCents || 0}" placeholder="Interni stroški (centi)"><button>Shrani posel</button></form>` : ''}`,
   )).join('') || '<p>Ni poslov.</p>';
   if (!isAdmin) return;
   select('#contractors').innerHTML = (data.contractors || []).map((contractor) => item(
@@ -65,9 +87,11 @@ const loadTeamWorkspace = async () => {
   select('#public-home').classList.add('hidden');
   select('#team-workspace').classList.remove('hidden');
   try {
-    state = await apiRequest('/bootstrap');
+    const [team, articles] = await Promise.all([apiRequest('/bootstrap'), apiRequest('/article-requests')]);
+    state = { ...team, articleRequests: articles.requests };
     if (!['admin', 'contractor'].includes(state.me?.role)) throw new Error('Vaša vloga ni veljavna.');
     render();
+    if (state.me?.role === 'contractor' && !catalogProducts.length) loadCatalog();
     if (state.me?.role === 'admin') window.dispatchEvent(new Event('dz:admin-ready'));
   } catch (error) {
     select('#status').innerHTML = `${escapeHtml(error.message)} <a class="text-link" href="/api/team/login">Ponovna prijava</a>`;
@@ -77,15 +101,19 @@ const loadTeamWorkspace = async () => {
 
 document.addEventListener('submit', async (event) => {
   const form = event.target;
-  if (!form.matches('[data-api-form],[data-task],[data-deal]')) return;
+  if (!form.matches('[data-api-form],[data-task],[data-deal],[data-article-form],[data-article-id]')) return;
   event.preventDefault();
   const body = Object.fromEntries(new FormData(form));
-  const path = form.dataset.task ? `/tasks/${form.dataset.task}` : form.dataset.deal ? `/deals/${form.dataset.deal}` : form.dataset.apiForm;
+  const path = form.dataset.task ? `/tasks/${form.dataset.task}` : form.dataset.deal ? `/deals/${form.dataset.deal}` : form.dataset.articleId ? `/article-requests/${form.dataset.articleId}` : form.dataset.articleForm !== undefined ? '/article-requests' : form.dataset.apiForm;
   try {
-    await apiRequest(path, { method: form.dataset.task || form.dataset.deal ? 'PATCH' : 'POST', body: JSON.stringify(body) });
-    if (form.dataset.apiForm) form.reset();
+    const button = form.querySelector('button[type="submit"],button:not([type])');
+    if (button) button.disabled = true;
+    await apiRequest(path, { method: form.dataset.task || form.dataset.deal || form.dataset.articleId ? 'PATCH' : 'POST', body: JSON.stringify(body) });
+    if (form.dataset.apiForm || form.dataset.articleForm !== undefined) form.reset();
     await loadTeamWorkspace();
+    select('#status').textContent = 'Shranjeno.';
   } catch (error) { select('#status').textContent = error.message; }
+  finally { const button = form.querySelector('button[type="submit"],button:not([type])'); if (button) button.disabled = false; }
 });
 
 document.addEventListener('click', async (event) => {
@@ -94,6 +122,12 @@ document.addEventListener('click', async (event) => {
     await apiRequest(`/contractors/${event.target.dataset.contractor}`, { method: 'PATCH', body: JSON.stringify({ enabled: event.target.dataset.enabled === 'true' }) });
     await loadTeamWorkspace();
   } catch (error) { select('#status').textContent = error.message; }
+});
+
+document.addEventListener('change', (event) => {
+  if (!event.target.matches('#article-form [name="article"]')) return;
+  const match = catalogProducts.find((product) => product.name === event.target.value);
+  if (match) select('#article-form [name="sku"]').value = match.sku;
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/team-sw.js');
