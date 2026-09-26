@@ -1,6 +1,7 @@
 package si.dzautotrade.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -14,11 +15,27 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Keeps DZ Auto Trade inside the app while external services use the browser. */
 public final class MainActivity extends Activity {
     private static final String APP_URL = "https://dzautotrade.si/dz-app.html";
     private static final int FILE_CHOOSER_REQUEST = 1001;
+    private static final String RELEASE_API =
+            "https://api.github.com/repos/girodayzzzz/DZ-Auto-Trade/releases/latest";
+    private static final String APK_URL =
+            "https://github.com/girodayzzzz/DZ-Auto-Trade/releases/latest/download/DZ-Auto-Trade.apk";
+    private static final long CHECK_INTERVAL_MS = 12L * 60 * 60 * 1000;
+    private static final long REMIND_INTERVAL_MS = 24L * 60 * 60 * 1000;
+    private static final Pattern VERSION = Pattern.compile("^(?:android-v)?(\\d{1,6})\\.(\\d{1,6})\\.(\\d{1,6})$");
 
     private WebView webView;
     private ValueCallback<Uri[]> pendingFiles;
@@ -76,6 +93,82 @@ public final class MainActivity extends Activity {
         if (savedInstanceState == null || webView.restoreState(savedInstanceState) == null) {
             webView.loadUrl(APP_URL);
         }
+        new Thread(this::checkForUpdates, "dz-apk-update-check").start();
+    }
+
+    private void checkForUpdates() {
+        android.content.SharedPreferences prefs = getSharedPreferences("apk_updates", MODE_PRIVATE);
+        long now = System.currentTimeMillis();
+        if (now - prefs.getLong("last_check", 0) < CHECK_INTERVAL_MS) return;
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) new URL(RELEASE_API).openConnection();
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setRequestProperty("Accept", "application/vnd.github+json");
+            connection.setRequestProperty("User-Agent", "DZ-Auto-Trade-Android");
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) return;
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            try (InputStream input = connection.getInputStream()) {
+                byte[] buffer = new byte[4096];
+                int count;
+                while ((count = input.read(buffer)) != -1 && bytes.size() < 65536) {
+                    bytes.write(buffer, 0, count);
+                }
+            }
+            if (bytes.size() >= 65536) return;
+            JSONObject release = new JSONObject(new String(bytes.toByteArray(), StandardCharsets.UTF_8));
+            if (release.optBoolean("draft") || release.optBoolean("prerelease")) return;
+            String tag = release.optString("tag_name");
+            if (!tag.startsWith("android-v") || release.optJSONArray("assets") == null) return;
+            int[] available = parseVersion(tag);
+            String installed = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            int[] current = parseVersion(installed);
+            if (available == null || current == null) return;
+            boolean hasApk = false;
+            for (int i = 0; i < release.optJSONArray("assets").length(); i++) {
+                if ("DZ-Auto-Trade.apk".equals(release.getJSONArray("assets")
+                        .getJSONObject(i).optString("name"))) hasApk = true;
+            }
+            if (!hasApk) return;
+            prefs.edit().putLong("last_check", now).apply();
+            for (int i = 0; i < 3; i++) {
+                if (available[i] < current[i]) return;
+                if (available[i] > current[i]) {
+                    if (tag.equals(prefs.getString("last_prompt_tag", ""))
+                            && now - prefs.getLong("last_prompt", 0) < REMIND_INTERVAL_MS) return;
+                    runOnUiThread(() -> showUpdate(tag, prefs));
+                    return;
+                }
+            }
+        } catch (Exception ignored) {
+            // A failed check must never prevent the app from opening.
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
+    }
+
+    private static int[] parseVersion(String version) {
+        Matcher matcher = VERSION.matcher(version);
+        if (!matcher.matches()) return null;
+        return new int[] {
+                Integer.parseInt(matcher.group(1)),
+                Integer.parseInt(matcher.group(2)),
+                Integer.parseInt(matcher.group(3))
+        };
+    }
+
+    private void showUpdate(String tag, android.content.SharedPreferences prefs) {
+        if (isFinishing() || isDestroyed()) return;
+        prefs.edit().putString("last_prompt_tag", tag)
+                .putLong("last_prompt", System.currentTimeMillis()).apply();
+        new AlertDialog.Builder(this)
+                .setTitle("Na voljo je nova različica")
+                .setMessage("DZ Auto Trade " + tag.substring("android-v".length())
+                        + " je pripravljen za prenos. Po prenosu namesti APK čez obstoječo aplikacijo.")
+                .setPositiveButton("Prenesi", (dialog, which) -> openExternal(Uri.parse(APK_URL)))
+                .setNegativeButton("Pozneje", null)
+                .show();
     }
 
     private boolean routeUrl(Uri uri) {
