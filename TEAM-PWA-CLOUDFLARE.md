@@ -43,6 +43,8 @@ Ime asseta se pri prihodnjih izdajah ne sme spremeniti. Za delujočo izdajo šte
 
 ### Spletne posodobitve in posodobitve APK-ja
 
+Od Android 1.0.4 naprej aplikacija med nalaganjem prikaže začetni zaslon in Cloudflare Access izziv za prijavo z e-poštno kodo obdrži v istem WebViewu. To omogoča, da je piškotek prijave na voljo aplikaciji po vrnitvi na `dzautotrade.si`. Prijava z Googlom ali drugimi zunanjimi OAuth ponudniki v vdelanem WebViewu ni zagotovljena; za ta APK omogočite prijavo s Cloudflare enkratno e-poštno kodo v Access in preverite administrativni račun ter dovoljenja. Če `/api/team/login` vrne `401`, nastavitev Access oziroma spremenljivk Workerja še ni popolna. Uporabiti je treba **nov podpisan release APK**; spletna objava sama ne popravi prijave v starejšem APK-ju.
+
 - **Spletna vsebina:** APK samo odpre `https://dzautotrade.si/dz-app.html`, zato so spremembe strani, trgovine in Stripe integracije po uspešni spletni objavi vidne brez nove namestitve APK-ja.
 - **APK:** nov APK je potreben samo ob spremembi Android zaganjalnika, manifesta, ikone, dovoljenj ali Android odvisnosti. Pred vsako izdajo je treba v `android-app/app/build.gradle` povečati `versionCode` (in smiselno posodobiti `versionName`). Trenutni `versionCode` je statično nastavljen; zaporedne gradnje ga ne povečajo samodejno.
 
