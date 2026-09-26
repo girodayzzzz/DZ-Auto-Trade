@@ -4361,7 +4361,134 @@ const imageType = (bytes) => {
   return '';
 };
 const vehicleImages = async (env, vehicleId) => (await env.VEHICLES_DB.prepare('SELECT id, content_type, byte_size, sort_order, is_primary FROM vehicle_images WHERE vehicle_id = ? ORDER BY sort_order, created_at').bind(vehicleId).all()).results || [];
+// Small-inventory fallback using the already configured KV namespace. Each car and
+// photo has its own key so unrelated edits cannot overwrite another listing.
+const KV_VEHICLE_PREFIX = 'vehicle:v1:';
+const KV_VEHICLE_IMAGE_PREFIX = 'vehicle-photo:v1:';
+const kvVehicleKey = (id) => `${KV_VEHICLE_PREFIX}${id}`;
+const kvVehicleImageKey = (vehicleId, imageId) => `${KV_VEHICLE_IMAGE_PREFIX}${vehicleId}:${imageId}`;
+const vehicleUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
+const listKvKeys = async (storage, prefix) => {
+  const keys = []; let cursor;
+  do {
+    const page = await storage.list({ prefix, limit: 1000, ...(cursor ? { cursor } : {}) });
+    keys.push(...page.keys);
+    if (keys.length > 1000) throw new Error('Največ 1000 zapisov v osnovnem načinu.');
+    cursor = page.list_complete === false ? page.cursor : undefined;
+  } while (cursor);
+  return keys;
+};
+const kvVehicleImages = async (storage, vehicleId) => (await listKvKeys(storage, `${KV_VEHICLE_IMAGE_PREFIX}${vehicleId}:`))
+  .filter(({ metadata }) => metadata && vehicleUuid(metadata.id))
+  .map(({ metadata }) => ({ id: metadata.id, content_type: metadata.content_type,
+    byte_size: metadata.byte_size, sort_order: metadata.sort_order, is_primary: metadata.is_primary ? 1 : 0,
+    url: `/api/vehicles/${vehicleId}/images/${metadata.id}`, isPrimary: Boolean(metadata.is_primary), sortOrder: metadata.sort_order }))
+  .sort((a, b) => a.sort_order - b.sort_order);
+const listKvVehicles = async (storage) => (await Promise.all((await listKvKeys(storage, KV_VEHICLE_PREFIX))
+  .map(({ name }) => storage.get(name, 'json')))).filter(Boolean);
+const kvVehicleRow = (value, id, previous, now) => ({
+  id, make: value.make, model: value.model, variant: value.variant, model_year: value.modelYear,
+  first_registration: value.firstRegistration, mileage: value.mileage, fuel: value.fuel,
+  power_kw: value.powerKw, transmission: value.transmission, equipment: value.equipment,
+  description: value.description, price_cents: value.priceCents, location: value.location,
+  ownership_type: value.ownershipType, status: value.status, is_public: value.isPublic ? 1 : 0,
+  seller_name: value.sellerName, seller_contact: value.sellerContact,
+  acquisition_cost_cents: value.acquisitionCostCents, internal_notes: value.internalNotes,
+  checklist_json: value.checklist, created_at: previous?.created_at || now, updated_at: now,
+});
+const handleKvPublicVehicles = async (request, env, url) => {
+  const storage = teamStore(env);
+  if (!storage) return json({ error: 'Zaloga vozil še ni nastavljena.' }, { status: 503 });
+  const imageMatch = url.pathname.match(/^\/api\/vehicles\/([^/]+)\/images\/([^/]+)$/);
+  if (imageMatch && request.method === 'GET') {
+    const [, vehicleId, imageId] = imageMatch;
+    if (!vehicleUuid(vehicleId) || !vehicleUuid(imageId)) return json({ error: 'Not found.' }, { status: 404 });
+    const row = await storage.get(kvVehicleKey(vehicleId), 'json');
+    if (!row || row.status !== 'published' || !row.is_public) return json({ error: 'Not found.' }, { status: 404 });
+    const image = await storage.getWithMetadata(kvVehicleImageKey(vehicleId, imageId), 'arrayBuffer');
+    return image.value && image.metadata ? new Response(image.value, { headers: {
+      'Content-Type': image.metadata.content_type, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'public, max-age=120',
+    } }) : json({ error: 'Not found.' }, { status: 404 });
+  }
+  const id = url.pathname.match(/^\/api\/vehicles\/([^/]+)$/)?.[1];
+  if (request.method !== 'GET' || (id && !vehicleUuid(id))) return json({ error: 'Not found.' }, { status: 404 });
+  const rows = (id ? [await storage.get(kvVehicleKey(id), 'json')] : await listKvVehicles(storage))
+    .filter((row) => row && row.status === 'published' && row.is_public)
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  const output = await Promise.all(rows.map(async (row) => publicVehicle(row, await kvVehicleImages(storage, row.id))));
+  return id ? output[0] ? json({ vehicle: output[0] }) : json({ error: 'Not found.' }, { status: 404 }) : json({ vehicles: output });
+};
+const handleKvVehicleAdmin = async (request, env, url) => {
+  const storage = teamStore(env);
+  if (!storage) return json({ error: 'PRODUCTS_KV binding manjka.' }, { status: 503 });
+  if (request.method === 'GET' && url.pathname === '/api/team/admin/vehicles') {
+    const rows = await listKvVehicles(storage);
+    return json({ vehicles: await Promise.all(rows.map(async (row) => ({ ...row,
+      checklist: JSON.parse(row.checklist_json || '{}'), images: await kvVehicleImages(storage, row.id),
+    }))) });
+  }
+  const imagePath = url.pathname.match(/^\/api\/team\/admin\/vehicles\/([^/]+)\/images(?:\/([^/]+))?$/);
+  if (imagePath) {
+    const [, vehicleId, imageId] = imagePath;
+    if (!vehicleUuid(vehicleId) || (imageId && !vehicleUuid(imageId))) return json({ error: 'Not found.' }, { status: 404 });
+    const row = await storage.get(kvVehicleKey(vehicleId), 'json');
+    if (!row) return json({ error: 'Vozilo ne obstaja.' }, { status: 404 });
+    const images = await kvVehicleImages(storage, vehicleId);
+    if (request.method === 'GET' && imageId) {
+      const image = await storage.getWithMetadata(kvVehicleImageKey(vehicleId, imageId), 'arrayBuffer');
+      return image.value && image.metadata ? new Response(image.value, { headers: {
+        'Content-Type': image.metadata.content_type, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, no-store',
+      } }) : json({ error: 'Fotografija ne obstaja.' }, { status: 404 });
+    }
+    if (request.method === 'POST' && !imageId) {
+      if (images.length >= 6) return json({ error: 'V osnovnem načinu je dovoljenih največ 6 fotografij.' }, { status: 400 });
+      const form = await request.formData(); const file = form.get('image');
+      if (!(file instanceof File) || file.size < 1 || file.size > 1024 * 1024) return json({ error: 'Fotografija mora biti velika največ 1 MB.' }, { status: 400 });
+      const bytes = new Uint8Array(await file.arrayBuffer()); const type = imageType(bytes);
+      if (!type || type !== file.type) return json({ error: 'Dovoljene so dejanske JPEG, PNG ali WebP fotografije.' }, { status: 400 });
+      const id = crypto.randomUUID();
+      await storage.put(kvVehicleImageKey(vehicleId, id), bytes, { metadata: { id, content_type: type,
+        byte_size: file.size, sort_order: images.length, is_primary: images.length === 0, created_at: new Date().toISOString() } });
+      return json({ ok: true, id });
+    }
+    if (request.method === 'DELETE' && imageId) {
+      if (!images.some((image) => image.id === imageId)) return json({ error: 'Fotografija ne obstaja.' }, { status: 404 });
+      await storage.delete(kvVehicleImageKey(vehicleId, imageId));
+      return json({ ok: true });
+    }
+    if (request.method === 'PATCH') {
+      const body = await request.json().catch(() => ({}));
+      const order = imageId ? null : Array.isArray(body.imageOrder) ? [...new Set(body.imageOrder.map(String))] : [];
+      if (order && (order.length !== images.length || images.some(({ id }) => !order.includes(id)))) return json({ error: 'Vrstni red fotografij ni veljaven.' }, { status: 400 });
+      if (imageId && !images.some((image) => image.id === imageId)) return json({ error: 'Fotografija ne obstaja.' }, { status: 404 });
+      const changes = imageId ? body.isPrimary ? images : images.filter((image) => image.id === imageId) : images;
+      for (const image of changes) {
+        const key = kvVehicleImageKey(vehicleId, image.id);
+        const stored = await storage.getWithMetadata(key, 'arrayBuffer');
+        if (!stored.value || !stored.metadata) continue;
+        const metadata = { ...stored.metadata,
+          sort_order: order ? order.indexOf(image.id) : image.sort_order,
+          is_primary: imageId && body.isPrimary ? image.id === imageId : image.is_primary,
+        };
+        await storage.put(key, stored.value, { metadata });
+      }
+      return json({ ok: true });
+    }
+  }
+  const id = url.pathname.match(/^\/api\/team\/admin\/vehicles\/([^/]+)$/)?.[1];
+  if (!['POST', 'PATCH'].includes(request.method) || (request.method === 'PATCH' && !vehicleUuid(id))) return json({ error: 'Not found.' }, { status: 404 });
+  const body = await request.json().catch(() => ({}));
+  const previous = id ? await storage.get(kvVehicleKey(id), 'json') : null;
+  if (id && !previous) return json({ error: 'Vozilo ne obstaja.' }, { status: 404 });
+  const value = vehicleInput(body, previous || {});
+  if (!value.make || !value.model) return json({ error: 'Znamka in model sta obvezna.' }, { status: 400 });
+  const vehicleId = id || crypto.randomUUID();
+  const row = kvVehicleRow(value, vehicleId, previous, new Date().toISOString());
+  await storage.put(kvVehicleKey(vehicleId), JSON.stringify(row));
+  return json({ ok: true, id: vehicleId, vehicle: { ...row, checklist: JSON.parse(row.checklist_json), images: [] } });
+};
 const handlePublicVehicles = async (request, env, url) => {
+  if (!env.VEHICLES_DB && !env.VEHICLE_IMAGES) return handleKvPublicVehicles(request, env, url);
   if (!env.VEHICLES_DB || !env.VEHICLE_IMAGES) return json({ error: 'Zaloga vozil še ni nastavljena.' }, { status: 503 });
   const imageMatch = url.pathname.match(/^\/api\/vehicles\/([^/]+)\/images\/([^/]+)$/);
   if (request.method === 'GET' && imageMatch) {
@@ -4378,6 +4505,7 @@ const handlePublicVehicles = async (request, env, url) => {
   return id ? (output[0] ? json({ vehicle: output[0] }) : json({ error: 'Not found.' }, { status: 404 })) : json({ vehicles: output });
 };
 const handleVehicleAdmin = async (request, env, url) => {
+  if (!env.VEHICLES_DB && !env.VEHICLE_IMAGES) return handleKvVehicleAdmin(request, env, url);
   if (!env.VEHICLES_DB || !env.VEHICLE_IMAGES) return json({ error: 'D1/R2 binding manjka.' }, { status: 503 });
   if (request.method === 'GET' && url.pathname === '/api/team/admin/vehicles') {
     const rows = (await env.VEHICLES_DB.prepare('SELECT * FROM vehicles ORDER BY updated_at DESC').all()).results || [];

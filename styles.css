@@ -11945,3 +11945,24 @@ body.home-page .hero-paths > a:focus-visible .hero-path-icon { color: #fff; bord
   .transport-cta-benefits { display: grid; }
   .transport-cta-actions a { min-height: 50px; }
 }
+
+/* Keep the whole mobile navigation reachable when the browser toolbar changes height. */
+@media (max-width: 900px) {
+  .site-header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .site-header .main-nav,
+  .shop-page .site-header .main-nav {
+    position: fixed;
+    top: 68px;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  }
+}

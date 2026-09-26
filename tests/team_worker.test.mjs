@@ -20,13 +20,16 @@ const token = (email) => {
 };
 
 const saved = new Map();
+const metadata = new Map();
 const kv = {
   async get(key, type) {
     const value = saved.get(key);
     return type === 'json' && value ? JSON.parse(value) : value || null;
   },
-  async put(key, value) { saved.set(key, value); },
-  async list({ prefix = '' } = {}) { return { keys: [...saved.keys()].filter((key) => key.startsWith(prefix)).map((name) => ({ name })), list_complete: true }; },
+  async getWithMetadata(key) { return { value: saved.get(key) || null, metadata: metadata.get(key) || null }; },
+  async put(key, value, options) { saved.set(key, value); if (options?.metadata) metadata.set(key, options.metadata); },
+  async delete(key) { saved.delete(key); metadata.delete(key); },
+  async list({ prefix = '' } = {}) { return { keys: [...saved.keys()].filter((key) => key.startsWith(prefix)).map((name) => ({ name, metadata: metadata.get(name) })), list_complete: true }; },
 };
 const env = {
   PRODUCTS_KV: kv,
@@ -108,6 +111,28 @@ try {
   assert.equal((await call('ana@example.si', `/tasks/${binesTask.id}`, 'PATCH', { status: 'zaključeno' })).status, 403);
   assert.equal((await call('ana@example.si', '/admin/tasks', 'POST', {})).status, 403);
   assert.equal((await call('ana@example.si', '/admin/vehicles')).status, 403);
+  const draft = await call('boss@dz.si', '/admin/vehicles', 'POST', { make: 'VW', model: 'Golf', status: 'draft', isPublic: true, sellerName: 'Zasebni prodajalec' });
+  assert.equal(draft.status, 200);
+  const vehicleId = (await draft.json()).id;
+  assert.equal((await worker.fetch(new Request('https://dzautotrade.si/api/vehicles'), env)).status, 200);
+  assert.equal((await (await worker.fetch(new Request('https://dzautotrade.si/api/vehicles'), env)).json()).vehicles.length, 0);
+  const published = await call('boss@dz.si', `/admin/vehicles/${vehicleId}`, 'PATCH', { make: 'VW', model: 'Golf', status: 'published', isPublic: true, sellerName: 'Zasebni prodajalec' });
+  assert.equal(published.status, 200);
+  const publicVehicles = (await (await worker.fetch(new Request('https://dzautotrade.si/api/vehicles'), env)).json()).vehicles;
+  assert.equal(publicVehicles.length, 1);
+  assert.equal(publicVehicles[0].sellerName, undefined);
+  assert.equal((await (await call('boss@dz.si', '/admin/vehicles')).json()).vehicles[0].seller_name, 'Zasebni prodajalec');
+  const jpeg = new File([Uint8Array.from([0xff, 0xd8, 0xff, 0xd9])], 'car.jpg', { type: 'image/jpeg' });
+  const form = new FormData(); form.set('image', jpeg);
+  const photoResponse = await worker.fetch(new Request(`https://dzautotrade.si/api/team/admin/vehicles/${vehicleId}/images`, {
+    method: 'POST', headers: { 'Cf-Access-Jwt-Assertion': token('boss@dz.si') }, body: form,
+  }), env);
+  assert.equal(photoResponse.status, 200);
+  const photoId = (await photoResponse.json()).id;
+  assert.equal((await worker.fetch(new Request(`https://dzautotrade.si/api/vehicles/${vehicleId}/images/${photoId}`), env)).status, 200);
+  assert.equal((await call('ana@example.si', `/admin/vehicles/${vehicleId}/images/${photoId}`)).status, 403);
+  assert.equal((await call('boss@dz.si', `/admin/vehicles/${vehicleId}/images/${photoId}`, 'DELETE')).status, 200);
+  assert.equal((await worker.fetch(new Request(`https://dzautotrade.si/api/vehicles/${vehicleId}/images/${photoId}`), env)).status, 404);
   assert.equal((await worker.fetch(new Request('https://dzautotrade.si/api/team/bootstrap', {
     headers: { 'Cf-Access-Authenticated-User-Email': 'boss@dz.si' },
   }), env)).status, 401);

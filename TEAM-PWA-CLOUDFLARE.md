@@ -107,7 +107,13 @@ Za obstoječi `admin-panel.html` in `/api/admin/*` ohranite admin-only Access. `
 
 Service worker predpomni samo `team.css` in `team-app.js`. Ne predpomni HTML, `/api/` odgovorov, izdelkov, obrazcev ali osebnih podatkov. Evidenca ekipe v KV je primerna za manjšo ekipo; pri več sočasnih uporabnikih je za transakcijske zapise primernejši D1 ali Durable Object.
 
-## Zaloga vozil (D1 in R2) – obvezna nastavitev pred uporabo
+## Zaloga vozil brez dodatnih Cloudflare virov
+
+Če v Workerju ni povezav `VEHICLES_DB` in `VEHICLE_IMAGES`, aplikacija shrani vozilo in fotografije v **že povezani `PRODUCTS_KV`**. Ni treba ustvariti D1, R2 ali dodati nove GitHub spremenljivke. Skrbnik prek aplikacije ustvari osnutek, doda slike, nastavi stanje »Objavljeno« in potrdi »Javno vidno«. Avto tržnica pokaže le javna objavljena vozila; interna polja se ne vrnejo javnosti. V osnovnem načinu je dovoljenih največ 6 slik na vozilo, vsaka se pred nalaganjem zmanjša na največ 1 MB. Za uporabo je še vedno obvezna pravilno nastavljena prijava skrbnika prek Cloudflare Access (`ADMIN_EMAIL`, `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` in pravilo za `/api/team/*`).
+
+Workers KV ima omejitev ene spremembe istega ključa na sekundo in lahko spremembe za kratek čas prikazuje z zamikom. Ta način je namenjen manjši zalogi; pri hitrem zaporednem urejanju lahko pride do zamika ali napake, zato po shranjevanju preverite javno stran. **Pred kasnejšim vklopom D1/R2 je treba vozila in slike preseliti iz KV**, saj bo Worker po vklopu povezav bral podatke iz D1/R2. Ne vklopite `VEHICLES_D1_DATABASE_ID` brez načrta prenosa obstoječih vozil.
+
+## Zaloga vozil (neobvezna nadgradnja D1 in R2)
 
 Koda zaloge je pripravljena, vendar **ni potrjeno objavljena ali produkcijsko delujoča**, dokler niso ustvarjeni viri, izvedena migracija in preverjen Access. Zapisi niso v `team:v1`: strukturirani podatki so v D1, izvirne fotografije pa zasebno v R2. Javni API vrne le izrecno dovoljena polja vozil s statusom `published` in vključenim `is_public`; slike streže Worker samo za taka vozila.
 
@@ -124,8 +130,8 @@ Vrnjeni D1 `database_id` shranite kot GitHub Actions repository variable
 Variables**). ID ni skrivnost, vendar mora pripadati pravemu produkcijskemu
 računu. Osnovni `wrangler.toml` namenoma nima nedelujočega placeholder bindinga;
 workflow iz tega ID-ja ustvari prezrti `wrangler.generated.toml`. Če ID manjka,
-obstoječi Worker varno objavi brez D1/R2 bindingov (trgovina in Stripe zato
-nista blokirana), vozilni API pa vrne `503`. Če je ID nastavljen, vendar ni
+obstoječi Worker objavi osnovni način vozil prek `PRODUCTS_KV` brez D1/R2 bindingov.
+Če manjka tudi `PRODUCTS_KV`, vozilni API vrne `503`. Če je ID nastavljen, vendar ni
 veljaven UUID, se workflow pred deployem ustavi. Za ročni deploy nato:
 
 ```bash
