@@ -90,7 +90,7 @@ jobs:
             echo 'config=wrangler.generated.toml' >> "$GITHUB_OUTPUT"
             echo 'vehicles_ready=true' >> "$GITHUB_OUTPUT"
           else
-            echo '::warning::VEHICLES_D1_DATABASE_ID is not set; deploying without vehicle D1/R2 bindings. Vehicle endpoints will safely return 503.'
+            echo '::notice::VEHICLES_D1_DATABASE_ID is not set; vehicle endpoints use the existing PRODUCTS_KV fallback.'
             echo 'config=wrangler.toml' >> "$GITHUB_OUTPUT"
             echo 'vehicles_ready=false' >> "$GITHUB_OUTPUT"
           fi
