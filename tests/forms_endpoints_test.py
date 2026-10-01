@@ -7,7 +7,6 @@ FORM_ENDPOINTS = {
     "parts": "https://formspree.io/f/xojglvjj",
     "vehicle-sale": "https://formspree.io/f/mgoglogj",
     "transport": "https://formspree.io/f/xlgqwjro",
-    "partner": "https://formspree.io/f/xrpgenne",
 }
 IGNORED_FORM_FILES = {"admin-panel.html", "dz-app.html"}
 

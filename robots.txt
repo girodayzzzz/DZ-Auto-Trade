@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /dz-app.html
+Disallow: /admin-panel.html
+Disallow: /android-app.html
 
 Sitemap: https://dzautotrade.si/sitemap.xml
