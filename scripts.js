@@ -985,9 +985,22 @@ const renderFeaturedProducts = () => {
   if (!featuredGrids.length) return;
 
   const purchasableProducts = currentProducts.filter(isCheckoutReady);
+  // Homepage highlights focus on tools and vehicle-care products, not spare parts.
+  const homepageCategories = /^(orodja|cistila|poliranje-in-zascita|tehnicni-spreji)$/i;
+  const homepageCategoryLabel = /(orodja|čistila|nega|poliranje|zaščita|tehnični spreji)/i;
+  const nonPartsProducts = purchasableProducts.filter((product) => {
+    const category = String(product.category || '').trim();
+    const label = String(product.categoryLabel || '').trim();
+    return homepageCategories.test(category) || homepageCategoryLabel.test(label);
+  });
+  const featuredPool = nonPartsProducts.length ? nonPartsProducts : purchasableProducts.filter((product) => {
+    const category = String(product.category || '').toLowerCase();
+    const label = String(product.categoryLabel || '').toLowerCase();
+    return !category.includes('avto-del') && !category.includes('rabljeni') && !label.includes('avto del');
+  });
   const featuredProducts = [
-    ...purchasableProducts.filter((product) => product.featured),
-    ...purchasableProducts.filter((product) => !product.featured),
+    ...featuredPool.filter((product) => product.featured),
+    ...featuredPool.filter((product) => !product.featured),
   ].slice(0, 10);
   featuredGrids.forEach((grid) => {
     grid.innerHTML = featuredProducts.length
