@@ -1524,4 +1524,16 @@ document.querySelectorAll('[data-transport-form]').forEach((form) => {
   }, 0));
   updateTransportFields();
   updateCompanyField();
+
+  // Prevent selecting a pickup date that has already passed.
+  const pickupDate = form.querySelector('#pickup-date');
+  if (pickupDate) {
+    const today = new Date();
+    const localToday = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-');
+    pickupDate.min = localToday;
+  }
 });
