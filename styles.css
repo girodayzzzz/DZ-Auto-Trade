@@ -11870,3 +11870,102 @@ body.home-page .hero-paths > a:focus-visible .hero-path-icon { color: #fff; bord
     padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
   }
 }
+
+
+/* Form usability: consistent feedback, touch targets and compact mobile layouts. */
+[data-formspree-status] {
+  margin: 0 0 1rem;
+  padding: .75rem .9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  color: #334155;
+  background: #f8fafc;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+[data-formspree-status][data-type="success"] {
+  color: #166534;
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+[data-formspree-status][data-type="error"] {
+  color: #991b1b;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+[data-formspree-status][data-type="info"] {
+  color: #1e40af;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+.contact-form input:not([type="checkbox"]):not([type="radio"]),
+.contact-form select,
+.contact-form textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+.contact-form :is(input, select, textarea, button):focus-visible {
+  outline: 3px solid rgba(229, 9, 20, .35);
+  outline-offset: 2px;
+}
+.contact-form button[type="submit"]:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+@media (max-width: 640px) {
+  .contact-form,
+  .booking-form,
+  .transport-form {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  .contact-form .form-grid,
+  .booking-panel .form-grid,
+  .transport-form .form-grid,
+  .transport-question-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .85rem;
+  }
+  .contact-form label,
+  .transport-form label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .contact-form input:not([type="checkbox"]):not([type="radio"]),
+  .contact-form select,
+  .contact-form textarea,
+  .transport-form input:not([type="checkbox"]):not([type="radio"]),
+  .transport-form select,
+  .transport-form textarea {
+    width: 100%;
+    min-height: 46px;
+    font-size: 16px;
+  }
+  .contact-form textarea,
+  .transport-form textarea {
+    min-height: 110px;
+  }
+  .contact-form button[type="submit"],
+  .transport-form button[type="submit"] {
+    width: 100%;
+    min-height: 50px;
+    white-space: normal;
+  }
+  .transport-form .choice-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 380px) {
+  .contact-form,
+  .booking-form,
+  .transport-form {
+    padding: .8rem;
+  }
+  .transport-form .choice-row {
+    grid-template-columns: 1fr;
+  }
+}
