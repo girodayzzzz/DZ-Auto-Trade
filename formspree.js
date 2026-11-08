@@ -37,6 +37,7 @@ formspreeForms.forEach((form) => {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (form.dataset.submitting === 'true') return;
     if (!form.checkValidity()) {
       form.reportValidity();
       setFormspreeStatus(form, 'Prosimo, izpolnite obvezna polja in preverite pravilnost vnosa.', 'error');
@@ -44,6 +45,8 @@ formspreeForms.forEach((form) => {
     }
     const submitButton = form.querySelector('[type="submit"]');
     const submitLabel = submitButton?.textContent;
+    form.dataset.submitting = 'true';
+    form.setAttribute('aria-busy', 'true');
     submitButton?.setAttribute('disabled', 'true');
     if (submitButton) submitButton.textContent = 'Pošiljamo...';
     setFormspreeStatus(form, 'Pošiljamo obrazec...', 'info');
@@ -61,6 +64,8 @@ formspreeForms.forEach((form) => {
     } catch (error) {
       setFormspreeStatus(form, `${error.message} Če se težava ponovi, pišite na dzautotrade@gmail.com.`, 'error');
     } finally {
+      form.dataset.submitting = 'false';
+      form.removeAttribute('aria-busy');
       submitButton?.removeAttribute('disabled');
       if (submitButton && submitLabel) submitButton.textContent = submitLabel;
     }
