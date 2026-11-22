@@ -2,7 +2,7 @@
   const SITE_URL = 'https://dzautotrade.si';
   const SITE_NAME = 'DZ Auto Trade';
   const LOGO_URL = `${SITE_URL}/assets/Logodzautotrade.si.png`;
-  const DEFAULT_DESCRIPTION = 'DZ Auto Trade je slovenska spletna trgovina za avto dele, detailing izdelke, orodja, vozila in storitve čiščenja vozil.';
+  const DEFAULT_DESCRIPTION = 'DZ Auto Trade: rezervni deli po VIN, avtokozmetika, orodje in oprema za delavnice. Povpraševanje za nove in rabljene avtomobilske dele v Sloveniji.';
   const PUBLIC_PAGES = new Set([
     '/', '/index.html', '/trgovina.html', '/product.html', '/avto-trznica.html', '/storitve.html',
     '/posredniska-prodaja.html', '/prevozi-transport.html', '/notranje-ciscenje.html', '/zunanje-ciscenje.html',
