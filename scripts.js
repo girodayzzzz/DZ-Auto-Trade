@@ -1537,3 +1537,46 @@ document.querySelectorAll('[data-transport-form]').forEach((form) => {
     pickupDate.min = localToday;
   }
 });
+
+
+// Privacy information notice. Cloudflare Web Analytics is configured in Cloudflare,
+// not loaded or controlled by this notice. It is a cookieless analytics service.
+// Do not use this notice as a consent mechanism for future non-essential trackers.
+(function initPrivacyNotice() {
+  const NOTICE_KEY = 'dzat_privacy_notice_v1';
+  function render() {
+    if (!document.body || document.getElementById('dzat-privacy-notice')) return;
+    let acknowledged = false;
+    try { acknowledged = localStorage.getItem(NOTICE_KEY) === 'acknowledged'; } catch (_) {}
+    const css = document.createElement('style');
+    css.textContent = '.dzat-privacy-notice{position:fixed;z-index:9999;bottom:18px;left:18px;right:18px;max-width:560px;background:#151b22;color:#f6f7f9;border:1px solid #4c5967;border-radius:16px;padding:20px;box-shadow:0 12px 38px #0007;font:inherit}.dzat-privacy-notice h2{font-size:1.15rem;margin:0 0 8px;color:#fff}.dzat-privacy-notice p{font-size:.91rem;line-height:1.55;margin:0 0 14px;color:#e5e9ed}.dzat-privacy-notice a{color:#b9dbff;text-decoration:underline}.dzat-privacy-notice button{background:#fff;color:#111b23;border:0;border-radius:9px;padding:10px 20px;cursor:pointer;font-weight:700}.dzat-privacy-notice button:focus-visible,.dzat-privacy-reopen:focus-visible{outline:3px solid #80bfff;outline-offset:3px}.dzat-privacy-reopen{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit;padding:0}@media(max-width:600px){.dzat-privacy-notice{left:10px;right:10px;bottom:10px;padding:16px;max-height:75vh;overflow:auto}}';
+    document.head.appendChild(css);
+    const panel = document.createElement('section');
+    panel.id = 'dzat-privacy-notice';
+    panel.className = 'dzat-privacy-notice';
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-label', 'Obvestilo o zasebnosti');
+    panel.innerHTML = '<h2>Zasebnost in piškotki</h2><p>Za delovanje trgovine uporabljamo potrebne tehnologije, med drugim shranjevanje košarice v brskalniku. Obisk merimo s storitvijo Cloudflare Web Analytics, ki po navedbah ponudnika ne uporablja analitičnih piškotkov in ne zbira osebnih podatkov obiskovalcev. To je informativno obvestilo, ne zahteva za soglasje. <a href="politika-piskotkov.html">Več o piškotkih</a> in <a href="politika-zasebnosti.html">zasebnosti</a>.</p><button type="button">Razumem</button>';
+    panel.querySelector('button').addEventListener('click', () => {
+      try { localStorage.setItem(NOTICE_KEY, 'acknowledged'); } catch (_) {}
+      panel.hidden = true;
+      panel.style.display = 'none';
+    });
+    document.body.appendChild(panel);
+    if (acknowledged) { panel.hidden = true; panel.style.display = 'none'; }
+    const footer = document.querySelector('.footer-legal .footer-links');
+    if (footer && !document.getElementById('dzat-privacy-reopen')) {
+      const li = document.createElement('li');
+      const reopen = document.createElement('button');
+      reopen.type = 'button';
+      reopen.id = 'dzat-privacy-reopen';
+      reopen.className = 'dzat-privacy-reopen';
+      reopen.textContent = 'Obvestilo o zasebnosti';
+      reopen.addEventListener('click', () => { panel.hidden = false; panel.style.display = ''; panel.querySelector('button').focus(); });
+      li.appendChild(reopen);
+      footer.appendChild(li);
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
+  else render();
+})();
