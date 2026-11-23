@@ -966,9 +966,10 @@ const renderFeaturedProductCard = (product) => `
       <span>${escapeHtml(product.badge || product.categoryLabel)}</span>
       <h3><a href="${createProductUrl(product)}">${escapeHtml(product.name)}</a></h3>
       <p>${escapeHtml(getFeaturedSummary(product.description))}</p>
+      <a class="text-link" href="${createProductUrl(product)}" aria-label="Podrobnosti izdelka ${escapeHtml(product.name)}">Podrobnosti izdelka →</a>
       <div class="featured-product-footer">
         <strong>${escapeHtml(product.price)}</strong>
-        <button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}">Dodaj</button>
+        <button class="shop-btn" type="button" data-add-to-cart="${escapeHtml(product.sku)}" aria-label="Dodaj ${escapeHtml(product.name)} v košarico">V košarico</button>
       </div>
     </div>
   </article>
